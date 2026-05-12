@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from '../auth/auth.module';
 import { ProductsModule } from '../products/products.module';
+import { StockModule } from '../stock/stock.module';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { envValidationSchema } from '../config/env.validation';
@@ -22,6 +23,7 @@ import { AppService } from './app.service';
     RedisModule,
     AuthModule,
     ProductsModule,
+    StockModule,
   ],
   controllers: [AppController],
   providers: [
