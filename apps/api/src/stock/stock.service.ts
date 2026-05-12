@@ -7,70 +7,80 @@ import { AuditAction, MovementType, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMovementDto } from './dto/create-movement.dto';
 import { MovementQueryDto } from './dto/movement-query.dto';
+import { StockAlertsGateway } from './stock-alerts.gateway';
 
 @Injectable()
 export class StockService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly alerts: StockAlertsGateway,
+  ) {}
 
   async createMovement(dto: CreateMovementDto, userId: string) {
     const { productId, type, quantity, notes } = dto;
 
-    return this.prisma.$transaction(async (tx) => {
-      const product = await tx.product.findUnique({ where: { id: productId } });
-      if (!product || !product.isActive) {
-        throw new NotFoundException(`Product ${productId} not found`);
-      }
-
-      const previousStock = product.stock;
-      let newStock: number;
-
-      if (type === MovementType.INBOUND) {
-        newStock = previousStock + quantity;
-      } else if (type === MovementType.OUTBOUND) {
-        if (previousStock < quantity) {
-          throw new BadRequestException(
-            `Insufficient stock: available ${previousStock}, requested ${quantity}`,
-          );
+    const { movement, newStock, product } = await this.prisma.$transaction(
+      async (tx) => {
+        const product = await tx.product.findUnique({ where: { id: productId } });
+        if (!product || !product.isActive) {
+          throw new NotFoundException(`Product ${productId} not found`);
         }
-        newStock = previousStock - quantity;
-      } else {
-        // ADJUSTMENT — quantity is the absolute target value
-        newStock = quantity;
-      }
 
-      const [movement] = await Promise.all([
-        tx.stockMovement.create({
-          data: {
-            productId,
-            userId,
-            type,
-            quantity,
-            previousStock,
-            newStock,
-            notes,
-          },
-          include: {
-            product: { select: { id: true, name: true, sku: true } },
-            user: { select: { id: true, name: true, email: true } },
-          },
-        }),
-        tx.product.update({
-          where: { id: productId },
-          data: { stock: newStock },
-        }),
-        tx.auditLog.create({
-          data: {
-            entityType: 'StockMovement',
-            entityId: productId,
-            action: AuditAction.UPDATE,
-            changes: { type, previousStock, newStock, quantity, notes },
-            userId,
-          },
-        }),
-      ]);
+        const previousStock = product.stock;
+        let newStock: number;
 
-      return movement;
-    });
+        if (type === MovementType.INBOUND) {
+          newStock = previousStock + quantity;
+        } else if (type === MovementType.OUTBOUND) {
+          if (previousStock < quantity) {
+            throw new BadRequestException(
+              `Insufficient stock: available ${previousStock}, requested ${quantity}`,
+            );
+          }
+          newStock = previousStock - quantity;
+        } else {
+          // ADJUSTMENT — quantity is the absolute target value
+          newStock = quantity;
+        }
+
+        const [movement] = await Promise.all([
+          tx.stockMovement.create({
+            data: { productId, userId, type, quantity, previousStock, newStock, notes },
+            include: {
+              product: { select: { id: true, name: true, sku: true } },
+              user: { select: { id: true, name: true, email: true } },
+            },
+          }),
+          tx.product.update({
+            where: { id: productId },
+            data: { stock: newStock },
+          }),
+          tx.auditLog.create({
+            data: {
+              entityType: 'StockMovement',
+              entityId: productId,
+              action: AuditAction.UPDATE,
+              changes: { type, previousStock, newStock, quantity, notes },
+              userId,
+            },
+          }),
+        ]);
+
+        return { movement, newStock, product };
+      },
+    );
+
+    if (newStock <= product.minStock) {
+      this.alerts.emitLowStock({
+        productId: product.id,
+        name: product.name,
+        sku: product.sku,
+        stock: newStock,
+        minStock: product.minStock,
+      });
+    }
+
+    return movement;
   }
 
   async findAll(query: MovementQueryDto) {
