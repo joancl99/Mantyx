@@ -195,6 +195,72 @@ npm run start:web
 
 ---
 
+## Running the project
+
+### First time
+
+> Do this once after cloning the repository or on a fresh machine.
+
+**1. Open Docker Desktop** and wait until the engine is running.
+
+**2. Install dependencies**
+```bash
+npm install
+```
+
+**3. Create the environment file**
+```bash
+cp apps/api/.env.example apps/api/.env
+```
+The default values work out of the box for local development. No changes needed.
+
+**4. Start infrastructure services**
+```bash
+npm run docker:up
+```
+Starts PostgreSQL `:5432`, Redis `:6379` and MinIO `:9000` in the background.
+
+**5. Create the database tables**
+```bash
+npx dotenv -e apps/api/.env -- prisma migrate dev --schema=apps/api/prisma/schema.prisma --name init
+```
+This reads the Prisma schema and creates all tables in PostgreSQL.
+
+**6. Start the API**
+```bash
+npm run start:api
+```
+
+API ready at `http://localhost:3000/api` — Swagger at `http://localhost:3000/api/docs`.
+
+---
+
+### Not the first time
+
+> Every day when you want to work on the project.
+
+**1. Open Docker Desktop** and wait until the engine is running.
+
+**2. Start infrastructure services**
+```bash
+npm run docker:up
+```
+
+**3. Start the API**
+```bash
+npm run start:api
+```
+
+That's it. Data is persisted in Docker volumes so the database is exactly where you left it.
+
+**To stop everything when you're done:**
+```bash
+# Ctrl+C in the API terminal
+npm run docker:down
+```
+
+---
+
 ## npm Scripts
 
 | Script | Description |
