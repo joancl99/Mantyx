@@ -20,6 +20,6 @@ export class RolesGuard implements CanActivate {
       .switchToHttp()
       .getRequest().user;
 
-    return !!user && required.includes(user.role);
+    return !!user && (user.role === Role.SUPERADMIN || required.includes(user.role));
   }
 }

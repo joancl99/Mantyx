@@ -10,6 +10,7 @@ datasource db {
 // ─── Enums ───────────────────────────────────────────────────────────────────
 
 enum Role {
+  SUPERADMIN
   ADMIN
   MANAGER
   OPERATOR

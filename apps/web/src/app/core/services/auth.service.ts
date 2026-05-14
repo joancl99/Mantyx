@@ -8,7 +8,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'ADMIN' | 'MANAGER' | 'OPERATOR';
+  role: 'SUPERADMIN' | 'ADMIN' | 'MANAGER' | 'OPERATOR';
 }
 
 interface AuthResponse {
