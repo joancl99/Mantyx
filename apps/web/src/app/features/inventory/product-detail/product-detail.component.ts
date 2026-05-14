@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular/standalone';
+import { IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [IonContent, IonHeader, IonTitle, IonToolbar],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton],
   templateUrl: './product-detail.component.html',
 })
 export class ProductDetailComponent {}

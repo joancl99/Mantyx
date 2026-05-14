@@ -24,30 +24,10 @@ export const appRoutes: Route[] = [
   {
     path: 'app',
     canActivate: [authGuard],
-    children: [
-      {
-        path: 'products',
-        loadComponent: () =>
-          import('./products/products-list/products-list.component').then(
-            (m) => m.ProductsListComponent
-          ),
-      },
-      {
-        path: 'products/:id',
-        loadComponent: () =>
-          import('./products/product-detail/product-detail.component').then(
-            (m) => m.ProductDetailComponent
-          ),
-      },
-      {
-        path: 'stock',
-        loadComponent: () =>
-          import('./stock/stock-movement/stock-movement.component').then(
-            (m) => m.StockMovementComponent
-          ),
-      },
-      { path: '', redirectTo: 'products', pathMatch: 'full' },
-    ],
+    loadComponent: () =>
+      import('./shell/shell.component').then((m) => m.ShellComponent),
+    loadChildren: () =>
+      import('./shell/shell.routes').then((m) => m.shellRoutes),
   },
   { path: '**', redirectTo: '/auth/login' },
 ];

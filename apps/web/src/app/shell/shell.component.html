@@ -1,0 +1,36 @@
+<ion-menu contentId="main-content" menuId="main-menu">
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>WarehouseApp</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content>
+    <ion-list lines="none">
+      @for (item of navItems; track item.route) {
+        <ion-menu-toggle auto-hide="false">
+          <ion-item
+            [routerLink]="item.route"
+            routerLinkActive="active-item"
+            button
+            detail="false"
+          >
+            <ion-icon slot="start" [name]="item.icon"></ion-icon>
+            <ion-label>{{ item.label }}</ion-label>
+          </ion-item>
+        </ion-menu-toggle>
+      }
+    </ion-list>
+
+    <ion-list lines="none">
+      <ion-menu-toggle auto-hide="false">
+        <ion-item button detail="false" (click)="logout()">
+          <ion-icon slot="start" name="log-out-outline"></ion-icon>
+          <ion-label>Cerrar sesión</ion-label>
+        </ion-item>
+      </ion-menu-toggle>
+    </ion-list>
+  </ion-content>
+</ion-menu>
+
+<ion-router-outlet id="main-content"></ion-router-outlet>
