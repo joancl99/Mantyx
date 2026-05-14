@@ -1,1 +1,181 @@
-// Design tokens applied here when visual phase starts
+:host {
+  display: contents;
+}
+
+ion-menu {
+  --background: var(--wh-surface);
+  --width: 272px;
+}
+
+// ─── Menu wrapper ─────────────────────────────────────────────────────────────
+.menu-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+  background: var(--wh-surface);
+}
+
+// ─── Header ───────────────────────────────────────────────────────────────────
+.menu-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 48px 24px 24px;
+}
+
+.menu-logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--wh-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+
+  ion-icon {
+    font-size: 24px;
+    color: var(--wh-bg);
+  }
+}
+
+.menu-app-name {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--wh-text);
+  letter-spacing: -0.3px;
+}
+
+.menu-user-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--wh-text-muted);
+  margin-top: 2px;
+}
+
+.menu-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--wh-success);
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--wh-success);
+  box-shadow: 0 0 6px var(--wh-success);
+}
+
+// ─── Divider ──────────────────────────────────────────────────────────────────
+.menu-divider {
+  height: 1px;
+  background: var(--wh-border);
+  margin: 0 24px;
+}
+
+// ─── Nav ──────────────────────────────────────────────────────────────────────
+.menu-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px;
+  gap: 2px;
+  overflow-y: auto;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: var(--wh-text-muted);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  width: 100%;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+
+  &:hover {
+    background: var(--wh-surface-hover);
+    color: var(--wh-text);
+
+    .menu-item-icon ion-icon {
+      color: var(--wh-text);
+    }
+  }
+
+  &.active {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--wh-accent);
+
+    .menu-item-icon {
+      background: var(--wh-accent);
+
+      ion-icon {
+        color: var(--wh-bg);
+      }
+    }
+  }
+
+  &--logout {
+    color: var(--wh-text-muted);
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--wh-danger);
+
+      .menu-item-icon ion-icon {
+        color: var(--wh-danger);
+      }
+    }
+  }
+}
+
+.menu-item-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--wh-surface-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+
+  ion-icon {
+    font-size: 18px;
+    color: var(--wh-text-muted);
+    transition: color 0.15s ease;
+  }
+}
+
+.menu-item-label {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.1px;
+}
+
+// ─── Footer ───────────────────────────────────────────────────────────────────
+.menu-footer {
+  padding: 12px 12px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  .menu-divider {
+    margin: 0;
+  }
+}

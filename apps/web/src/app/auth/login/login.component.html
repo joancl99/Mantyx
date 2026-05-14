@@ -1,6 +1,84 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Login</ion-title>
-  </ion-toolbar>
-</ion-header>
-<ion-content></ion-content>
+<ion-content>
+  <div class="login-wrap">
+    <div class="login-card">
+
+      <!-- Logo -->
+      <div class="login-header">
+        <div class="logo-icon">
+          <ion-icon name="cube-sharp"></ion-icon>
+        </div>
+        <h1 class="app-name">WarehouseApp</h1>
+        <p class="app-subtitle">Accede a tu cuenta</p>
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+        <!-- Email -->
+        <div class="field" [class.field--error]="submitted() && email.invalid">
+          <label class="field-label">Email</label>
+          <div class="input-wrap">
+            <ion-icon name="mail-outline" class="input-icon"></ion-icon>
+            <input
+              class="field-input"
+              type="email"
+              formControlName="email"
+              placeholder="tu@email.com"
+              autocomplete="email"
+            />
+          </div>
+          @if (submitted() && email.hasError('required')) {
+            <span class="field-error">El email es obligatorio</span>
+          } @else if (submitted() && email.hasError('email')) {
+            <span class="field-error">Introduce un email válido</span>
+          }
+        </div>
+
+        <!-- Password -->
+        <div class="field" [class.field--error]="submitted() && password.invalid">
+          <label class="field-label">Contraseña</label>
+          <div class="input-wrap">
+            <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
+            <input
+              class="field-input"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+            />
+            <button type="button" class="input-toggle" (click)="togglePassword()">
+              <ion-icon [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            </button>
+          </div>
+          @if (submitted() && password.hasError('required')) {
+            <span class="field-error">La contraseña es obligatoria</span>
+          } @else if (submitted() && password.hasError('minlength')) {
+            <span class="field-error">Mínimo 6 caracteres</span>
+          }
+        </div>
+
+        <!-- API error -->
+        @if (errorMessage()) {
+          <div class="error-banner">{{ errorMessage() }}</div>
+        }
+
+        <!-- Submit -->
+        <button type="submit" class="btn-primary" [disabled]="isLoading()">
+          @if (isLoading()) {
+            <ion-spinner name="crescent"></ion-spinner>
+          } @else {
+            Entrar
+          }
+        </button>
+
+      </form>
+
+      <!-- Register link -->
+      <p class="register-link">
+        ¿No tienes cuenta?
+        <a routerLink="/auth/register">Regístrate</a>
+      </p>
+
+    </div>
+  </div>
+</ion-content>

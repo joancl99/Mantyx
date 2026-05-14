@@ -1,35 +1,58 @@
-<ion-menu contentId="main-content" menuId="main-menu">
-  <ion-header>
-    <ion-toolbar>
-      <ion-title>WarehouseApp</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
+<ion-menu contentId="main-content" menuId="main-menu" type="overlay">
   <ion-content>
-    <ion-list lines="none">
-      @for (item of navItems; track item.route) {
-        <ion-menu-toggle auto-hide="false">
-          <ion-item
-            [routerLink]="item.route"
-            routerLinkActive="active-item"
-            button
-            detail="false"
-          >
-            <ion-icon slot="start" [name]="item.icon"></ion-icon>
-            <ion-label>{{ item.label }}</ion-label>
-          </ion-item>
-        </ion-menu-toggle>
-      }
-    </ion-list>
+    <div class="menu-wrap">
 
-    <ion-list lines="none">
-      <ion-menu-toggle auto-hide="false">
-        <ion-item button detail="false" (click)="logout()">
-          <ion-icon slot="start" name="log-out-outline"></ion-icon>
-          <ion-label>Cerrar sesión</ion-label>
-        </ion-item>
-      </ion-menu-toggle>
-    </ion-list>
+      <!-- Header -->
+      <div class="menu-header">
+        <div class="menu-logo">
+          <ion-icon name="cube-sharp"></ion-icon>
+        </div>
+        <div class="menu-brand">
+          <span class="menu-app-name">WarehouseApp</span>
+          @if (currentUser()) {
+            <span class="menu-user-name">{{ currentUser()!.name }}</span>
+          }
+        </div>
+        <div class="menu-status">
+          <span class="status-dot"></span>
+          <span>En línea</span>
+        </div>
+      </div>
+
+      <div class="menu-divider"></div>
+
+      <!-- Nav items -->
+      <nav class="menu-nav">
+        @for (item of navItems; track item.route) {
+          <ion-menu-toggle auto-hide="false">
+            <a
+              class="menu-item"
+              [routerLink]="item.route"
+              routerLinkActive="active"
+            >
+              <span class="menu-item-icon">
+                <ion-icon [name]="item.icon"></ion-icon>
+              </span>
+              <span class="menu-item-label">{{ item.label }}</span>
+            </a>
+          </ion-menu-toggle>
+        }
+      </nav>
+
+      <!-- Logout -->
+      <div class="menu-footer">
+        <div class="menu-divider"></div>
+        <ion-menu-toggle auto-hide="false">
+          <button class="menu-item menu-item--logout" (click)="logout()">
+            <span class="menu-item-icon">
+              <ion-icon name="log-out-outline"></ion-icon>
+            </span>
+            <span class="menu-item-label">Cerrar sesión</span>
+          </button>
+        </ion-menu-toggle>
+      </div>
+
+    </div>
   </ion-content>
 </ion-menu>
 

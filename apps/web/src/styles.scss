@@ -3,3 +3,63 @@
 @import '@ionic/angular/css/structure.css';
 @import '@ionic/angular/css/typography.css';
 @import '@ionic/angular/css/display.css';
+
+// ─── Design tokens ───────────────────────────────────────────────────────────
+:root {
+  // Palette
+  --wh-bg:             #0f172a;
+  --wh-surface:        #1e293b;
+  --wh-surface-hover:  #273549;
+  --wh-border:         rgba(51, 65, 85, 0.7);
+  --wh-accent:         #f59e0b;
+  --wh-accent-hover:   #d97706;
+  --wh-text:           #f1f5f9;
+  --wh-text-muted:     #94a3b8;
+  --wh-danger:         #ef4444;
+  --wh-success:        #10b981;
+
+  // Ionic overrides
+  --ion-background-color:     var(--wh-bg);
+  --ion-background-color-rgb: 15, 23, 42;
+  --ion-text-color:           var(--wh-text);
+  --ion-text-color-rgb:       241, 245, 249;
+  --ion-toolbar-background:   var(--wh-surface);
+  --ion-toolbar-color:        var(--wh-text);
+  --ion-item-background:      transparent;
+  --ion-border-color:         var(--wh-border);
+
+  --ion-color-primary:          var(--wh-accent);
+  --ion-color-primary-rgb:      245, 158, 11;
+  --ion-color-primary-contrast: var(--wh-bg);
+  --ion-color-primary-shade:    var(--wh-accent-hover);
+  --ion-color-primary-tint:     #fbbf24;
+}
+
+// ─── Base ─────────────────────────────────────────────────────────────────────
+* { box-sizing: border-box; }
+
+html, body, ion-app {
+  height: 100%;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--wh-bg);
+  color: var(--wh-text);
+}
+
+ion-content {
+  --background: var(--wh-bg);
+}
+
+ion-toolbar {
+  --background: var(--wh-surface);
+  --border-color: var(--wh-border);
+  --color: var(--wh-text);
+}
+
+ion-menu-button {
+  --color: var(--wh-text);
+}
+
+// ─── Scrollbar ────────────────────────────────────────────────────────────────
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--wh-border); border-radius: 2px; }
