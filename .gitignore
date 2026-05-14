@@ -47,6 +47,9 @@ Thumbs.db
 .claude/worktrees
 .claude/settings.local.json
 
+# Agent skills (reinstallable via npx autoskills)
+.agents/
+
 # environment files — never commit secrets
 apps/api/.env
 *.env.local
