@@ -5,14 +5,7 @@ import { IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton 
   selector: 'app-admin',
   standalone: true,
   imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton],
-  template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
-        <ion-title>Administración</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content></ion-content>
-  `,
+  templateUrl: './admin.component.html',
+  styleUrl: './admin.component.scss',
 })
 export class AdminComponent {}

@@ -5,14 +5,7 @@ import { IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton 
   selector: 'app-movements',
   standalone: true,
   imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton],
-  template: `
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
-        <ion-title>Movimientos</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content></ion-content>
-  `,
+  templateUrl: './movements.component.html',
+  styleUrl: './movements.component.scss',
 })
 export class MovementsComponent {}
