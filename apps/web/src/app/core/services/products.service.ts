@@ -7,16 +7,22 @@ export interface Category {
   name: string;
 }
 
+export interface Brand {
+  id: string;
+  name: string;
+}
+
 export interface Product {
   id: string;
+  companyId: string;
   name: string;
   description: string | null;
   sku: string;
-  price: number;
-  stock: number;
+  barcode: string | null;
   minStock: number;
   imageUrl: string | null;
   category: Category | null;
+  brand: Brand | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -24,6 +30,7 @@ export interface Product {
 export interface ProductsQuery {
   search?: string;
   categoryId?: string;
+  brandId?: string;
   lowStock?: boolean;
   page?: number;
   limit?: number;
@@ -40,10 +47,10 @@ export interface CreateProductDto {
   name: string;
   description?: string;
   sku: string;
-  price: number;
-  stock: number;
+  barcode?: string;
   minStock: number;
   categoryId?: string;
+  brandId?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -56,6 +63,7 @@ export class ProductsService {
     let params = new HttpParams();
     if (query.search) params = params.set('search', query.search);
     if (query.categoryId) params = params.set('categoryId', query.categoryId);
+    if (query.brandId) params = params.set('brandId', query.brandId);
     if (query.lowStock !== undefined) params = params.set('lowStock', String(query.lowStock));
     if (query.page) params = params.set('page', String(query.page));
     if (query.limit) params = params.set('limit', String(query.limit));

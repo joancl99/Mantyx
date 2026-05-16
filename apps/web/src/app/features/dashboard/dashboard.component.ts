@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { IonContent, IonIcon, IonRippleEffect } from '@ionic/angular/standalone';
+import { IonContent, IonIcon } from '@ionic/angular/standalone';
 import { AuthService } from '../../core/services/auth.service';
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────
@@ -71,7 +71,7 @@ const QUICK_ACTIONS: QuickAction[] = [
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [IonContent, IonIcon, IonRippleEffect, RouterLink],
+  imports: [IonContent, IonIcon, RouterLink],
   template: `
     <ion-content [scrollY]="true" [fullscreen]="true">
       <div class="dashboard">

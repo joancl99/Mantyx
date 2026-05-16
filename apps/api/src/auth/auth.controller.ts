@@ -12,6 +12,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
@@ -23,6 +24,7 @@ import { JwtRefreshPayload } from './types/jwt-payload.interface';
 
 @ApiTags('Auth')
 @Controller('auth')
+@Throttle({ auth: { limit: 10, ttl: 60000 } })
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
@@ -53,6 +55,7 @@ export class AuthController {
     return this.auth.refresh(user.sub, user.refreshToken);
   }
 
+  @SkipThrottle()
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth('access-token')

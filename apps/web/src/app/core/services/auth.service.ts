@@ -33,7 +33,9 @@ export class AuthService {
   private readonly _accessToken = signal<string | null>(
     localStorage.getItem(ACCESS_TOKEN_KEY)
   );
-  private readonly _user = signal<User | null>(null);
+  private readonly _user = signal<User | null>(
+    this._parseTokenUser(localStorage.getItem(ACCESS_TOKEN_KEY))
+  );
 
   readonly accessToken = this._accessToken.asReadonly();
   readonly currentUser = this._user.asReadonly();
@@ -60,6 +62,7 @@ export class AuthService {
       .pipe(
         tap((res) => {
           this._accessToken.set(res.accessToken);
+          this._user.set(this._parseTokenUser(res.accessToken));
           localStorage.setItem(ACCESS_TOKEN_KEY, res.accessToken);
           localStorage.setItem(REFRESH_TOKEN_KEY, res.refreshToken);
         }),
@@ -86,5 +89,21 @@ export class AuthService {
     this._user.set(res.user);
     localStorage.setItem(ACCESS_TOKEN_KEY, res.accessToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, res.refreshToken);
+  }
+
+  private _parseTokenUser(token: string | null): User | null {
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return {
+        id: payload.sub,
+        email: payload.email,
+        name: payload.name ?? '',
+        role: payload.role,
+        companyId: payload.companyId ?? null,
+      };
+    } catch {
+      return null;
+    }
   }
 }
