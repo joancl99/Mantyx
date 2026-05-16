@@ -14,21 +14,61 @@ enum Role {
   ADMIN
   MANAGER
   OPERATOR
+  VIEWER
+}
+
+enum CompanyStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
 }
 
 enum MovementType {
   INBOUND
   OUTBOUND
+  TRANSFER
   ADJUSTMENT
+  RETURN
 }
 
 enum AuditAction {
   CREATE
   UPDATE
   DELETE
+  LOGIN
+  LOGOUT
 }
 
-// ─── Models ──────────────────────────────────────────────────────────────────
+enum InventoryCountStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// ─── Platform (SUPERADMIN scope) ─────────────────────────────────────────────
+
+model Company {
+  id        String        @id @default(uuid())
+  name      String
+  slug      String        @unique
+  taxId     String?
+  logoUrl   String?
+  status    CompanyStatus @default(ACTIVE)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  users      User[]
+  warehouses Warehouse[]
+  products   Product[]
+  categories Category[]
+  brands     Brand[]
+  auditLogs  AuditLog[]
+
+  @@map("companies")
+}
+
+// ─── Users ───────────────────────────────────────────────────────────────────
 
 model User {
   id           String   @id @default(uuid())
@@ -41,44 +81,186 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  stockMovements StockMovement[]
-  auditLogs      AuditLog[]
+  // null only for SUPERADMIN
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  stockMovements   StockMovement[]
+  auditLogs        AuditLog[]
+  inventoryCounts  InventoryCount[]
 
   @@map("users")
 }
 
+// ─── Warehouse structure ──────────────────────────────────────────────────────
+
+model Warehouse {
+  id        String   @id @default(uuid())
+  name      String
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  zones     Zone[]
+  stockMovements StockMovement[]
+  inventoryCounts InventoryCount[]
+
+  @@unique([companyId, name])
+  @@map("warehouses")
+}
+
+model Zone {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+
+  aisles Aisle[]
+
+  @@unique([warehouseId, name])
+  @@map("zones")
+}
+
+model Aisle {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  zoneId String
+  zone   Zone   @relation(fields: [zoneId], references: [id])
+
+  locations Location[]
+
+  @@unique([zoneId, name])
+  @@map("aisles")
+}
+
+model Location {
+  id        String   @id @default(uuid())
+  code      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  aisleId String
+  aisle   Aisle  @relation(fields: [aisleId], references: [id])
+
+  stockEntries         StockEntry[]
+  movementsFrom        StockMovement[] @relation("FromLocation")
+  movementsTo          StockMovement[] @relation("ToLocation")
+  inventoryCountLines  InventoryCountLine[]
+
+  @@unique([aisleId, code])
+  @@map("locations")
+}
+
+// ─── Product catalog ──────────────────────────────────────────────────────────
+
 model Category {
   id          String   @id @default(uuid())
-  name        String   @unique
+  name        String
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
   products Product[]
 
+  @@unique([companyId, name])
   @@map("categories")
+}
+
+model Brand {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  products Product[]
+
+  @@unique([companyId, name])
+  @@map("brands")
 }
 
 model Product {
   id          String   @id @default(uuid())
   name        String
-  sku         String   @unique
+  sku         String
+  barcode     String?
   description String?
   imageUrl    String?
-  price       Decimal  @db.Decimal(10, 2)
-  stock       Int      @default(0)
   minStock    Int      @default(0)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  companyId  String
+  company    Company   @relation(fields: [companyId], references: [id])
   categoryId String
-  category   Category @relation(fields: [categoryId], references: [id])
+  category   Category  @relation(fields: [categoryId], references: [id])
+  brandId    String?
+  brand      Brand?    @relation(fields: [brandId], references: [id])
 
+  variants       ProductVariant[]
+  stockEntries   StockEntry[]
   stockMovements StockMovement[]
 
+  @@unique([companyId, sku])
   @@map("products")
 }
+
+model ProductVariant {
+  id        String   @id @default(uuid())
+  sku       String
+  barcode   String?
+  size      String?
+  color     String?
+  imageUrl  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  stockEntries StockEntry[]
+
+  @@unique([productId, sku])
+  @@map("product_variants")
+}
+
+// ─── Stock ────────────────────────────────────────────────────────────────────
+
+// Current stock per product (or variant) per location
+model StockEntry {
+  id        String   @id @default(uuid())
+  quantity  Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  variantId  String?
+  variant    ProductVariant? @relation(fields: [variantId], references: [id])
+  locationId String
+  location   Location @relation(fields: [locationId], references: [id])
+
+  @@unique([productId, variantId, locationId])
+  @@map("stock_entries")
+}
+
+// ─── Movements ────────────────────────────────────────────────────────────────
 
 model StockMovement {
   id            String       @id @default(uuid())
@@ -89,25 +271,73 @@ model StockMovement {
   notes         String?
   createdAt     DateTime     @default(now())
 
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  productId      String
+  product        Product    @relation(fields: [productId], references: [id])
+  userId         String
+  user           User       @relation(fields: [userId], references: [id])
+  warehouseId    String
+  warehouse      Warehouse  @relation(fields: [warehouseId], references: [id])
+  fromLocationId String?
+  fromLocation   Location?  @relation("FromLocation", fields: [fromLocationId], references: [id])
+  toLocationId   String?
+  toLocation     Location?  @relation("ToLocation", fields: [toLocationId], references: [id])
 
   @@map("stock_movements")
 }
 
+// ─── Inventory counts ─────────────────────────────────────────────────────────
+
+model InventoryCount {
+  id          String               @id @default(uuid())
+  name        String
+  status      InventoryCountStatus @default(DRAFT)
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  warehouseId String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+  createdById String
+  createdBy   User      @relation(fields: [createdById], references: [id])
+
+  lines InventoryCountLine[]
+
+  @@map("inventory_counts")
+}
+
+model InventoryCountLine {
+  id             String   @id @default(uuid())
+  expectedQty    Int
+  countedQty     Int?
+  difference     Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  inventoryCountId String
+  inventoryCount   InventoryCount @relation(fields: [inventoryCountId], references: [id])
+  locationId       String
+  location         Location       @relation(fields: [locationId], references: [id])
+
+  @@map("inventory_count_lines")
+}
+
+// ─── Audit ────────────────────────────────────────────────────────────────────
+
 model AuditLog {
   id         String      @id @default(uuid())
   entityType String
-  entityId   String
+  entityId   String?
   action     AuditAction
-  changes    Json
+  changes    Json?
+  ipAddress  String?
+  userAgent  String?
   createdAt  DateTime    @default(now())
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
 
   @@map("audit_logs")
 }

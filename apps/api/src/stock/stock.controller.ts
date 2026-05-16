@@ -8,7 +8,6 @@ import {
   ParseUUIDPipe,
   Post,
   Query,
-  Request,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -16,6 +15,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtPayload } from '../auth/types/jwt-payload.interface';
 import { CreateMovementDto } from './dto/create-movement.dto';
 import { MovementQueryDto } from './dto/movement-query.dto';
@@ -29,24 +29,36 @@ export class StockController {
 
   @Post('movements')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Record a stock movement (all authenticated roles)' })
+  @ApiOperation({ summary: 'Record a stock movement' })
   @ApiResponse({ status: 201 })
   createMovement(
+    @CurrentUser() user: JwtPayload,
     @Body() dto: CreateMovementDto,
-    @Request() req: { user: JwtPayload },
   ) {
-    return this.stock.createMovement(dto, req.user.sub);
+    return this.stock.createMovement(dto, user.sub, user.companyId!);
   }
 
   @Get('movements')
   @ApiOperation({ summary: 'List stock movements with filters and pagination' })
-  findAll(@Query() query: MovementQueryDto) {
-    return this.stock.findAll(query);
+  findAll(@CurrentUser() user: JwtPayload, @Query() query: MovementQueryDto) {
+    return this.stock.findAll(user.companyId!, query);
   }
 
   @Get('movements/:id')
   @ApiOperation({ summary: 'Get a stock movement by id' })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.stock.findOne(id);
+  findOne(
+    @CurrentUser() user: JwtPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.stock.findOne(id, user.companyId!);
+  }
+
+  @Get('by-product/:productId')
+  @ApiOperation({ summary: 'Get total stock and entries by product' })
+  getStockByProduct(
+    @CurrentUser() user: JwtPayload,
+    @Param('productId', ParseUUIDPipe) productId: string,
+  ) {
+    return this.stock.getStockByProduct(productId, user.companyId!);
   }
 }

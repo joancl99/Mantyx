@@ -16,66 +16,113 @@ export class StockService {
     private readonly alerts: StockAlertsGateway,
   ) {}
 
-  async createMovement(dto: CreateMovementDto, userId: string) {
-    const { productId, type, quantity, notes } = dto;
+  async createMovement(dto: CreateMovementDto, userId: string, companyId: string) {
+    const { productId, warehouseId, type, quantity, fromLocationId, toLocationId, notes } = dto;
 
-    const { movement, newStock, product } = await this.prisma.$transaction(
-      async (tx) => {
-        const product = await tx.product.findUnique({ where: { id: productId } });
-        if (!product || !product.isActive) {
-          throw new NotFoundException(`Product ${productId} not found`);
+    const { movement, product } = await this.prisma.$transaction(async (tx) => {
+      const product = await tx.product.findFirst({
+        where: { id: productId, companyId, isActive: true },
+      });
+      if (!product) throw new NotFoundException(`Product ${productId} not found`);
+
+      const warehouse = await tx.warehouse.findFirst({
+        where: { id: warehouseId, companyId },
+      });
+      if (!warehouse) throw new NotFoundException(`Warehouse ${warehouseId} not found`);
+
+      // Compute previous stock across all locations for this product
+      const agg = await tx.stockEntry.aggregate({
+        where: { productId },
+        _sum: { quantity: true },
+      });
+      const previousStock = agg._sum.quantity ?? 0;
+
+      let newStock = previousStock;
+
+      if (type === MovementType.INBOUND) {
+        newStock = previousStock + quantity;
+        if (toLocationId) {
+          await tx.stockEntry.upsert({
+            where: { productId_variantId_locationId: { productId, variantId: null as unknown as string, locationId: toLocationId } },
+            create: { productId, locationId: toLocationId, quantity },
+            update: { quantity: { increment: quantity } },
+          });
         }
-
-        const previousStock = product.stock;
-        let newStock: number;
-
-        if (type === MovementType.INBOUND) {
-          newStock = previousStock + quantity;
-        } else if (type === MovementType.OUTBOUND) {
-          if (previousStock < quantity) {
-            throw new BadRequestException(
-              `Insufficient stock: available ${previousStock}, requested ${quantity}`,
-            );
-          }
-          newStock = previousStock - quantity;
-        } else {
-          // ADJUSTMENT — quantity is the absolute target value
-          newStock = quantity;
+      } else if (type === MovementType.OUTBOUND) {
+        if (previousStock < quantity) {
+          throw new BadRequestException(
+            `Insufficient stock: available ${previousStock}, requested ${quantity}`,
+          );
         }
+        newStock = previousStock - quantity;
+        if (fromLocationId) {
+          await tx.stockEntry.update({
+            where: { productId_variantId_locationId: { productId, variantId: null as unknown as string, locationId: fromLocationId } },
+            data: { quantity: { decrement: quantity } },
+          });
+        }
+      } else if (type === MovementType.TRANSFER) {
+        if (!fromLocationId || !toLocationId) {
+          throw new BadRequestException('TRANSFER requires fromLocationId and toLocationId');
+        }
+        await tx.stockEntry.update({
+          where: { productId_variantId_locationId: { productId, variantId: null as unknown as string, locationId: fromLocationId } },
+          data: { quantity: { decrement: quantity } },
+        });
+        await tx.stockEntry.upsert({
+          where: { productId_variantId_locationId: { productId, variantId: null as unknown as string, locationId: toLocationId } },
+          create: { productId, locationId: toLocationId, quantity },
+          update: { quantity: { increment: quantity } },
+        });
+      } else {
+        // ADJUSTMENT — set absolute stock at a location
+        if (!toLocationId) throw new BadRequestException('ADJUSTMENT requires toLocationId');
+        const current = await tx.stockEntry.findFirst({ where: { productId, locationId: toLocationId } });
+        const currentQty = current?.quantity ?? 0;
+        newStock = previousStock - currentQty + quantity;
+        await tx.stockEntry.upsert({
+          where: { productId_variantId_locationId: { productId, variantId: null as unknown as string, locationId: toLocationId } },
+          create: { productId, locationId: toLocationId, quantity },
+          update: { quantity },
+        });
+      }
 
-        const [movement] = await Promise.all([
-          tx.stockMovement.create({
-            data: { productId, userId, type, quantity, previousStock, newStock, notes },
-            include: {
-              product: { select: { id: true, name: true, sku: true } },
-              user: { select: { id: true, name: true, email: true } },
-            },
-          }),
-          tx.product.update({
-            where: { id: productId },
-            data: { stock: newStock },
-          }),
-          tx.auditLog.create({
-            data: {
-              entityType: 'StockMovement',
-              entityId: productId,
-              action: AuditAction.UPDATE,
-              changes: { type, previousStock, newStock, quantity, notes },
-              userId,
-            },
-          }),
-        ]);
+      const [movement] = await Promise.all([
+        tx.stockMovement.create({
+          data: { productId, userId, warehouseId, type, quantity, previousStock, newStock, fromLocationId, toLocationId, notes },
+          include: {
+            product: { select: { id: true, name: true, sku: true } },
+            user: { select: { id: true, name: true, email: true } },
+            warehouse: { select: { id: true, name: true } },
+          },
+        }),
+        tx.auditLog.create({
+          data: {
+            entityType: 'StockMovement',
+            entityId: productId,
+            action: AuditAction.UPDATE,
+            changes: { type, previousStock, newStock, quantity, notes },
+            userId,
+            companyId,
+          },
+        }),
+      ]);
 
-        return { movement, newStock, product };
-      },
-    );
+      return { movement, product };
+    });
 
-    if (newStock <= product.minStock) {
+    // Check low-stock alert after transaction
+    const agg = await this.prisma.stockEntry.aggregate({
+      where: { productId: product.id },
+      _sum: { quantity: true },
+    });
+    const totalStock = agg._sum.quantity ?? 0;
+    if (totalStock <= product.minStock) {
       this.alerts.emitLowStock({
         productId: product.id,
         name: product.name,
         sku: product.sku,
-        stock: newStock,
+        stock: totalStock,
         minStock: product.minStock,
       });
     }
@@ -83,19 +130,12 @@ export class StockService {
     return movement;
   }
 
-  async findAll(query: MovementQueryDto) {
-    const {
-      page = 1,
-      limit = 20,
-      productId,
-      userId,
-      type,
-      dateFrom,
-      dateTo,
-    } = query;
+  async findAll(companyId: string, query: MovementQueryDto) {
+    const { page = 1, limit = 20, productId, userId, type, dateFrom, dateTo } = query;
     const skip = (page - 1) * limit;
 
     const where: Prisma.StockMovementWhereInput = {
+      warehouse: { companyId },
       ...(productId && { productId }),
       ...(userId && { userId }),
       ...(type && { type }),
@@ -116,6 +156,7 @@ export class StockService {
         include: {
           product: { select: { id: true, name: true, sku: true } },
           user: { select: { id: true, name: true, email: true } },
+          warehouse: { select: { id: true, name: true } },
         },
       }),
       this.prisma.stockMovement.count({ where }),
@@ -124,15 +165,38 @@ export class StockService {
     return { data: items, total, page, limit };
   }
 
-  async findOne(id: string) {
-    const movement = await this.prisma.stockMovement.findUnique({
-      where: { id },
+  async findOne(id: string, companyId: string) {
+    const movement = await this.prisma.stockMovement.findFirst({
+      where: { id, warehouse: { companyId } },
       include: {
         product: { select: { id: true, name: true, sku: true } },
         user: { select: { id: true, name: true, email: true } },
+        warehouse: { select: { id: true, name: true } },
       },
     });
     if (!movement) throw new NotFoundException(`Movement ${id} not found`);
     return movement;
+  }
+
+  async getStockByProduct(productId: string, companyId: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, companyId },
+      select: { id: true, name: true, sku: true, minStock: true },
+    });
+    if (!product) throw new NotFoundException(`Product ${productId} not found`);
+
+    const entries = await this.prisma.stockEntry.findMany({
+      where: { productId },
+      include: {
+        location: {
+          include: {
+            aisle: { include: { zone: { include: { warehouse: true } } } },
+          },
+        },
+      },
+    });
+
+    const total = entries.reduce((sum, e) => sum + e.quantity, 0);
+    return { product, total, entries };
   }
 }

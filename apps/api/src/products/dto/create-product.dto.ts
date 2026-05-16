@@ -1,49 +1,41 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsInt,
-  IsNumber,
-  IsOptional,
-  IsPositive,
-  IsString,
-  IsUUID,
-  Min,
-} from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 
 export class CreateProductDto {
-  @ApiProperty({ example: 'Wireless Keyboard' })
+  @ApiProperty({ example: 'Nike Air Basic' })
   @IsString()
   name: string;
 
-  @ApiProperty({ example: 'WKB-001' })
+  @ApiProperty({ example: 'ZAP-NIK-AIR-BLK-42' })
   @IsString()
   sku: string;
 
-  @ApiPropertyOptional({ example: 'Compact wireless keyboard with backlight' })
+  @ApiPropertyOptional({ example: '8412345678901' })
+  @IsOptional()
+  @IsString()
+  barcode?: string;
+
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiPropertyOptional({ example: 'https://storage/image.jpg' })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   imageUrl?: string;
 
-  @ApiProperty({ example: 49.99 })
-  @IsNumber({ maxDecimalPlaces: 2 })
-  @IsPositive()
-  price: number;
-
-  @ApiProperty({ example: 100 })
-  @IsInt()
-  @Min(0)
-  stock: number;
-
-  @ApiProperty({ example: 10, description: 'Low-stock alert threshold' })
+  @ApiProperty({ example: 5 })
   @IsInt()
   @Min(0)
   minStock: number;
 
-  @ApiProperty({ example: 'uuid-of-category' })
+  @ApiProperty()
   @IsUUID()
   categoryId: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  brandId?: string;
 }

@@ -3,23 +3,34 @@ import { MovementType } from '@prisma/client';
 import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 
 export class CreateMovementDto {
-  @ApiProperty({ example: 'uuid-of-product' })
+  @ApiProperty()
   @IsUUID()
   productId: string;
 
-  @ApiProperty({ enum: MovementType, description: 'INBOUND +qty | OUTBOUND -qty | ADJUSTMENT sets absolute stock' })
+  @ApiProperty()
+  @IsUUID()
+  warehouseId: string;
+
+  @ApiProperty({ enum: MovementType })
   @IsEnum(MovementType)
   type: MovementType;
 
-  @ApiProperty({
-    example: 50,
-    description: 'Units to add/remove. For ADJUSTMENT: target absolute stock value.',
-  })
+  @ApiProperty({ example: 50 })
   @IsInt()
   @Min(1)
   quantity: number;
 
-  @ApiPropertyOptional({ example: 'Received from supplier ABC' })
+  @ApiPropertyOptional({ description: 'Source location (TRANSFER, OUTBOUND)' })
+  @IsOptional()
+  @IsUUID()
+  fromLocationId?: string;
+
+  @ApiPropertyOptional({ description: 'Destination location (TRANSFER, INBOUND)' })
+  @IsOptional()
+  @IsUUID()
+  toLocationId?: string;
+
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   notes?: string;

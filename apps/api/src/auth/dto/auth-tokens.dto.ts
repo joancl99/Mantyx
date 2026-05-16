@@ -6,6 +6,7 @@ export class AuthUserDto {
   @ApiProperty() email: string;
   @ApiProperty() name: string;
   @ApiProperty({ enum: Role }) role: Role;
+  @ApiProperty({ nullable: true }) companyId: string | null;
 }
 
 export class AuthTokensDto {
