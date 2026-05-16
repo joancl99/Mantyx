@@ -1,32 +1,16 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal, OnInit, DestroyRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { IonContent, IonIcon } from '@ionic/angular/standalone';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  IonContent, IonIcon, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonSpinner,
+} from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import {
+  cubeOutline, warningOutline, closeCircleOutline, swapHorizontalOutline,
+  arrowUpOutline, arrowDownOutline, layersOutline, addCircleOutline,
+} from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
-
-// ─── Interfaces ───────────────────────────────────────────────────────────────
-
-interface KpiCard {
-  label: string;
-  value: number | string;
-  icon: string;
-  accent: 'default' | 'warning' | 'danger' | 'success';
-}
-
-interface Alert {
-  id: string;
-  text: string;
-  type: 'stock-bajo' | 'sin-stock' | 'recuento';
-  critical: boolean;
-}
-
-interface Movement {
-  id: string;
-  kind: 'entrada' | 'salida' | 'traslado';
-  quantity: number;
-  product: string;
-  location: string;
-  timeAgo: string;
-}
+import { DashboardService, DashboardAlert, DashboardMovement } from '../../core/services/dashboard.service';
 
 interface QuickAction {
   label: string;
@@ -35,52 +19,31 @@ interface QuickAction {
   accent: boolean;
 }
 
-// ─── Mock data ────────────────────────────────────────────────────────────────
-
-const MOCK_KPIS: KpiCard[] = [
-  { label: 'Productos totales', value: 245,  icon: 'cube-outline',             accent: 'default' },
-  { label: 'Stock bajo',        value: 12,   icon: 'warning-outline',          accent: 'warning' },
-  { label: 'Sin stock',         value: 4,    icon: 'close-circle-outline',     accent: 'danger'  },
-  { label: 'Movimientos hoy',   value: 38,   icon: 'swap-horizontal-outline',  accent: 'success' },
-];
-
-const MOCK_ALERTS: Alert[] = [
-  { id: '1', text: 'Nike Air Basic 42 — stock bajo (2 uds)',        type: 'stock-bajo', critical: true  },
-  { id: '2', text: 'Adidas Runner Blanca 41 — sin stock',           type: 'sin-stock',  critical: true  },
-  { id: '3', text: 'Puma Speed Negro 40 — stock bajo (1 ud)',       type: 'stock-bajo', critical: false },
-  { id: '4', text: 'Ubicación A1-03-B — pendiente de recuento',     type: 'recuento',   critical: false },
-  { id: '5', text: 'Reebok Classic Blanca 39 — sin stock',          type: 'sin-stock',  critical: true  },
-];
-
-const MOCK_MOVEMENTS: Movement[] = [
-  { id: '1', kind: 'entrada',  quantity: 20, product: 'Nike Air Basic Negro 42',   location: 'A1-03-B', timeAgo: 'hace 10 min' },
-  { id: '2', kind: 'salida',   quantity: 3,  product: 'Adidas Runner Blanca 41',   location: 'A2-01-A', timeAgo: 'hace 25 min' },
-  { id: '3', kind: 'traslado', quantity: 5,  product: 'Sudadera Basic Gris M',     location: 'B3-02-C', timeAgo: 'hace 1 h'    },
-  { id: '4', kind: 'entrada',  quantity: 50, product: 'Camiseta Slim Fit Blanca L', location: 'A1-01-A', timeAgo: 'hace 2 h'   },
-  { id: '5', kind: 'salida',   quantity: 8,  product: 'Puma Speed Negro 40',       location: 'C1-04-D', timeAgo: 'hace 3 h'   },
-];
-
 const QUICK_ACTIONS: QuickAction[] = [
-  { label: 'Escanear',         icon: 'barcode-outline',       route: '/app/scanner',   accent: true  },
-  { label: 'Ver stock',        icon: 'layers-outline',        route: '/app/stock',     accent: false },
-  { label: 'Nuevo movimiento', icon: 'add-circle-outline',    route: '/app/movements', accent: false },
+  { label: 'Ver stock',        icon: 'layers-outline',     route: '/app/stock',     accent: false },
+  { label: 'Nuevo movimiento', icon: 'add-circle-outline', route: '/app/movements', accent: true  },
 ];
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [IonContent, IonIcon, RouterLink],
+  imports: [IonContent, IonIcon, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonSpinner, RouterLink],
   styleUrl: './dashboard.component.scss',
   templateUrl: './dashboard.component.html',
 })
-export class DashboardComponent {
-  private auth = inject(AuthService);
+export class DashboardComponent implements OnInit {
+  private readonly auth = inject(AuthService);
+  private readonly dashboardService = inject(DashboardService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  readonly kpis = MOCK_KPIS;
-  readonly alerts = MOCK_ALERTS;
-  readonly movements = MOCK_MOVEMENTS;
+  readonly loading = signal(true);
+  readonly totalProducts = signal(0);
+  readonly lowStock = signal(0);
+  readonly noStock = signal(0);
+  readonly movementsToday = signal(0);
+  readonly alerts = signal<DashboardAlert[]>([]);
+  readonly movements = signal<DashboardMovement[]>([]);
+
   readonly quickActions = QUICK_ACTIONS;
 
   readonly greeting = computed(() => {
@@ -90,15 +53,64 @@ export class DashboardComponent {
     return `${saludo}, ${name}`;
   });
 
-  movementIcon(kind: Movement['kind']): string {
-    return { entrada: 'arrow-up-outline', salida: 'arrow-down-outline', traslado: 'swap-horizontal-outline' }[kind];
+  constructor() {
+    addIcons({
+      cubeOutline, warningOutline, closeCircleOutline, swapHorizontalOutline,
+      arrowUpOutline, arrowDownOutline, layersOutline, addCircleOutline,
+    });
   }
 
-  movementPrefix(kind: Movement['kind']): string {
-    return { entrada: '+', salida: '−', traslado: '↔ ' }[kind];
+  ngOnInit() {
+    this.dashboardService.getStats()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (stats) => {
+          this.totalProducts.set(stats.kpis.totalProducts);
+          this.lowStock.set(stats.kpis.lowStock);
+          this.noStock.set(stats.kpis.noStock);
+          this.movementsToday.set(stats.kpis.movementsToday);
+          this.alerts.set(stats.alerts);
+          this.movements.set(stats.recentMovements);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false),
+      });
   }
 
-  alertLabel(type: Alert['type']): string {
-    return { 'stock-bajo': 'Stock bajo', 'sin-stock': 'Sin stock', 'recuento': 'Recuento' }[type];
+  movementIcon(type: DashboardMovement['type']): string {
+    return type === 'INBOUND' ? 'arrow-up-outline'
+      : type === 'OUTBOUND' ? 'arrow-down-outline'
+      : 'swap-horizontal-outline';
+  }
+
+  movementKind(type: DashboardMovement['type']): string {
+    return type === 'INBOUND' ? 'entrada' : type === 'OUTBOUND' ? 'salida' : 'traslado';
+  }
+
+  movementPrefix(type: DashboardMovement['type']): string {
+    return type === 'INBOUND' ? '+' : type === 'OUTBOUND' ? '−' : '↔ ';
+  }
+
+  alertType(type: DashboardAlert['type']): string {
+    return type === 'no-stock' ? 'sin-stock' : 'stock-bajo';
+  }
+
+  alertLabel(type: DashboardAlert['type']): string {
+    return type === 'no-stock' ? 'Sin stock' : 'Stock bajo';
+  }
+
+  alertText(alert: DashboardAlert): string {
+    return alert.type === 'no-stock'
+      ? `${alert.productName} — sin stock`
+      : `${alert.productName} — stock bajo (${alert.totalStock} uds, mín. ${alert.minStock})`;
+  }
+
+  timeAgo(dateStr: string): string {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 60) return `hace ${minutes} min`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `hace ${hours} h`;
+    return `hace ${Math.floor(hours / 24)} d`;
   }
 }

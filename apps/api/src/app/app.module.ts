@@ -6,6 +6,7 @@ import { AuthModule } from '../auth/auth.module';
 import { BrandsModule } from '../brands/brands.module';
 import { CategoriesModule } from '../categories/categories.module';
 import { ProductsModule } from '../products/products.module';
+import { DashboardModule } from '../dashboard/dashboard.module';
 import { StockModule } from '../stock/stock.module';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -33,6 +34,7 @@ import { AppService } from './app.service';
     BrandsModule,
     ProductsModule,
     StockModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [

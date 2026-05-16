@@ -1,3 +1,9 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
 <ion-content [scrollY]="true" [fullscreen]="true">
   <div class="dashboard">
 
@@ -11,81 +17,107 @@
       <p class="dash-header__sub">Resumen del almacén central</p>
     </header>
 
-    <!-- KPIs -->
-    <section class="kpi-grid">
-      @for (kpi of kpis; track kpi.label) {
-        <div class="kpi-card kpi-card--{{ kpi.accent }}">
-          <div class="kpi-card__icon-wrap">
-            <ion-icon [name]="kpi.icon"></ion-icon>
-          </div>
-          <span class="kpi-card__value">{{ kpi.value }}</span>
-          <span class="kpi-card__label">{{ kpi.label }}</span>
+    @if (loading()) {
+      <div class="state-center">
+        <ion-spinner class="main-spinner"></ion-spinner>
+      </div>
+    } @else {
+
+      <!-- KPIs -->
+      <section class="kpi-grid">
+        <div class="kpi-card kpi-card--default">
+          <div class="kpi-card__icon-wrap"><ion-icon name="cube-outline"></ion-icon></div>
+          <span class="kpi-card__value">{{ totalProducts() }}</span>
+          <span class="kpi-card__label">Productos totales</span>
         </div>
-      }
-    </section>
+        <div class="kpi-card kpi-card--warning">
+          <div class="kpi-card__icon-wrap"><ion-icon name="warning-outline"></ion-icon></div>
+          <span class="kpi-card__value">{{ lowStock() }}</span>
+          <span class="kpi-card__label">Stock bajo</span>
+        </div>
+        <div class="kpi-card kpi-card--danger">
+          <div class="kpi-card__icon-wrap"><ion-icon name="close-circle-outline"></ion-icon></div>
+          <span class="kpi-card__value">{{ noStock() }}</span>
+          <span class="kpi-card__label">Sin stock</span>
+        </div>
+        <div class="kpi-card kpi-card--success">
+          <div class="kpi-card__icon-wrap"><ion-icon name="swap-horizontal-outline"></ion-icon></div>
+          <span class="kpi-card__value">{{ movementsToday() }}</span>
+          <span class="kpi-card__label">Movimientos hoy</span>
+        </div>
+      </section>
 
-    <!-- Alertas -->
-    <section class="dash-section">
-      <div class="dash-section__header">
-        <h2 class="dash-section__title">Alertas importantes</h2>
-        <span class="dash-section__count">{{ alerts.length }}</span>
-      </div>
-      <div class="alert-list">
-        @for (alert of alerts; track alert.id) {
-          <div class="alert-item">
-            <span class="alert-item__dot alert-item__dot--{{ alert.type }}" [class.alert-item__dot--pulse]="alert.critical"></span>
-            <span class="alert-item__text">{{ alert.text }}</span>
-            <span class="alert-item__badge alert-item__badge--{{ alert.type }}">
-              {{ alertLabel(alert.type) }}
-            </span>
-          </div>
-        }
-      </div>
-    </section>
+      <!-- Alertas -->
+      <section class="dash-section">
+        <div class="dash-section__header">
+          <h2 class="dash-section__title">Alertas importantes</h2>
+          <span class="dash-section__count">{{ alerts().length }}</span>
+        </div>
+        <div class="alert-list">
+          @if (alerts().length === 0) {
+            <p class="empty-msg">Sin alertas activas</p>
+          } @else {
+            @for (alert of alerts(); track alert.id) {
+              <div class="alert-item">
+                <span class="alert-item__dot alert-item__dot--{{ alertType(alert.type) }}"
+                      [class.alert-item__dot--pulse]="alert.type === 'no-stock'"></span>
+                <span class="alert-item__text">{{ alertText(alert) }}</span>
+                <span class="alert-item__badge alert-item__badge--{{ alertType(alert.type) }}">
+                  {{ alertLabel(alert.type) }}
+                </span>
+              </div>
+            }
+          }
+        </div>
+      </section>
 
-    <!-- Últimos movimientos -->
-    <section class="dash-section">
-      <div class="dash-section__header">
-        <h2 class="dash-section__title">Últimos movimientos</h2>
-      </div>
-      <div class="movement-list">
-        @for (mv of movements; track mv.id) {
-          <div class="movement-item">
-            <div class="movement-item__icon movement-item__icon--{{ mv.kind }}">
-              <ion-icon [name]="movementIcon(mv.kind)"></ion-icon>
-            </div>
-            <div class="movement-item__body">
-              <span class="movement-item__product">{{ mv.product }}</span>
-              <span class="movement-item__meta">{{ mv.location }}</span>
-            </div>
-            <div class="movement-item__right">
-              <span class="movement-item__qty movement-item__qty--{{ mv.kind }}">
-                {{ movementPrefix(mv.kind) }}{{ mv.quantity }}
-              </span>
-              <span class="movement-item__time">{{ mv.timeAgo }}</span>
-            </div>
-          </div>
-        }
-      </div>
-    </section>
+      <!-- Últimos movimientos -->
+      <section class="dash-section">
+        <div class="dash-section__header">
+          <h2 class="dash-section__title">Últimos movimientos</h2>
+        </div>
+        <div class="movement-list">
+          @if (movements().length === 0) {
+            <p class="empty-msg">Sin movimientos registrados</p>
+          } @else {
+            @for (mv of movements(); track mv.id) {
+              <div class="movement-item">
+                <div class="movement-item__icon movement-item__icon--{{ movementKind(mv.type) }}">
+                  <ion-icon [name]="movementIcon(mv.type)"></ion-icon>
+                </div>
+                <div class="movement-item__body">
+                  <span class="movement-item__product">{{ mv.productName }}</span>
+                  <span class="movement-item__meta">{{ mv.warehouseName }}</span>
+                </div>
+                <div class="movement-item__right">
+                  <span class="movement-item__qty movement-item__qty--{{ movementKind(mv.type) }}">
+                    {{ movementPrefix(mv.type) }}{{ mv.quantity }}
+                  </span>
+                  <span class="movement-item__time">{{ timeAgo(mv.createdAt) }}</span>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </section>
 
-    <!-- Accesos rápidos -->
-    <section class="dash-section dash-section--last">
-      <h2 class="dash-section__title">Accesos rápidos</h2>
-      <div class="quick-actions">
-        @for (action of quickActions; track action.label) {
-          <a
-            class="action-btn"
-            [class.action-btn--accent]="action.accent"
-            [routerLink]="action.route"
-            ion-ripple-effect
-          >
-            <ion-icon [name]="action.icon"></ion-icon>
-            <span>{{ action.label }}</span>
-          </a>
-        }
-      </div>
-    </section>
+      <!-- Accesos rápidos -->
+      <section class="dash-section dash-section--last">
+        <h2 class="dash-section__title">Accesos rápidos</h2>
+        <div class="quick-actions">
+          @for (action of quickActions; track action.label) {
+            <a
+              class="action-btn"
+              [class.action-btn--accent]="action.accent"
+              [routerLink]="action.route"
+            >
+              <ion-icon [name]="action.icon"></ion-icon>
+              <span>{{ action.label }}</span>
+            </a>
+          }
+        </div>
+      </section>
 
+    }
   </div>
 </ion-content>
