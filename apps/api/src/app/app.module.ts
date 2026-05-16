@@ -3,6 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AuthModule } from '../auth/auth.module';
+import { BrandsModule } from '../brands/brands.module';
+import { CategoriesModule } from '../categories/categories.module';
 import { ProductsModule } from '../products/products.module';
 import { StockModule } from '../stock/stock.module';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -27,6 +29,8 @@ import { AppService } from './app.service';
     PrismaModule,
     RedisModule,
     AuthModule,
+    CategoriesModule,
+    BrandsModule,
     ProductsModule,
     StockModule,
   ],
