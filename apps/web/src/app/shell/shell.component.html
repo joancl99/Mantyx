@@ -13,6 +13,12 @@
             <span class="menu-user-name">{{ currentUser()!.name }}</span>
           }
         </div>
+        @if (currentUser()) {
+          <div class="menu-role-badge role-{{ currentUser()!.role | lowercase }}">
+            <ion-icon name="shield-checkmark-outline"></ion-icon>
+            {{ currentUser()!.role }}
+          </div>
+        }
         <div class="menu-status">
           <span class="status-dot"></span>
           <span>En línea</span>
@@ -23,7 +29,7 @@
 
       <!-- Nav items -->
       <nav class="menu-nav">
-        @for (item of navItems; track item.route) {
+        @for (item of navItems(); track item.route) {
           <ion-menu-toggle auto-hide="false">
             <a
               class="menu-item"
@@ -57,3 +63,10 @@
 </ion-menu>
 
 <ion-router-outlet id="main-content"></ion-router-outlet>
+
+<!-- Scanner FAB — global, always visible -->
+<ion-fab slot="fixed" vertical="bottom" horizontal="end">
+  <ion-fab-button class="scanner-fab" (click)="openScanner()">
+    <ion-icon name="barcode-outline"></ion-icon>
+  </ion-fab-button>
+</ion-fab>

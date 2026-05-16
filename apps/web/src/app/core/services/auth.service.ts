@@ -4,11 +4,14 @@ import { Router } from '@angular/router';
 import { map, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
+export type Role = 'SUPERADMIN' | 'ADMIN' | 'MANAGER' | 'OPERATOR' | 'VIEWER';
+
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'SUPERADMIN' | 'ADMIN' | 'MANAGER' | 'OPERATOR';
+  role: Role;
+  companyId: string | null;
 }
 
 interface AuthResponse {

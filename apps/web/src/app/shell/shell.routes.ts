@@ -4,44 +4,42 @@ export const shellRoutes: Route[] = [
   {
     path: 'dashboard',
     loadComponent: () =>
-      import('../features/dashboard/dashboard.component').then(
-        (m) => m.DashboardComponent
-      ),
+      import('../features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
   },
   {
-    path: 'stock-query',
+    path: 'products',
     loadComponent: () =>
-      import('../features/stock-query/stock-query.component').then(
-        (m) => m.StockQueryComponent
-      ),
+      import('../features/products/products.component').then((m) => m.ProductsComponent),
+  },
+  {
+    path: 'stock',
+    loadComponent: () =>
+      import('../features/stock/stock.component').then((m) => m.StockComponent),
+  },
+  {
+    path: 'movements',
+    loadComponent: () =>
+      import('../features/movements/movements.component').then((m) => m.MovementsComponent),
   },
   {
     path: 'inventory',
     loadComponent: () =>
-      import('../features/inventory/inventory.component').then(
-        (m) => m.InventoryComponent
-      ),
+      import('../features/inventory/inventory.component').then((m) => m.InventoryComponent),
   },
   {
-    path: 'inventory/:id',
+    path: 'warehouses',
     loadComponent: () =>
-      import('../features/inventory/product-detail/product-detail.component').then(
-        (m) => m.ProductDetailComponent
-      ),
+      import('../features/warehouses/warehouses.component').then((m) => m.WarehousesComponent),
   },
   {
-    path: 'receptions',
+    path: 'management',
     loadComponent: () =>
-      import('../features/receptions/receptions.component').then(
-        (m) => m.ReceptionsComponent
-      ),
+      import('../features/management/management.component').then((m) => m.ManagementComponent),
   },
   {
-    path: 'expeditions',
+    path: 'admin',
     loadComponent: () =>
-      import('../features/expeditions/expeditions.component').then(
-        (m) => m.ExpeditionsComponent
-      ),
+      import('../features/admin/admin.component').then((m) => m.AdminComponent),
   },
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
 ];
