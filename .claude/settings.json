@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(cd*; npm exec nx -- build api *)",
+      "PowerShell(cd*; npm exec nx -- build web *)",
+      "PowerShell(cd*; dotenv -e .env -- npx prisma validate *)",
+      "PowerShell(cd*; dotenv -e .env -- npx prisma validate)",
+      "Bash(npm run docker:up)",
+      "Bash(npm run docker:down)",
+      "Bash(docker compose *)",
+      "Bash(git checkout *)",
+      "Bash(git branch *)",
+      "Bash(git push origin *)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx autoskills",
+            "timeout": 60,
+            "statusMessage": "Actualizando skills del proyecto..."
+          }
+        ]
+      }
+    ]
+  }
+}
