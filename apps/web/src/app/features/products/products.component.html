@@ -150,8 +150,13 @@
 
 <!-- Create / Edit modal -->
 @if (showModal()) {
-  <div class="modal-backdrop" (click)="closeModal()">
-    <div class="modal" (click)="$event.stopPropagation()">
+  <div
+    class="modal-backdrop"
+    tabindex="0"
+    (click)="closeModal()"
+    (keydown.escape)="closeModal()"
+  >
+    <div class="modal" role="presentation" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2 class="modal-title">
           {{ modalMode() === 'create' ? 'Nuevo producto' : 'Editar producto' }}
@@ -167,8 +172,9 @@
             class="form-field"
             [class.has-error]="submitted() && form.get('name')?.invalid"
           >
-            <label class="form-label">Nombre *</label>
+            <label class="form-label" for="prod-name">Nombre *</label>
             <input
+              id="prod-name"
               class="form-input"
               formControlName="name"
               placeholder="Nike Air Basic"
@@ -181,8 +187,9 @@
             class="form-field"
             [class.has-error]="submitted() && form.get('sku')?.invalid"
           >
-            <label class="form-label">SKU *</label>
+            <label class="form-label" for="prod-sku">SKU *</label>
             <input
+              id="prod-sku"
               class="form-input"
               formControlName="sku"
               placeholder="ZAP-NIK-AIR-42"
@@ -195,8 +202,11 @@
 
         <div class="form-row">
           <div class="form-field">
-            <label class="form-label">Código de barras</label>
+            <label class="form-label" for="prod-barcode"
+              >Código de barras</label
+            >
             <input
+              id="prod-barcode"
               class="form-input"
               formControlName="barcode"
               placeholder="8412345678901"
@@ -206,8 +216,9 @@
             class="form-field"
             [class.has-error]="submitted() && form.get('minStock')?.invalid"
           >
-            <label class="form-label">Stock mínimo *</label>
+            <label class="form-label" for="prod-minstock">Stock mínimo *</label>
             <input
+              id="prod-minstock"
               class="form-input"
               type="number"
               formControlName="minStock"
@@ -225,8 +236,12 @@
             class="form-field"
             [class.has-error]="submitted() && form.get('categoryId')?.invalid"
           >
-            <label class="form-label">Categoría *</label>
-            <select class="form-input" formControlName="categoryId">
+            <label class="form-label" for="prod-category">Categoría *</label>
+            <select
+              id="prod-category"
+              class="form-input"
+              formControlName="categoryId"
+            >
               <option value="">Seleccionar categoría</option>
               @for (cat of categories(); track cat.id) {
                 <option [value]="cat.id">{{ cat.name }}</option>
@@ -237,8 +252,12 @@
             }
           </div>
           <div class="form-field">
-            <label class="form-label">Marca</label>
-            <select class="form-input" formControlName="brandId">
+            <label class="form-label" for="prod-brand">Marca</label>
+            <select
+              id="prod-brand"
+              class="form-input"
+              formControlName="brandId"
+            >
               <option value="">Sin marca</option>
               @for (brand of brands(); track brand.id) {
                 <option [value]="brand.id">{{ brand.name }}</option>
@@ -248,8 +267,9 @@
         </div>
 
         <div class="form-field">
-          <label class="form-label">Descripción</label>
+          <label class="form-label" for="prod-description">Descripción</label>
           <textarea
+            id="prod-description"
             class="form-input form-textarea"
             formControlName="description"
             rows="3"
@@ -285,8 +305,17 @@
 
 <!-- Delete confirm -->
 @if (deleteTarget()) {
-  <div class="modal-backdrop" (click)="cancelDelete()">
-    <div class="modal modal--sm" (click)="$event.stopPropagation()">
+  <div
+    class="modal-backdrop"
+    tabindex="0"
+    (click)="cancelDelete()"
+    (keydown.escape)="cancelDelete()"
+  >
+    <div
+      class="modal modal--sm"
+      role="presentation"
+      (click)="$event.stopPropagation()"
+    >
       <div class="modal-header">
         <h2 class="modal-title">Eliminar producto</h2>
       </div>

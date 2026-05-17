@@ -1,7 +1,6 @@
 <ion-content>
   <div class="login-wrap">
     <div class="login-card">
-
       <!-- Logo -->
       <div class="login-header">
         <div class="logo-icon">
@@ -13,13 +12,13 @@
 
       <!-- Form -->
       <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-
         <!-- Name -->
         <div class="field" [class.field--error]="submitted() && name.invalid">
-          <label class="field-label">Nombre</label>
+          <label class="field-label" for="register-name">Nombre</label>
           <div class="input-wrap">
             <ion-icon name="person-outline" class="input-icon"></ion-icon>
             <input
+              id="register-name"
               class="field-input"
               type="text"
               formControlName="name"
@@ -36,10 +35,11 @@
 
         <!-- Email -->
         <div class="field" [class.field--error]="submitted() && email.invalid">
-          <label class="field-label">Email</label>
+          <label class="field-label" for="register-email">Email</label>
           <div class="input-wrap">
             <ion-icon name="mail-outline" class="input-icon"></ion-icon>
             <input
+              id="register-email"
               class="field-input"
               type="email"
               formControlName="email"
@@ -55,19 +55,29 @@
         </div>
 
         <!-- Password -->
-        <div class="field" [class.field--error]="submitted() && password.invalid">
-          <label class="field-label">Contraseña</label>
+        <div
+          class="field"
+          [class.field--error]="submitted() && password.invalid"
+        >
+          <label class="field-label" for="register-password">Contraseña</label>
           <div class="input-wrap">
             <ion-icon name="lock-closed-outline" class="input-icon"></ion-icon>
             <input
+              id="register-password"
               class="field-input"
               [type]="showPassword() ? 'text' : 'password'"
               formControlName="password"
               placeholder="••••••••"
               autocomplete="new-password"
             />
-            <button type="button" class="input-toggle" (click)="togglePassword()">
-              <ion-icon [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+            <button
+              type="button"
+              class="input-toggle"
+              (click)="togglePassword()"
+            >
+              <ion-icon
+                [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'"
+              ></ion-icon>
             </button>
           </div>
           @if (submitted() && password.hasError('required')) {
@@ -90,7 +100,6 @@
             Crear cuenta
           }
         </button>
-
       </form>
 
       <!-- Login link -->
@@ -98,7 +107,6 @@
         ¿Ya tienes cuenta?
         <a routerLink="/auth/login">Inicia sesión</a>
       </p>
-
     </div>
   </div>
 </ion-content>

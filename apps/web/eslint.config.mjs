@@ -8,6 +8,7 @@ export default [
   {
     files: ['**/*.ts'],
     rules: {
+      '@angular-eslint/prefer-inject': 'off',
       '@angular-eslint/directive-selector': [
         'error',
         {
