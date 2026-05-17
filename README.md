@@ -325,6 +325,17 @@ Uses `nx affected` — only lints, tests and builds projects touched by the PR.
 | Test | `nx affected -t test` |
 | Build | `nx affected -t build --configuration=production` |
 
+### Before merging to main
+
+Always run these locally in `dev` before merging to avoid breaking CI:
+
+```bash
+npx nx format
+npx nx affected -t lint --base=origin/main --head=HEAD
+```
+
+> **Note:** If `nx.json` has an `nxCloudId` field and the workspace is not connected to Nx Cloud, remove it — otherwise CI will abort with an authorization error.
+
 ---
 
 ## API Reference
