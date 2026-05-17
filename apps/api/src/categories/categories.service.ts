@@ -21,7 +21,10 @@ export class CategoriesService {
         select: { id: true, name: true },
       });
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2002'
+      ) {
         throw new ConflictException('Category name already exists');
       }
       throw e;

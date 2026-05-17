@@ -7,12 +7,14 @@ import {
   DestroyRef,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormsModule, ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import {
-  IonContent,
-  IonIcon,
-  IonSpinner,
-} from '@ionic/angular/standalone';
+  FormsModule,
+  ReactiveFormsModule,
+  FormGroup,
+  FormControl,
+  Validators,
+} from '@angular/forms';
+import { IonContent, IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   addOutline,
@@ -30,8 +32,15 @@ import {
 } from 'ionicons/icons';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
-import { ProductsService, Product, CreateProductDto } from '../../core/services/products.service';
-import { CategoriesService, Category } from '../../core/services/categories.service';
+import {
+  ProductsService,
+  Product,
+  CreateProductDto,
+} from '../../core/services/products.service';
+import {
+  CategoriesService,
+  Category,
+} from '../../core/services/categories.service';
 import { BrandsService, Brand } from '../../core/services/brands.service';
 
 type ModalMode = 'create' | 'edit';
@@ -39,13 +48,7 @@ type ModalMode = 'create' | 'edit';
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [
-    FormsModule,
-    ReactiveFormsModule,
-    IonContent,
-    IonIcon,
-    IonSpinner,
-  ],
+  imports: [FormsModule, ReactiveFormsModule, IonContent, IonIcon, IonSpinner],
   styleUrl: './products.component.scss',
   templateUrl: './products.component.html',
 })
@@ -70,7 +73,9 @@ export class ProductsComponent implements OnInit {
   readonly total = signal(0);
   readonly pageSize = 20;
 
-  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.total() / this.pageSize)),
+  );
   readonly totalLabel = computed(() => {
     const t = this.total();
     return t === 0 ? 'Sin resultados' : `${t} producto${t === 1 ? '' : 's'}`;
@@ -97,22 +102,31 @@ export class ProductsComponent implements OnInit {
   readonly deleteTarget = signal<Product | null>(null);
 
   readonly form = new FormGroup({
-    name:        new FormControl('', Validators.required),
-    sku:         new FormControl('', Validators.required),
-    barcode:     new FormControl(''),
+    name: new FormControl('', Validators.required),
+    sku: new FormControl('', Validators.required),
+    barcode: new FormControl(''),
     description: new FormControl(''),
-    minStock:    new FormControl(0, [Validators.required, Validators.min(0)]),
-    categoryId:  new FormControl('', Validators.required),
-    brandId:     new FormControl(''),
+    minStock: new FormControl(0, [Validators.required, Validators.min(0)]),
+    categoryId: new FormControl('', Validators.required),
+    brandId: new FormControl(''),
   });
 
   private readonly searchSubject = new Subject<string>();
 
   constructor() {
     addIcons({
-      addOutline, searchOutline, cubeOutline, createOutline, trashOutline,
-      closeOutline, chevronBackOutline, chevronForwardOutline, filterOutline,
-      checkmarkOutline, alertCircleOutline, imageOutline,
+      addOutline,
+      searchOutline,
+      cubeOutline,
+      createOutline,
+      trashOutline,
+      closeOutline,
+      chevronBackOutline,
+      chevronForwardOutline,
+      filterOutline,
+      checkmarkOutline,
+      alertCircleOutline,
+      imageOutline,
     });
   }
 
@@ -120,35 +134,41 @@ export class ProductsComponent implements OnInit {
     this.loadFilters();
     this.loadProducts();
 
-    this.searchSubject.pipe(
-      debounceTime(350),
-      distinctUntilChanged(),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe(() => {
-      this.currentPage.set(1);
-      this.loadProducts();
-    });
+    this.searchSubject
+      .pipe(
+        debounceTime(350),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe(() => {
+        this.currentPage.set(1);
+        this.loadProducts();
+      });
   }
 
   private loadFilters() {
-    this.categoriesService.getAll()
+    this.categoriesService
+      .getAll()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(cats => this.categories.set(cats));
+      .subscribe((cats) => this.categories.set(cats));
 
-    this.brandsService.getAll()
+    this.brandsService
+      .getAll()
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(brands => this.brands.set(brands));
+      .subscribe((brands) => this.brands.set(brands));
   }
 
   loadProducts() {
     this.loading.set(true);
-    this.productsService.getAll({
-      search: this.searchQuery() || undefined,
-      categoryId: this.selectedCategory() || undefined,
-      brandId: this.selectedBrand() || undefined,
-      page: this.currentPage(),
-      limit: this.pageSize,
-    }).pipe(takeUntilDestroyed(this.destroyRef))
+    this.productsService
+      .getAll({
+        search: this.searchQuery() || undefined,
+        categoryId: this.selectedCategory() || undefined,
+        brandId: this.selectedBrand() || undefined,
+        page: this.currentPage(),
+        limit: this.pageSize,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
           this.products.set(res.data);
@@ -194,13 +214,13 @@ export class ProductsComponent implements OnInit {
 
   openEdit(product: Product) {
     this.form.patchValue({
-      name:        product.name,
-      sku:         product.sku,
-      barcode:     product.barcode ?? '',
+      name: product.name,
+      sku: product.sku,
+      barcode: product.barcode ?? '',
       description: product.description ?? '',
-      minStock:    product.minStock,
-      categoryId:  product.category?.id ?? '',
-      brandId:     product.brand?.id ?? '',
+      minStock: product.minStock,
+      categoryId: product.category?.id ?? '',
+      brandId: product.brand?.id ?? '',
     });
     this.submitted.set(false);
     this.formError.set('');
@@ -222,18 +242,19 @@ export class ProductsComponent implements OnInit {
     const raw = this.form.getRawValue();
 
     const dto: CreateProductDto = {
-      name:        raw.name!,
-      sku:         raw.sku!,
-      barcode:     raw.barcode || undefined,
+      name: raw.name!,
+      sku: raw.sku!,
+      barcode: raw.barcode || undefined,
       description: raw.description || undefined,
-      minStock:    Number(raw.minStock),
-      categoryId:  raw.categoryId!,
-      brandId:     raw.brandId || undefined,
+      minStock: Number(raw.minStock),
+      categoryId: raw.categoryId!,
+      brandId: raw.brandId || undefined,
     };
 
-    const request$ = this.modalMode() === 'create'
-      ? this.productsService.create(dto)
-      : this.productsService.update(this.editingProduct()!.id, dto);
+    const request$ =
+      this.modalMode() === 'create'
+        ? this.productsService.create(dto)
+        : this.productsService.update(this.editingProduct()!.id, dto);
 
     request$.subscribe({
       next: () => {
@@ -243,7 +264,9 @@ export class ProductsComponent implements OnInit {
       },
       error: (err) => {
         this.saving.set(false);
-        this.formError.set(err?.error?.message ?? 'Error al guardar el producto');
+        this.formError.set(
+          err?.error?.message ?? 'Error al guardar el producto',
+        );
       },
     });
   }

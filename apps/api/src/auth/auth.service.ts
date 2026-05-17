@@ -91,8 +91,14 @@ export class AuthService {
     });
 
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwt.signAsync(payload, signOpts(this.accessSecret, this.accessExpiry)),
-      this.jwt.signAsync(payload, signOpts(this.refreshSecret, this.refreshExpiry)),
+      this.jwt.signAsync(
+        payload,
+        signOpts(this.accessSecret, this.accessExpiry),
+      ),
+      this.jwt.signAsync(
+        payload,
+        signOpts(this.refreshSecret, this.refreshExpiry),
+      ),
     ]);
 
     const hashed = await bcrypt.hash(refreshToken, 10);
@@ -101,7 +107,13 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
-      user: { id: user.id, email: user.email, name: user.name, role: user.role, companyId: user.companyId },
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        companyId: user.companyId,
+      },
     };
   }
 }

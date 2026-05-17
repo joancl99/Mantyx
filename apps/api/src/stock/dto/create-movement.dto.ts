@@ -1,6 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { MovementType } from '@prisma/client';
-import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 
 export class CreateMovementDto {
   @ApiProperty()
@@ -25,7 +32,9 @@ export class CreateMovementDto {
   @IsUUID()
   fromLocationId?: string;
 
-  @ApiPropertyOptional({ description: 'Destination location (TRANSFER, INBOUND)' })
+  @ApiPropertyOptional({
+    description: 'Destination location (TRANSFER, INBOUND)',
+  })
   @IsOptional()
   @IsUUID()
   toLocationId?: string;

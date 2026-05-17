@@ -16,19 +16,33 @@ export class StockService {
     private readonly alerts: StockAlertsGateway,
   ) {}
 
-  async createMovement(dto: CreateMovementDto, userId: string, companyId: string) {
-    const { productId, warehouseId, type, quantity, fromLocationId, toLocationId, notes } = dto;
+  async createMovement(
+    dto: CreateMovementDto,
+    userId: string,
+    companyId: string,
+  ) {
+    const {
+      productId,
+      warehouseId,
+      type,
+      quantity,
+      fromLocationId,
+      toLocationId,
+      notes,
+    } = dto;
 
     const { movement, product } = await this.prisma.$transaction(async (tx) => {
       const product = await tx.product.findFirst({
         where: { id: productId, companyId, isActive: true },
       });
-      if (!product) throw new NotFoundException(`Product ${productId} not found`);
+      if (!product)
+        throw new NotFoundException(`Product ${productId} not found`);
 
       const warehouse = await tx.warehouse.findFirst({
         where: { id: warehouseId, companyId },
       });
-      if (!warehouse) throw new NotFoundException(`Warehouse ${warehouseId} not found`);
+      if (!warehouse)
+        throw new NotFoundException(`Warehouse ${warehouseId} not found`);
 
       // Compute previous stock across all locations for this product
       const agg = await tx.stockEntry.aggregate({
@@ -43,7 +57,13 @@ export class StockService {
         newStock = previousStock + quantity;
         if (toLocationId) {
           await tx.stockEntry.upsert({
-            where: { productId_variantId_locationId: { productId, variantId: null as unknown as string, locationId: toLocationId } },
+            where: {
+              productId_variantId_locationId: {
+                productId,
+                variantId: null as unknown as string,
+                locationId: toLocationId,
+              },
+            },
             create: { productId, locationId: toLocationId, quantity },
             update: { quantity: { increment: quantity } },
           });
@@ -57,31 +77,60 @@ export class StockService {
         newStock = previousStock - quantity;
         if (fromLocationId) {
           await tx.stockEntry.update({
-            where: { productId_variantId_locationId: { productId, variantId: null as unknown as string, locationId: fromLocationId } },
+            where: {
+              productId_variantId_locationId: {
+                productId,
+                variantId: null as unknown as string,
+                locationId: fromLocationId,
+              },
+            },
             data: { quantity: { decrement: quantity } },
           });
         }
       } else if (type === MovementType.TRANSFER) {
         if (!fromLocationId || !toLocationId) {
-          throw new BadRequestException('TRANSFER requires fromLocationId and toLocationId');
+          throw new BadRequestException(
+            'TRANSFER requires fromLocationId and toLocationId',
+          );
         }
         await tx.stockEntry.update({
-          where: { productId_variantId_locationId: { productId, variantId: null as unknown as string, locationId: fromLocationId } },
+          where: {
+            productId_variantId_locationId: {
+              productId,
+              variantId: null as unknown as string,
+              locationId: fromLocationId,
+            },
+          },
           data: { quantity: { decrement: quantity } },
         });
         await tx.stockEntry.upsert({
-          where: { productId_variantId_locationId: { productId, variantId: null as unknown as string, locationId: toLocationId } },
+          where: {
+            productId_variantId_locationId: {
+              productId,
+              variantId: null as unknown as string,
+              locationId: toLocationId,
+            },
+          },
           create: { productId, locationId: toLocationId, quantity },
           update: { quantity: { increment: quantity } },
         });
       } else {
         // ADJUSTMENT — set absolute stock at a location
-        if (!toLocationId) throw new BadRequestException('ADJUSTMENT requires toLocationId');
-        const current = await tx.stockEntry.findFirst({ where: { productId, locationId: toLocationId } });
+        if (!toLocationId)
+          throw new BadRequestException('ADJUSTMENT requires toLocationId');
+        const current = await tx.stockEntry.findFirst({
+          where: { productId, locationId: toLocationId },
+        });
         const currentQty = current?.quantity ?? 0;
         newStock = previousStock - currentQty + quantity;
         await tx.stockEntry.upsert({
-          where: { productId_variantId_locationId: { productId, variantId: null as unknown as string, locationId: toLocationId } },
+          where: {
+            productId_variantId_locationId: {
+              productId,
+              variantId: null as unknown as string,
+              locationId: toLocationId,
+            },
+          },
           create: { productId, locationId: toLocationId, quantity },
           update: { quantity },
         });
@@ -89,7 +138,18 @@ export class StockService {
 
       const [movement] = await Promise.all([
         tx.stockMovement.create({
-          data: { productId, userId, warehouseId, type, quantity, previousStock, newStock, fromLocationId, toLocationId, notes },
+          data: {
+            productId,
+            userId,
+            warehouseId,
+            type,
+            quantity,
+            previousStock,
+            newStock,
+            fromLocationId,
+            toLocationId,
+            notes,
+          },
           include: {
             product: { select: { id: true, name: true, sku: true } },
             user: { select: { id: true, name: true, email: true } },
@@ -131,7 +191,15 @@ export class StockService {
   }
 
   async findAll(companyId: string, query: MovementQueryDto) {
-    const { page = 1, limit = 20, productId, userId, type, dateFrom, dateTo } = query;
+    const {
+      page = 1,
+      limit = 20,
+      productId,
+      userId,
+      type,
+      dateFrom,
+      dateTo,
+    } = query;
     const skip = (page - 1) * limit;
 
     const where: Prisma.StockMovementWhereInput = {

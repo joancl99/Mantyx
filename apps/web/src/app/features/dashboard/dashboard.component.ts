@@ -1,16 +1,39 @@
-import { Component, computed, inject, signal, OnInit, DestroyRef } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  signal,
+  OnInit,
+  DestroyRef,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
-  IonContent, IonIcon, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonSpinner,
+  IonContent,
+  IonIcon,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonMenuButton,
+  IonSpinner,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
-  cubeOutline, warningOutline, closeCircleOutline, swapHorizontalOutline,
-  arrowUpOutline, arrowDownOutline, layersOutline, addCircleOutline,
+  cubeOutline,
+  warningOutline,
+  closeCircleOutline,
+  swapHorizontalOutline,
+  arrowUpOutline,
+  arrowDownOutline,
+  layersOutline,
+  addCircleOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
-import { DashboardService, DashboardAlert, DashboardMovement } from '../../core/services/dashboard.service';
+import {
+  DashboardService,
+  DashboardAlert,
+  DashboardMovement,
+} from '../../core/services/dashboard.service';
 
 interface QuickAction {
   label: string;
@@ -20,14 +43,33 @@ interface QuickAction {
 }
 
 const QUICK_ACTIONS: QuickAction[] = [
-  { label: 'Ver stock',        icon: 'layers-outline',     route: '/app/stock',     accent: false },
-  { label: 'Nuevo movimiento', icon: 'add-circle-outline', route: '/app/movements', accent: true  },
+  {
+    label: 'Ver stock',
+    icon: 'layers-outline',
+    route: '/app/stock',
+    accent: false,
+  },
+  {
+    label: 'Nuevo movimiento',
+    icon: 'add-circle-outline',
+    route: '/app/movements',
+    accent: true,
+  },
 ];
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [IonContent, IonIcon, IonHeader, IonToolbar, IonButtons, IonMenuButton, IonSpinner, RouterLink],
+  imports: [
+    IonContent,
+    IonIcon,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonMenuButton,
+    IonSpinner,
+    RouterLink,
+  ],
   styleUrl: './dashboard.component.scss',
   templateUrl: './dashboard.component.html',
 })
@@ -49,19 +91,27 @@ export class DashboardComponent implements OnInit {
   readonly greeting = computed(() => {
     const name = this.auth.currentUser()?.name?.split(' ')[0] ?? 'usuario';
     const hour = new Date().getHours();
-    const saludo = hour < 13 ? 'Buenos días' : hour < 20 ? 'Buenas tardes' : 'Buenas noches';
+    const saludo =
+      hour < 13 ? 'Buenos días' : hour < 20 ? 'Buenas tardes' : 'Buenas noches';
     return `${saludo}, ${name}`;
   });
 
   constructor() {
     addIcons({
-      cubeOutline, warningOutline, closeCircleOutline, swapHorizontalOutline,
-      arrowUpOutline, arrowDownOutline, layersOutline, addCircleOutline,
+      cubeOutline,
+      warningOutline,
+      closeCircleOutline,
+      swapHorizontalOutline,
+      arrowUpOutline,
+      arrowDownOutline,
+      layersOutline,
+      addCircleOutline,
     });
   }
 
   ngOnInit() {
-    this.dashboardService.getStats()
+    this.dashboardService
+      .getStats()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (stats) => {
@@ -78,13 +128,19 @@ export class DashboardComponent implements OnInit {
   }
 
   movementIcon(type: DashboardMovement['type']): string {
-    return type === 'INBOUND' ? 'arrow-up-outline'
-      : type === 'OUTBOUND' ? 'arrow-down-outline'
-      : 'swap-horizontal-outline';
+    return type === 'INBOUND'
+      ? 'arrow-up-outline'
+      : type === 'OUTBOUND'
+        ? 'arrow-down-outline'
+        : 'swap-horizontal-outline';
   }
 
   movementKind(type: DashboardMovement['type']): string {
-    return type === 'INBOUND' ? 'entrada' : type === 'OUTBOUND' ? 'salida' : 'traslado';
+    return type === 'INBOUND'
+      ? 'entrada'
+      : type === 'OUTBOUND'
+        ? 'salida'
+        : 'traslado';
   }
 
   movementPrefix(type: DashboardMovement['type']): string {

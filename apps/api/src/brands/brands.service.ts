@@ -21,7 +21,10 @@ export class BrandsService {
         select: { id: true, name: true },
       });
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2002'
+      ) {
         throw new ConflictException('Brand name already exists');
       }
       throw e;

@@ -55,11 +55,25 @@ export class DashboardService {
       if (totalStock === 0) {
         noStock++;
         if (alerts.length < 5)
-          alerts.push({ id: p.id, productName: p.name, sku: p.sku, totalStock, minStock: p.minStock, type: 'no-stock' });
+          alerts.push({
+            id: p.id,
+            productName: p.name,
+            sku: p.sku,
+            totalStock,
+            minStock: p.minStock,
+            type: 'no-stock',
+          });
       } else if (p.minStock > 0 && totalStock <= p.minStock) {
         lowStock++;
         if (alerts.length < 5)
-          alerts.push({ id: p.id, productName: p.name, sku: p.sku, totalStock, minStock: p.minStock, type: 'low-stock' });
+          alerts.push({
+            id: p.id,
+            productName: p.name,
+            sku: p.sku,
+            totalStock,
+            minStock: p.minStock,
+            type: 'low-stock',
+          });
       }
     }
 

@@ -64,7 +64,8 @@ export class ProductsService {
     if (query.search) params = params.set('search', query.search);
     if (query.categoryId) params = params.set('categoryId', query.categoryId);
     if (query.brandId) params = params.set('brandId', query.brandId);
-    if (query.lowStock !== undefined) params = params.set('lowStock', String(query.lowStock));
+    if (query.lowStock !== undefined)
+      params = params.set('lowStock', String(query.lowStock));
     if (query.page) params = params.set('page', String(query.page));
     if (query.limit) params = params.set('limit', String(query.limit));
     return this.http.get<PaginatedProducts>(this.base, { params });

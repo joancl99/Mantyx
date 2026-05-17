@@ -67,8 +67,10 @@ export class ProductsService {
       });
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === 'P2002') throw new ConflictException('SKU already exists');
-        if (e.code === 'P2003') throw new NotFoundException('Category or brand not found');
+        if (e.code === 'P2002')
+          throw new ConflictException('SKU already exists');
+        if (e.code === 'P2003')
+          throw new NotFoundException('Category or brand not found');
       }
       throw e;
     }
@@ -84,8 +86,10 @@ export class ProductsService {
       });
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
-        if (e.code === 'P2002') throw new ConflictException('SKU already exists');
-        if (e.code === 'P2003') throw new NotFoundException('Category or brand not found');
+        if (e.code === 'P2002')
+          throw new ConflictException('SKU already exists');
+        if (e.code === 'P2003')
+          throw new NotFoundException('Category or brand not found');
       }
       throw e;
     }

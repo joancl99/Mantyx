@@ -1,7 +1,6 @@
 <ion-menu contentId="main-content" menuId="main-menu" type="overlay">
   <ion-content>
     <div class="menu-wrap">
-
       <!-- Header -->
       <div class="menu-header">
         <div class="menu-logo">
@@ -14,7 +13,9 @@
           }
         </div>
         @if (currentUser()) {
-          <div class="menu-role-badge role-{{ currentUser()!.role | lowercase }}">
+          <div
+            class="menu-role-badge role-{{ currentUser()!.role | lowercase }}"
+          >
             <ion-icon name="shield-checkmark-outline"></ion-icon>
             {{ currentUser()!.role }}
           </div>
@@ -57,7 +58,6 @@
           </button>
         </ion-menu-toggle>
       </div>
-
     </div>
   </ion-content>
 </ion-menu>

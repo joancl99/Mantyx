@@ -35,19 +35,65 @@ interface NavItem {
   roles: Role[];
 }
 
-const ALL_ROLES: Role[] = ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR', 'VIEWER'];
+const ALL_ROLES: Role[] = [
+  'SUPERADMIN',
+  'ADMIN',
+  'MANAGER',
+  'OPERATOR',
+  'VIEWER',
+];
 const MANAGERS_UP: Role[] = ['SUPERADMIN', 'ADMIN', 'MANAGER'];
 const ADMINS_UP: Role[] = ['SUPERADMIN', 'ADMIN'];
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard',      icon: 'home-outline',             route: '/app/dashboard',  roles: ALL_ROLES    },
-  { label: 'Productos',      icon: 'cube-outline',             route: '/app/products',   roles: MANAGERS_UP  },
-  { label: 'Stock',          icon: 'layers-outline',           route: '/app/stock',      roles: ALL_ROLES    },
-  { label: 'Movimientos',    icon: 'swap-horizontal-outline',  route: '/app/movements',  roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'] },
-  { label: 'Inventario',     icon: 'clipboard-outline',        route: '/app/inventory',  roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'] },
-  { label: 'Almacenes',      icon: 'business-outline',         route: '/app/warehouses', roles: MANAGERS_UP  },
-  { label: 'Management',     icon: 'bar-chart-outline',        route: '/app/management', roles: MANAGERS_UP  },
-  { label: 'Administración', icon: 'settings-outline',         route: '/app/admin',      roles: ADMINS_UP    },
+  {
+    label: 'Dashboard',
+    icon: 'home-outline',
+    route: '/app/dashboard',
+    roles: ALL_ROLES,
+  },
+  {
+    label: 'Productos',
+    icon: 'cube-outline',
+    route: '/app/products',
+    roles: MANAGERS_UP,
+  },
+  {
+    label: 'Stock',
+    icon: 'layers-outline',
+    route: '/app/stock',
+    roles: ALL_ROLES,
+  },
+  {
+    label: 'Movimientos',
+    icon: 'swap-horizontal-outline',
+    route: '/app/movements',
+    roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'],
+  },
+  {
+    label: 'Inventario',
+    icon: 'clipboard-outline',
+    route: '/app/inventory',
+    roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'],
+  },
+  {
+    label: 'Almacenes',
+    icon: 'business-outline',
+    route: '/app/warehouses',
+    roles: MANAGERS_UP,
+  },
+  {
+    label: 'Management',
+    icon: 'bar-chart-outline',
+    route: '/app/management',
+    roles: MANAGERS_UP,
+  },
+  {
+    label: 'Administración',
+    icon: 'settings-outline',
+    route: '/app/admin',
+    roles: ADMINS_UP,
+  },
 ];
 
 @Component({

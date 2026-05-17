@@ -4,12 +4,16 @@ export const shellRoutes: Route[] = [
   {
     path: 'dashboard',
     loadComponent: () =>
-      import('../features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
+      import('../features/dashboard/dashboard.component').then(
+        (m) => m.DashboardComponent,
+      ),
   },
   {
     path: 'products',
     loadComponent: () =>
-      import('../features/products/products.component').then((m) => m.ProductsComponent),
+      import('../features/products/products.component').then(
+        (m) => m.ProductsComponent,
+      ),
   },
   {
     path: 'stock',
@@ -19,22 +23,30 @@ export const shellRoutes: Route[] = [
   {
     path: 'movements',
     loadComponent: () =>
-      import('../features/movements/movements.component').then((m) => m.MovementsComponent),
+      import('../features/movements/movements.component').then(
+        (m) => m.MovementsComponent,
+      ),
   },
   {
     path: 'inventory',
     loadComponent: () =>
-      import('../features/inventory/inventory.component').then((m) => m.InventoryComponent),
+      import('../features/inventory/inventory.component').then(
+        (m) => m.InventoryComponent,
+      ),
   },
   {
     path: 'warehouses',
     loadComponent: () =>
-      import('../features/warehouses/warehouses.component').then((m) => m.WarehousesComponent),
+      import('../features/warehouses/warehouses.component').then(
+        (m) => m.WarehousesComponent,
+      ),
   },
   {
     path: 'management',
     loadComponent: () =>
-      import('../features/management/management.component').then((m) => m.ManagementComponent),
+      import('../features/management/management.component').then(
+        (m) => m.ManagementComponent,
+      ),
   },
   {
     path: 'admin',

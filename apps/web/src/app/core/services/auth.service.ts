@@ -31,34 +31,46 @@ const REFRESH_TOKEN_KEY = 'wh_refresh_token';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly _accessToken = signal<string | null>(
-    localStorage.getItem(ACCESS_TOKEN_KEY)
+    localStorage.getItem(ACCESS_TOKEN_KEY),
   );
   private readonly _user = signal<User | null>(
-    this._parseTokenUser(localStorage.getItem(ACCESS_TOKEN_KEY))
+    this._parseTokenUser(localStorage.getItem(ACCESS_TOKEN_KEY)),
   );
 
   readonly accessToken = this._accessToken.asReadonly();
   readonly currentUser = this._user.asReadonly();
   readonly isLoggedIn = computed(() => !!this._accessToken());
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+  ) {}
 
   login(email: string, password: string) {
     return this.http
-      .post<AuthResponse>(`${environment.apiUrl}/auth/login`, { email, password })
+      .post<AuthResponse>(`${environment.apiUrl}/auth/login`, {
+        email,
+        password,
+      })
       .pipe(tap((res) => this._storeSession(res)));
   }
 
   register(name: string, email: string, password: string) {
     return this.http
-      .post<AuthResponse>(`${environment.apiUrl}/auth/register`, { name, email, password })
+      .post<AuthResponse>(`${environment.apiUrl}/auth/register`, {
+        name,
+        email,
+        password,
+      })
       .pipe(tap((res) => this._storeSession(res)));
   }
 
   refresh() {
     const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
     return this.http
-      .post<RefreshResponse>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
+      .post<RefreshResponse>(`${environment.apiUrl}/auth/refresh`, {
+        refreshToken,
+      })
       .pipe(
         tap((res) => {
           this._accessToken.set(res.accessToken);
@@ -66,7 +78,7 @@ export class AuthService {
           localStorage.setItem(ACCESS_TOKEN_KEY, res.accessToken);
           localStorage.setItem(REFRESH_TOKEN_KEY, res.refreshToken);
         }),
-        map((res) => res.accessToken)
+        map((res) => res.accessToken),
       );
   }
 

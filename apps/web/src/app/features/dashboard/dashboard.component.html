@@ -6,7 +6,6 @@
 
 <ion-content [scrollY]="true" [fullscreen]="true">
   <div class="dashboard">
-
     <!-- Header -->
     <header class="dash-header">
       <div class="dash-header__eyebrow">
@@ -22,26 +21,33 @@
         <ion-spinner class="main-spinner"></ion-spinner>
       </div>
     } @else {
-
       <!-- KPIs -->
       <section class="kpi-grid">
         <div class="kpi-card kpi-card--default">
-          <div class="kpi-card__icon-wrap"><ion-icon name="cube-outline"></ion-icon></div>
+          <div class="kpi-card__icon-wrap">
+            <ion-icon name="cube-outline"></ion-icon>
+          </div>
           <span class="kpi-card__value">{{ totalProducts() }}</span>
           <span class="kpi-card__label">Productos totales</span>
         </div>
         <div class="kpi-card kpi-card--warning">
-          <div class="kpi-card__icon-wrap"><ion-icon name="warning-outline"></ion-icon></div>
+          <div class="kpi-card__icon-wrap">
+            <ion-icon name="warning-outline"></ion-icon>
+          </div>
           <span class="kpi-card__value">{{ lowStock() }}</span>
           <span class="kpi-card__label">Stock bajo</span>
         </div>
         <div class="kpi-card kpi-card--danger">
-          <div class="kpi-card__icon-wrap"><ion-icon name="close-circle-outline"></ion-icon></div>
+          <div class="kpi-card__icon-wrap">
+            <ion-icon name="close-circle-outline"></ion-icon>
+          </div>
           <span class="kpi-card__value">{{ noStock() }}</span>
           <span class="kpi-card__label">Sin stock</span>
         </div>
         <div class="kpi-card kpi-card--success">
-          <div class="kpi-card__icon-wrap"><ion-icon name="swap-horizontal-outline"></ion-icon></div>
+          <div class="kpi-card__icon-wrap">
+            <ion-icon name="swap-horizontal-outline"></ion-icon>
+          </div>
           <span class="kpi-card__value">{{ movementsToday() }}</span>
           <span class="kpi-card__label">Movimientos hoy</span>
         </div>
@@ -59,10 +65,18 @@
           } @else {
             @for (alert of alerts(); track alert.id) {
               <div class="alert-item">
-                <span class="alert-item__dot alert-item__dot--{{ alertType(alert.type) }}"
-                      [class.alert-item__dot--pulse]="alert.type === 'no-stock'"></span>
+                <span
+                  class="alert-item__dot alert-item__dot--{{
+                    alertType(alert.type)
+                  }}"
+                  [class.alert-item__dot--pulse]="alert.type === 'no-stock'"
+                ></span>
                 <span class="alert-item__text">{{ alertText(alert) }}</span>
-                <span class="alert-item__badge alert-item__badge--{{ alertType(alert.type) }}">
+                <span
+                  class="alert-item__badge alert-item__badge--{{
+                    alertType(alert.type)
+                  }}"
+                >
                   {{ alertLabel(alert.type) }}
                 </span>
               </div>
@@ -82,18 +96,32 @@
           } @else {
             @for (mv of movements(); track mv.id) {
               <div class="movement-item">
-                <div class="movement-item__icon movement-item__icon--{{ movementKind(mv.type) }}">
+                <div
+                  class="movement-item__icon movement-item__icon--{{
+                    movementKind(mv.type)
+                  }}"
+                >
                   <ion-icon [name]="movementIcon(mv.type)"></ion-icon>
                 </div>
                 <div class="movement-item__body">
-                  <span class="movement-item__product">{{ mv.productName }}</span>
-                  <span class="movement-item__meta">{{ mv.warehouseName }}</span>
+                  <span class="movement-item__product">{{
+                    mv.productName
+                  }}</span>
+                  <span class="movement-item__meta">{{
+                    mv.warehouseName
+                  }}</span>
                 </div>
                 <div class="movement-item__right">
-                  <span class="movement-item__qty movement-item__qty--{{ movementKind(mv.type) }}">
+                  <span
+                    class="movement-item__qty movement-item__qty--{{
+                      movementKind(mv.type)
+                    }}"
+                  >
                     {{ movementPrefix(mv.type) }}{{ mv.quantity }}
                   </span>
-                  <span class="movement-item__time">{{ timeAgo(mv.createdAt) }}</span>
+                  <span class="movement-item__time">{{
+                    timeAgo(mv.createdAt)
+                  }}</span>
                 </div>
               </div>
             }
@@ -117,7 +145,6 @@
           }
         </div>
       </section>
-
     }
   </div>
 </ion-content>

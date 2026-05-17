@@ -1,6 +1,5 @@
 <ion-content [scrollY]="true" [fullscreen]="true">
   <div class="products-page">
-
     <!-- Header -->
     <header class="page-header">
       <div class="page-header__left">
@@ -39,7 +38,10 @@
         <select class="filter-select" (change)="onBrandChange($event)">
           <option value="">Todas las marcas</option>
           @for (brand of brands(); track brand.id) {
-            <option [value]="brand.id" [selected]="selectedBrand() === brand.id">
+            <option
+              [value]="brand.id"
+              [selected]="selectedBrand() === brand.id"
+            >
               {{ brand.name }}
             </option>
           }
@@ -59,9 +61,11 @@
         </div>
         <p class="empty-title">Sin productos</p>
         <p class="empty-sub">
-          {{ searchQuery() || selectedCategory() || selectedBrand()
-            ? 'Prueba con otros filtros'
-            : 'Crea el primer producto' }}
+          {{
+            searchQuery() || selectedCategory() || selectedBrand()
+              ? 'Prueba con otros filtros'
+              : 'Crea el primer producto'
+          }}
         </p>
       </div>
     } @else {
@@ -80,7 +84,9 @@
               <span class="product-sku">{{ product.sku }}</span>
               <div class="product-tags">
                 @if (product.category) {
-                  <span class="tag tag--category">{{ product.category.name }}</span>
+                  <span class="tag tag--category">{{
+                    product.category.name
+                  }}</span>
                 }
                 @if (product.brand) {
                   <span class="tag tag--brand">{{ product.brand.name }}</span>
@@ -95,11 +101,19 @@
             </div>
             @if (canEdit()) {
               <div class="product-actions">
-                <button class="action-btn action-btn--edit" (click)="openEdit(product)" title="Editar">
+                <button
+                  class="action-btn action-btn--edit"
+                  (click)="openEdit(product)"
+                  title="Editar"
+                >
                   <ion-icon name="create-outline" />
                 </button>
                 @if (canDelete()) {
-                  <button class="action-btn action-btn--delete" (click)="confirmDelete(product)" title="Eliminar">
+                  <button
+                    class="action-btn action-btn--delete"
+                    (click)="confirmDelete(product)"
+                    title="Eliminar"
+                  >
                     <ion-icon name="trash-outline" />
                   </button>
                 }
@@ -111,17 +125,26 @@
 
       @if (totalPages() > 1) {
         <div class="pagination">
-          <button class="page-btn" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">
+          <button
+            class="page-btn"
+            [disabled]="currentPage() === 1"
+            (click)="goToPage(currentPage() - 1)"
+          >
             <ion-icon name="chevron-back-outline" />
           </button>
-          <span class="page-info">{{ currentPage() }} / {{ totalPages() }}</span>
-          <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1)">
+          <span class="page-info"
+            >{{ currentPage() }} / {{ totalPages() }}</span
+          >
+          <button
+            class="page-btn"
+            [disabled]="currentPage() === totalPages()"
+            (click)="goToPage(currentPage() + 1)"
+          >
             <ion-icon name="chevron-forward-outline" />
           </button>
         </div>
       }
     }
-
   </div>
 </ion-content>
 
@@ -140,16 +163,30 @@
 
       <form [formGroup]="form" (ngSubmit)="submitForm()" class="modal-body">
         <div class="form-row">
-          <div class="form-field" [class.has-error]="submitted() && form.get('name')?.invalid">
+          <div
+            class="form-field"
+            [class.has-error]="submitted() && form.get('name')?.invalid"
+          >
             <label class="form-label">Nombre *</label>
-            <input class="form-input" formControlName="name" placeholder="Nike Air Basic" />
+            <input
+              class="form-input"
+              formControlName="name"
+              placeholder="Nike Air Basic"
+            />
             @if (submitted() && form.get('name')?.hasError('required')) {
               <span class="form-error">Campo obligatorio</span>
             }
           </div>
-          <div class="form-field" [class.has-error]="submitted() && form.get('sku')?.invalid">
+          <div
+            class="form-field"
+            [class.has-error]="submitted() && form.get('sku')?.invalid"
+          >
             <label class="form-label">SKU *</label>
-            <input class="form-input" formControlName="sku" placeholder="ZAP-NIK-AIR-42" />
+            <input
+              class="form-input"
+              formControlName="sku"
+              placeholder="ZAP-NIK-AIR-42"
+            />
             @if (submitted() && form.get('sku')?.hasError('required')) {
               <span class="form-error">Campo obligatorio</span>
             }
@@ -159,11 +196,24 @@
         <div class="form-row">
           <div class="form-field">
             <label class="form-label">Código de barras</label>
-            <input class="form-input" formControlName="barcode" placeholder="8412345678901" />
+            <input
+              class="form-input"
+              formControlName="barcode"
+              placeholder="8412345678901"
+            />
           </div>
-          <div class="form-field" [class.has-error]="submitted() && form.get('minStock')?.invalid">
+          <div
+            class="form-field"
+            [class.has-error]="submitted() && form.get('minStock')?.invalid"
+          >
             <label class="form-label">Stock mínimo *</label>
-            <input class="form-input" type="number" formControlName="minStock" placeholder="5" min="0" />
+            <input
+              class="form-input"
+              type="number"
+              formControlName="minStock"
+              placeholder="5"
+              min="0"
+            />
             @if (submitted() && form.get('minStock')?.invalid) {
               <span class="form-error">Número ≥ 0</span>
             }
@@ -171,7 +221,10 @@
         </div>
 
         <div class="form-row">
-          <div class="form-field" [class.has-error]="submitted() && form.get('categoryId')?.invalid">
+          <div
+            class="form-field"
+            [class.has-error]="submitted() && form.get('categoryId')?.invalid"
+          >
             <label class="form-label">Categoría *</label>
             <select class="form-input" formControlName="categoryId">
               <option value="">Seleccionar categoría</option>
@@ -196,7 +249,12 @@
 
         <div class="form-field">
           <label class="form-label">Descripción</label>
-          <textarea class="form-input form-textarea" formControlName="description" rows="3" placeholder="Descripción opcional..."></textarea>
+          <textarea
+            class="form-input form-textarea"
+            formControlName="description"
+            rows="3"
+            placeholder="Descripción opcional..."
+          ></textarea>
         </div>
 
         @if (formError()) {
@@ -207,10 +265,17 @@
         }
 
         <div class="modal-footer">
-          <button type="button" class="btn-ghost" (click)="closeModal()">Cancelar</button>
+          <button type="button" class="btn-ghost" (click)="closeModal()">
+            Cancelar
+          </button>
           <button type="submit" class="btn-primary" [disabled]="saving()">
-            @if (saving()) { <ion-spinner name="crescent" /> }
-            @else { {{ modalMode() === 'create' ? 'Crear producto' : 'Guardar cambios' }} }
+            @if (saving()) {
+              <ion-spinner name="crescent" />
+            } @else {
+              {{
+                modalMode() === 'create' ? 'Crear producto' : 'Guardar cambios'
+              }}
+            }
           </button>
         </div>
       </form>
@@ -227,15 +292,22 @@
       </div>
       <div class="modal-body">
         <p class="delete-text">
-          ¿Eliminar <strong>{{ deleteTarget()!.name }}</strong>?
-          Esta acción no se puede deshacer.
+          ¿Eliminar <strong>{{ deleteTarget()!.name }}</strong
+          >? Esta acción no se puede deshacer.
         </p>
       </div>
       <div class="modal-footer">
         <button class="btn-ghost" (click)="cancelDelete()">Cancelar</button>
-        <button class="btn-danger" [disabled]="saving()" (click)="executeDelete()">
-          @if (saving()) { <ion-spinner name="crescent" /> }
-          @else { Eliminar }
+        <button
+          class="btn-danger"
+          [disabled]="saving()"
+          (click)="executeDelete()"
+        >
+          @if (saving()) {
+            <ion-spinner name="crescent" />
+          } @else {
+            Eliminar
+          }
         </button>
       </div>
     </div>
