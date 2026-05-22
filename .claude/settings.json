@@ -24,6 +24,16 @@
             "statusMessage": "Actualizando skills del proyecto..."
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "Write-Output '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"frontend-design skill is active. Invoke it proactively for all Angular UI and frontend work in Mantyx: components, pages, visual design.\"}}'",
+            "shell": "powershell",
+            "statusMessage": "Cargando frontend-design skill..."
+          }
+        ]
       }
     ]
   }

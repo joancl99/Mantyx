@@ -156,8 +156,8 @@
 
         <!-- Type selector — visual pills -->
         <div class="form-field">
-          <label class="form-label">Tipo *</label>
-          <div class="type-pills">
+          <span class="form-label">Tipo *</span>
+          <div class="type-pills" role="group" aria-label="Tipo de movimiento">
             @for (t of availableTypes; track t) {
               <button
                 type="button"

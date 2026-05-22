@@ -4,4 +4,574 @@
     <ion-title>Administración</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content></ion-content>
+
+<ion-content [scrollY]="true" [fullscreen]="true">
+  <div class="admin-page">
+
+    @if (isSuperAdmin()) {
+
+      <!-- ── SUPERADMIN: EMPRESAS ─────────────────────────────────────────────── -->
+      <header class="page-header">
+        <div class="page-header__left">
+          <h1 class="page-title">Empresas</h1>
+          <span class="page-subtitle">{{ companies().length }} empresa{{ companies().length === 1 ? '' : 's' }} registrada{{ companies().length === 1 ? '' : 's' }}</span>
+        </div>
+        <button class="btn-primary" (click)="openCreateCompany()">
+          <ion-icon name="add-outline" />
+          Nueva empresa
+        </button>
+      </header>
+
+      <div class="filters-bar">
+        <div class="search-wrap search-wrap--grow">
+          <ion-icon name="search-outline" class="search-icon" />
+          <input
+            class="search-input"
+            placeholder="Buscar empresa..."
+            [ngModel]="companySearch()"
+            (ngModelChange)="companySearch.set($event)"
+          />
+        </div>
+      </div>
+
+      @if (companiesLoading()) {
+        <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
+      } @else if (filteredCompanies().length === 0) {
+        <div class="state-center">
+          <div class="empty-icon"><ion-icon name="shield-outline" /></div>
+          <p class="empty-title">Sin empresas</p>
+          <p class="empty-sub">Crea la primera empresa cliente</p>
+        </div>
+      } @else {
+        <div class="company-list">
+          @for (c of filteredCompanies(); track c.id) {
+            <div class="company-row">
+              <div class="company-avatar">{{ companyInitials(c.name) }}</div>
+              <div class="company-info">
+                <span class="company-name">{{ c.name }}</span>
+                <span class="company-meta">
+                  {{ c.slug }}
+                  @if (c.taxId) { · {{ c.taxId }} }
+                  · {{ c._count.users }} usuario{{ c._count.users === 1 ? '' : 's' }}
+                  · {{ c._count.warehouses }} almacén{{ c._count.warehouses === 1 ? '' : 'es' }}
+                </span>
+              </div>
+              <span class="company-status company-status--{{ c.status.toLowerCase() }}">
+                {{ companyStatusLabel(c.status) }}
+              </span>
+              <div class="company-actions">
+                <button class="action-btn action-btn--edit" (click)="openEditCompany(c)" title="Editar">
+                  <ion-icon name="create-outline" />
+                </button>
+                <button
+                  class="action-btn"
+                  [class]="c.status === 'ACTIVE' ? 'action-btn--deactivate' : 'action-btn--activate'"
+                  (click)="confirmToggleCompany(c)"
+                  [title]="c.status === 'ACTIVE' ? 'Desactivar' : 'Activar'"
+                >
+                  <ion-icon name="power-outline" />
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+    } @else {
+
+      <!-- Tab bar -->
+      <div class="tab-bar">
+        <button class="tab-btn" [class.active]="activeTab() === 'usuarios'" (click)="setTab('usuarios')">
+          <ion-icon name="people-outline" />
+          Usuarios
+        </button>
+        <button class="tab-btn" [class.active]="activeTab() === 'categorias'" (click)="setTab('categorias')">
+          <ion-icon name="pricetags-outline" />
+          Categorías
+        </button>
+        <button class="tab-btn" [class.active]="activeTab() === 'marcas'" (click)="setTab('marcas')">
+          <ion-icon name="storefront-outline" />
+          Marcas
+        </button>
+      </div>
+
+      <!-- ── USUARIOS ─────────────────────────────────────────────────────────── -->
+      @if (activeTab() === 'usuarios') {
+
+        <header class="page-header">
+          <div class="page-header__left">
+            <h1 class="page-title">Usuarios</h1>
+            <span class="page-subtitle">
+              {{ activeCount() }} activo{{ activeCount() === 1 ? '' : 's' }} · {{ totalCount() }} total
+            </span>
+          </div>
+          <button class="btn-primary" (click)="openCreateUser()">
+            <ion-icon name="person-add-outline" />
+            Nuevo usuario
+          </button>
+        </header>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card__value">{{ totalCount() }}</div>
+            <div class="stat-card__label">Total</div>
+          </div>
+          <div class="stat-card stat-card--green">
+            <div class="stat-card__value">{{ activeCount() }}</div>
+            <div class="stat-card__label">Activos</div>
+          </div>
+          <div class="stat-card stat-card--red">
+            <div class="stat-card__value">{{ inactiveCount() }}</div>
+            <div class="stat-card__label">Inactivos</div>
+          </div>
+          <div class="stat-card stat-card--accent">
+            <div class="stat-card__value">{{ adminCount() }}</div>
+            <div class="stat-card__label">Admins / Managers</div>
+          </div>
+        </div>
+
+        <div class="filters-bar">
+          <div class="search-wrap search-wrap--grow">
+            <ion-icon name="search-outline" class="search-icon" />
+            <input class="search-input" placeholder="Buscar por nombre o email..."
+              [ngModel]="userSearch()" (ngModelChange)="userSearch.set($event)" />
+          </div>
+          <div class="filter-selects">
+            <select class="filter-select" [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event)">
+              <option value="">Todos los roles</option>
+              @for (role of assignableRoles; track role) {
+                <option [value]="role">{{ roleLabel(role) }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        @if (usersLoading()) {
+          <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
+        } @else if (filteredUsers().length === 0) {
+          <div class="state-center">
+            <div class="empty-icon"><ion-icon name="people-outline" /></div>
+            <p class="empty-title">Sin usuarios</p>
+            <p class="empty-sub">
+              @if (userSearch() || roleFilter()) { Ningún usuario coincide con los filtros }
+              @else { Crea el primer usuario para empezar }
+            </p>
+          </div>
+        } @else {
+          <div class="user-list">
+            @for (u of filteredUsers(); track u.id) {
+              <div class="user-row" [class.inactive]="!u.isActive">
+                <div class="user-avatar" [attr.data-role]="u.role">{{ u.name.charAt(0).toUpperCase() }}</div>
+                <div class="user-info">
+                  <span class="user-name">{{ u.name }}</span>
+                  <span class="user-email">{{ u.email }}</span>
+                </div>
+                <span class="role-badge role-badge--{{ u.role.toLowerCase() }}">{{ roleLabel(u.role) }}</span>
+                <span [class]="u.isActive ? 'status-chip status-chip--active' : 'status-chip status-chip--inactive'">
+                  {{ u.isActive ? 'Activo' : 'Inactivo' }}
+                </span>
+                <div class="user-actions">
+                  <button class="action-btn action-btn--edit" (click)="openEditUser(u)" title="Editar">
+                    <ion-icon name="create-outline" />
+                  </button>
+                  @if (u.id !== currentUserId()) {
+                    <button class="action-btn" [class]="u.isActive ? 'action-btn--deactivate' : 'action-btn--activate'"
+                      (click)="confirmToggle(u)" [title]="u.isActive ? 'Desactivar' : 'Activar'">
+                      <ion-icon name="power-outline" />
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+      }
+
+      <!-- ── CATEGORÍAS ───────────────────────────────────────────────────────── -->
+      @if (activeTab() === 'categorias') {
+
+        <header class="page-header">
+          <div class="page-header__left">
+            <h1 class="page-title">Categorías</h1>
+            <span class="page-subtitle">{{ categories().length }} categoría{{ categories().length === 1 ? '' : 's' }}</span>
+          </div>
+          <button class="btn-primary" (click)="openCreateCat()">
+            <ion-icon name="add-outline" />
+            Nueva categoría
+          </button>
+        </header>
+
+        <div class="filters-bar">
+          <div class="search-wrap search-wrap--grow">
+            <ion-icon name="search-outline" class="search-icon" />
+            <input class="search-input" placeholder="Buscar categoría..."
+              [ngModel]="catSearch()" (ngModelChange)="catSearch.set($event)" />
+          </div>
+        </div>
+
+        @if (catLoading()) {
+          <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
+        } @else if (filteredCategories().length === 0) {
+          <div class="state-center">
+            <div class="empty-icon"><ion-icon name="pricetags-outline" /></div>
+            <p class="empty-title">Sin categorías</p>
+            <p class="empty-sub">
+              @if (catSearch()) { Ninguna coincide con la búsqueda }
+              @else { Crea la primera categoría para empezar }
+            </p>
+          </div>
+        } @else {
+          <div class="catalog-list">
+            @for (cat of filteredCategories(); track cat.id) {
+              <div class="catalog-row">
+                <div class="catalog-dot catalog-dot--cat"></div>
+                <span class="catalog-name">{{ cat.name }}</span>
+                <div class="user-actions">
+                  <button class="action-btn action-btn--edit" (click)="openEditCat(cat)" title="Renombrar">
+                    <ion-icon name="create-outline" />
+                  </button>
+                  <button class="action-btn action-btn--delete" (click)="confirmDeleteCat(cat)" title="Eliminar">
+                    <ion-icon name="trash-outline" />
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        @if (catFormError() && !showCatModal()) {
+          <div class="form-alert" style="margin-top: 16px">
+            <ion-icon name="alert-circle-outline" />{{ catFormError() }}
+          </div>
+        }
+
+      }
+
+      <!-- ── MARCAS ────────────────────────────────────────────────────────────── -->
+      @if (activeTab() === 'marcas') {
+
+        <header class="page-header">
+          <div class="page-header__left">
+            <h1 class="page-title">Marcas</h1>
+            <span class="page-subtitle">{{ brands().length }} marca{{ brands().length === 1 ? '' : 's' }}</span>
+          </div>
+          <button class="btn-primary" (click)="openCreateBrand()">
+            <ion-icon name="add-outline" />
+            Nueva marca
+          </button>
+        </header>
+
+        <div class="filters-bar">
+          <div class="search-wrap search-wrap--grow">
+            <ion-icon name="search-outline" class="search-icon" />
+            <input class="search-input" placeholder="Buscar marca..."
+              [ngModel]="brandSearch()" (ngModelChange)="brandSearch.set($event)" />
+          </div>
+        </div>
+
+        @if (brandLoading()) {
+          <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
+        } @else if (filteredBrands().length === 0) {
+          <div class="state-center">
+            <div class="empty-icon"><ion-icon name="storefront-outline" /></div>
+            <p class="empty-title">Sin marcas</p>
+            <p class="empty-sub">
+              @if (brandSearch()) { Ninguna coincide con la búsqueda }
+              @else { Crea la primera marca para empezar }
+            </p>
+          </div>
+        } @else {
+          <div class="catalog-list">
+            @for (brand of filteredBrands(); track brand.id) {
+              <div class="catalog-row">
+                <div class="catalog-dot catalog-dot--brand"></div>
+                <span class="catalog-name">{{ brand.name }}</span>
+                <div class="user-actions">
+                  <button class="action-btn action-btn--edit" (click)="openEditBrand(brand)" title="Renombrar">
+                    <ion-icon name="create-outline" />
+                  </button>
+                  <button class="action-btn action-btn--delete" (click)="confirmDeleteBrand(brand)" title="Eliminar">
+                    <ion-icon name="trash-outline" />
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        @if (brandFormError() && !showBrandModal()) {
+          <div class="form-alert" style="margin-top: 16px">
+            <ion-icon name="alert-circle-outline" />{{ brandFormError() }}
+          </div>
+        }
+
+      }
+
+    }
+
+  </div>
+</ion-content>
+
+<!-- ── USER modal ──────────────────────────────────────────────────────────────── -->
+@if (showUserModal()) {
+  <div class="modal-backdrop" tabindex="0" (click)="closeUserModal()" (keydown.escape)="closeUserModal()">
+    <div class="modal" role="presentation" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ userModalMode() === 'create' ? 'Nuevo usuario' : 'Editar usuario' }}</h2>
+        <button class="modal-close" (click)="closeUserModal()"><ion-icon name="close-outline" /></button>
+      </div>
+      <form [formGroup]="userForm" (ngSubmit)="submitUserForm()" class="modal-body">
+        <div class="form-row">
+          <div class="form-field" [class.has-error]="userSubmitted() && userForm.get('name')?.invalid">
+            <label class="form-label" for="u-name">Nombre *</label>
+            <input id="u-name" class="form-input" formControlName="name" placeholder="Juan García" />
+            @if (userSubmitted() && userForm.get('name')?.hasError('required')) {
+              <span class="form-error">Campo obligatorio</span>
+            }
+          </div>
+          <div class="form-field" [class.has-error]="userSubmitted() && userForm.get('email')?.invalid">
+            <label class="form-label" for="u-email">Email *</label>
+            <input id="u-email" class="form-input" formControlName="email" placeholder="juan@empresa.com" type="email" />
+            @if (userSubmitted() && userForm.get('email')?.hasError('email')) {
+              <span class="form-error">Email no válido</span>
+            }
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label" for="u-role">Rol *</label>
+            <select id="u-role" class="form-input" formControlName="role">
+              @for (role of assignableRoles; track role) {
+                <option [value]="role">{{ roleLabel(role) }}</option>
+              }
+            </select>
+          </div>
+          @if (userModalMode() === 'create') {
+            <div class="form-field" [class.has-error]="userSubmitted() && userForm.get('password')?.invalid">
+              <label class="form-label" for="u-password">Contraseña *</label>
+              <div class="password-wrap">
+                <input id="u-password" class="form-input" formControlName="password"
+                  [type]="showPassword() ? 'text' : 'password'" placeholder="Mínimo 8 caracteres" />
+                <button type="button" class="password-toggle" (click)="showPassword.set(!showPassword())">
+                  <ion-icon [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'" />
+                </button>
+              </div>
+              @if (userSubmitted() && userForm.get('password')?.hasError('minlength')) {
+                <span class="form-error">Mínimo 8 caracteres</span>
+              }
+            </div>
+          }
+        </div>
+        @if (userFormError()) {
+          <div class="form-alert"><ion-icon name="alert-circle-outline" />{{ userFormError() }}</div>
+        }
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" (click)="closeUserModal()">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="userSaving()">
+            @if (userSaving()) { <ion-spinner name="crescent" /> }
+            @else { {{ userModalMode() === 'create' ? 'Crear usuario' : 'Guardar cambios' }} }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ── USER toggle confirm ─────────────────────────────────────────────────────── -->
+@if (toggleTarget()) {
+  <div class="modal-backdrop" tabindex="0" (click)="cancelToggle()" (keydown.escape)="cancelToggle()">
+    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ toggleTarget()!.isActive ? 'Desactivar usuario' : 'Activar usuario' }}</h2>
+      </div>
+      <div class="modal-body">
+        <p class="delete-text">
+          {{ toggleTarget()!.isActive ? '¿Desactivar a ' : '¿Activar a ' }}
+          <strong>{{ toggleTarget()!.name }}</strong>?
+          {{ toggleTarget()!.isActive ? ' No podrá acceder al sistema.' : ' Volverá a tener acceso.' }}
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="cancelToggle()">Cancelar</button>
+        <button [class]="toggleTarget()!.isActive ? 'btn-danger' : 'btn-primary'"
+          [disabled]="userSaving()" (click)="executeToggle()">
+          @if (userSaving()) { <ion-spinner name="crescent" /> }
+          @else { {{ toggleTarget()!.isActive ? 'Desactivar' : 'Activar' }} }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── CATEGORY modal ─────────────────────────────────────────────────────────── -->
+@if (showCatModal()) {
+  <div class="modal-backdrop" tabindex="0" (click)="closeCatModal()" (keydown.escape)="closeCatModal()">
+    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ catModalMode() === 'create' ? 'Nueva categoría' : 'Renombrar categoría' }}</h2>
+        <button class="modal-close" (click)="closeCatModal()"><ion-icon name="close-outline" /></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field" [class.has-error]="catSubmitted() && catForm.invalid">
+          <label class="form-label" for="cat-name">Nombre *</label>
+          <input id="cat-name" class="form-input" [formControl]="catForm" placeholder="Ej: Electrónica" />
+          @if (catSubmitted() && catForm.hasError('required')) {
+            <span class="form-error">Campo obligatorio</span>
+          }
+        </div>
+        @if (catFormError()) {
+          <div class="form-alert"><ion-icon name="alert-circle-outline" />{{ catFormError() }}</div>
+        }
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" (click)="closeCatModal()">Cancelar</button>
+          <button class="btn-primary" [disabled]="catSaving()" (click)="submitCatForm()">
+            @if (catSaving()) { <ion-spinner name="crescent" /> }
+            @else { {{ catModalMode() === 'create' ? 'Crear' : 'Guardar' }} }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── CATEGORY delete confirm ────────────────────────────────────────────────── -->
+@if (catDeleteTarget()) {
+  <div class="modal-backdrop" tabindex="0" (click)="cancelDeleteCat()" (keydown.escape)="cancelDeleteCat()">
+    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Eliminar categoría</h2>
+      </div>
+      <div class="modal-body">
+        <p class="delete-text">
+          ¿Eliminar <strong>{{ catDeleteTarget()!.name }}</strong>?
+          Si hay productos con esta categoría, no se podrá eliminar.
+        </p>
+        <div class="modal-footer">
+          <button class="btn-ghost" (click)="cancelDeleteCat()">Cancelar</button>
+          <button class="btn-danger" [disabled]="catDeleting()" (click)="executeDeleteCat()">
+            @if (catDeleting()) { <ion-spinner name="crescent" /> } @else { Eliminar }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── BRAND modal ────────────────────────────────────────────────────────────── -->
+@if (showBrandModal()) {
+  <div class="modal-backdrop" tabindex="0" (click)="closeBrandModal()" (keydown.escape)="closeBrandModal()">
+    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ brandModalMode() === 'create' ? 'Nueva marca' : 'Renombrar marca' }}</h2>
+        <button class="modal-close" (click)="closeBrandModal()"><ion-icon name="close-outline" /></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field" [class.has-error]="brandSubmitted() && brandForm.invalid">
+          <label class="form-label" for="brand-name">Nombre *</label>
+          <input id="brand-name" class="form-input" [formControl]="brandForm" placeholder="Ej: Samsung" />
+          @if (brandSubmitted() && brandForm.hasError('required')) {
+            <span class="form-error">Campo obligatorio</span>
+          }
+        </div>
+        @if (brandFormError()) {
+          <div class="form-alert"><ion-icon name="alert-circle-outline" />{{ brandFormError() }}</div>
+        }
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" (click)="closeBrandModal()">Cancelar</button>
+          <button class="btn-primary" [disabled]="brandSaving()" (click)="submitBrandForm()">
+            @if (brandSaving()) { <ion-spinner name="crescent" /> }
+            @else { {{ brandModalMode() === 'create' ? 'Crear' : 'Guardar' }} }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── BRAND delete confirm ───────────────────────────────────────────────────── -->
+@if (brandDeleteTarget()) {
+  <div class="modal-backdrop" tabindex="0" (click)="cancelDeleteBrand()" (keydown.escape)="cancelDeleteBrand()">
+    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Eliminar marca</h2>
+      </div>
+      <div class="modal-body">
+        <p class="delete-text">
+          ¿Eliminar <strong>{{ brandDeleteTarget()!.name }}</strong>?
+          Si hay productos con esta marca, no se podrá eliminar.
+        </p>
+        <div class="modal-footer">
+          <button class="btn-ghost" (click)="cancelDeleteBrand()">Cancelar</button>
+          <button class="btn-danger" [disabled]="brandDeleting()" (click)="executeDeleteBrand()">
+            @if (brandDeleting()) { <ion-spinner name="crescent" /> } @else { Eliminar }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ── COMPANY CREATE / EDIT MODAL ───────────────────────────────────────── -->
+@if (showCompanyModal()) {
+  <div class="modal-backdrop" tabindex="0" (click)="closeCompanyModal()" (keydown.escape)="closeCompanyModal()">
+    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ companyModalMode() === 'create' ? 'Nueva empresa' : 'Editar empresa' }}</h2>
+        <button class="modal-close" (click)="closeCompanyModal()"><ion-icon name="close-outline" /></button>
+      </div>
+      <form [formGroup]="companyForm" (ngSubmit)="submitCompanyForm()" class="modal-body">
+        <div class="form-field" [class.has-error]="companySubmitted() && companyForm.get('name')?.invalid">
+          <label class="form-label" for="company-name">Nombre *</label>
+          <input id="company-name" class="form-input" formControlName="name" placeholder="Acme Corp" />
+          @if (companySubmitted() && companyForm.get('name')?.hasError('required')) {
+            <span class="form-error">Campo obligatorio</span>
+          }
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="company-taxid">CIF / NIF</label>
+          <input id="company-taxid" class="form-input" formControlName="taxId" placeholder="B12345678" />
+        </div>
+        @if (companyFormError()) {
+          <div class="form-alert"><ion-icon name="alert-circle-outline" />{{ companyFormError() }}</div>
+        }
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" (click)="closeCompanyModal()">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="companySaving()">
+            @if (companySaving()) { <ion-spinner name="crescent" /> }
+            @else { {{ companyModalMode() === 'create' ? 'Crear empresa' : 'Guardar cambios' }} }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- ── COMPANY TOGGLE STATUS CONFIRM ─────────────────────────────────────── -->
+@if (companyToggleTarget()) {
+  <div class="modal-backdrop" tabindex="0" (click)="cancelToggleCompany()" (keydown.escape)="cancelToggleCompany()">
+    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          {{ companyToggleTarget()!.status === 'ACTIVE' ? 'Desactivar empresa' : 'Activar empresa' }}
+        </h2>
+      </div>
+      <div class="modal-body">
+        <p class="delete-text">
+          {{ companyToggleTarget()!.status === 'ACTIVE' ? '¿Desactivar' : '¿Activar' }}
+          <strong>{{ companyToggleTarget()!.name }}</strong>?
+          {{ companyToggleTarget()!.status === 'ACTIVE'
+            ? 'Los usuarios de esta empresa no podrán acceder.'
+            : 'Los usuarios de esta empresa recuperarán el acceso.' }}
+        </p>
+        <div class="modal-footer">
+          <button class="btn-ghost" (click)="cancelToggleCompany()">Cancelar</button>
+          <button class="btn-primary" [disabled]="companySaving()" (click)="executeToggleCompany()">
+            @if (companySaving()) { <ion-spinner name="crescent" /> }
+            @else { {{ companyToggleTarget()!.status === 'ACTIVE' ? 'Desactivar' : 'Activar' }} }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -4,7 +4,7 @@
 @import '@ionic/angular/css/typography.css';
 @import '@ionic/angular/css/display.css';
 
-@import 'styles/shared';
+@use 'styles/shared' as *;
 
 // ─── Design tokens ───────────────────────────────────────────────────────────
 :root {
