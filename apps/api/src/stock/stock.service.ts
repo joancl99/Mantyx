@@ -246,6 +246,54 @@ export class StockService {
     return movement;
   }
 
+  async getOverview(
+    companyId: string,
+    query: { search?: string; lowStock?: boolean; page?: number; limit?: number },
+  ) {
+    const { search, lowStock, page = 1, limit = 30 } = query;
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.ProductWhereInput = {
+      companyId,
+      isActive: true,
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { sku: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
+    };
+
+    const products = await this.prisma.product.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        sku: true,
+        minStock: true,
+        stockEntries: { select: { quantity: true } },
+      },
+      orderBy: { name: 'asc' },
+    });
+
+    const withStock = products.map((p) => ({
+      productId: p.id,
+      name: p.name,
+      sku: p.sku,
+      minStock: p.minStock,
+      totalStock: p.stockEntries.reduce((sum, e) => sum + e.quantity, 0),
+    }));
+
+    const filtered = lowStock
+      ? withStock.filter((p) => p.totalStock <= p.minStock)
+      : withStock;
+
+    const total = filtered.length;
+    const data = filtered.slice(skip, skip + limit);
+
+    return { data, total, page, limit };
+  }
+
   async getStockByProduct(productId: string, companyId: string) {
     const product = await this.prisma.product.findFirst({
       where: { id: productId, companyId },

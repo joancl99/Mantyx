@@ -14,7 +14,16 @@ import {
   FormControl,
   Validators,
 } from '@angular/forms';
-import { IonContent, IonIcon, IonSpinner } from '@ionic/angular/standalone';
+import {
+  IonContent,
+  IonIcon,
+  IonSpinner,
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonMenuButton,
+  IonTitle,
+} from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   addOutline,
@@ -48,7 +57,18 @@ type ModalMode = 'create' | 'edit';
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [FormsModule, ReactiveFormsModule, IonContent, IonIcon, IonSpinner],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    IonContent,
+    IonIcon,
+    IonSpinner,
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonMenuButton,
+    IonTitle,
+  ],
   styleUrl: './products.component.scss',
   templateUrl: './products.component.html',
 })

@@ -15,6 +15,7 @@ import {
   IonToolbar,
   IonButtons,
   IonMenuButton,
+  IonTitle,
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -67,6 +68,7 @@ const QUICK_ACTIONS: QuickAction[] = [
     IonToolbar,
     IonButtons,
     IonMenuButton,
+    IonTitle,
     IonSpinner,
     RouterLink,
   ],

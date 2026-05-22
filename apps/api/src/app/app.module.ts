@@ -8,6 +8,7 @@ import { CategoriesModule } from '../categories/categories.module';
 import { ProductsModule } from '../products/products.module';
 import { DashboardModule } from '../dashboard/dashboard.module';
 import { StockModule } from '../stock/stock.module';
+import { WarehousesModule } from '../warehouses/warehouses.module';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { envValidationSchema } from '../config/env.validation';
@@ -34,6 +35,7 @@ import { AppService } from './app.service';
     BrandsModule,
     ProductsModule,
     StockModule,
+    WarehousesModule,
     DashboardModule,
   ],
   controllers: [AppController],

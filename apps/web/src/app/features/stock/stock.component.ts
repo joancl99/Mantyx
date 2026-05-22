@@ -1,25 +1,144 @@
-import { Component } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  signal,
+  OnInit,
+  DestroyRef,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import {
   IonHeader,
   IonToolbar,
-  IonTitle,
   IonContent,
   IonButtons,
   IonMenuButton,
+  IonTitle,
+  IonIcon,
+  IonSpinner,
 } from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import {
+  searchOutline,
+  layersOutline,
+  alertCircleOutline,
+  chevronBackOutline,
+  chevronForwardOutline,
+  closeOutline,
+  warningOutline,
+  checkmarkCircleOutline,
+} from 'ionicons/icons';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import {
+  StockService,
+  StockOverviewItem,
+} from '../../core/services/stock.service';
 
 @Component({
   selector: 'app-stock',
   standalone: true,
   imports: [
+    FormsModule,
     IonHeader,
     IonToolbar,
-    IonTitle,
     IonContent,
     IonButtons,
     IonMenuButton,
+    IonTitle,
+    IonIcon,
+    IonSpinner,
   ],
   templateUrl: './stock.component.html',
   styleUrl: './stock.component.scss',
 })
-export class StockComponent {}
+export class StockComponent implements OnInit {
+  private readonly stockService = inject(StockService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly searchSubject = new Subject<string>();
+
+  readonly items = signal<StockOverviewItem[]>([]);
+  readonly loading = signal(true);
+  readonly searchQuery = signal('');
+  readonly filterLowStock = signal(false);
+  readonly currentPage = signal(1);
+  readonly total = signal(0);
+  readonly pageSize = 30;
+
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.total() / this.pageSize)),
+  );
+  readonly totalLabel = computed(() => {
+    const t = this.total();
+    const low = this.filterLowStock();
+    if (t === 0) return 'Sin resultados';
+    return low ? `${t} producto${t === 1 ? '' : 's'} con stock bajo` : `${t} producto${t === 1 ? '' : 's'}`;
+  });
+
+  readonly lowStockCount = computed(() =>
+    this.items().filter((i) => i.totalStock <= i.minStock).length,
+  );
+
+  constructor() {
+    addIcons({
+      searchOutline,
+      layersOutline,
+      alertCircleOutline,
+      chevronBackOutline,
+      chevronForwardOutline,
+      closeOutline,
+      warningOutline,
+      checkmarkCircleOutline,
+    });
+  }
+
+  ngOnInit() {
+    this.load();
+    this.searchSubject
+      .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => { this.currentPage.set(1); this.load(); });
+  }
+
+  load() {
+    this.loading.set(true);
+    this.stockService
+      .getOverview({
+        search: this.searchQuery() || undefined,
+        lowStock: this.filterLowStock() || undefined,
+        page: this.currentPage(),
+        limit: this.pageSize,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.items.set(res.data);
+          this.total.set(res.total);
+          this.loading.set(false);
+        },
+        error: () => this.loading.set(false),
+      });
+  }
+
+  onSearch(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(value);
+    this.searchSubject.next(value);
+  }
+
+  onToggleLowStock() {
+    this.filterLowStock.update((v) => !v);
+    this.currentPage.set(1);
+    this.load();
+  }
+
+  goToPage(page: number) {
+    this.currentPage.set(page);
+    this.load();
+  }
+
+  stockStatus(item: StockOverviewItem): 'ok' | 'low' | 'empty' {
+    if (item.totalStock === 0) return 'empty';
+    if (item.totalStock <= item.minStock) return 'low';
+    return 'ok';
+  }
+}

@@ -4,4 +4,149 @@
     <ion-title>Almacenes</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content></ion-content>
+
+<ion-content [scrollY]="true" [fullscreen]="true">
+  <div class="warehouses-page">
+
+    <header class="page-header">
+      <div class="page-header__left">
+        <h1 class="page-title">Almacenes</h1>
+        <span class="page-subtitle">{{ activeCount() }} activo{{ activeCount() === 1 ? '' : 's' }} · {{ totalCount() }} total</span>
+      </div>
+      @if (canEdit()) {
+        <button class="btn-primary" (click)="openCreate()">
+          <ion-icon name="add-outline" />
+          Nuevo almacén
+        </button>
+      }
+    </header>
+
+    @if (loading()) {
+      <div class="state-center">
+        <ion-spinner name="crescent" class="main-spinner" />
+      </div>
+    } @else if (warehouses().length === 0) {
+      <div class="state-center">
+        <div class="empty-icon"><ion-icon name="business-outline" /></div>
+        <p class="empty-title">Sin almacenes</p>
+        <p class="empty-sub">Crea el primer almacén para empezar</p>
+      </div>
+    } @else {
+      <div class="wh-list">
+        @for (wh of warehouses(); track wh.id) {
+          <div class="wh-row" [class.inactive]="!wh.isActive">
+
+            <div class="wh-icon">
+              <ion-icon name="business-outline" />
+            </div>
+
+            <div class="wh-info">
+              <div class="wh-name-row">
+                <span class="wh-name">{{ wh.name }}</span>
+                @if (!wh.isActive) {
+                  <span class="badge-inactive">Inactivo</span>
+                }
+              </div>
+              @if (wh.address) {
+                <span class="wh-address">
+                  <ion-icon name="location-outline" />
+                  {{ wh.address }}
+                </span>
+              }
+            </div>
+
+            <div class="wh-zones">
+              <ion-icon name="layers-outline" />
+              <span>{{ wh._count.zones }} zona{{ wh._count.zones === 1 ? '' : 's' }}</span>
+            </div>
+
+            @if (canEdit()) {
+              <div class="wh-actions">
+                <button class="action-btn action-btn--edit" (click)="openEdit(wh)" title="Editar">
+                  <ion-icon name="create-outline" />
+                </button>
+                <button
+                  class="action-btn"
+                  [class]="wh.isActive ? 'action-btn--deactivate' : 'action-btn--activate'"
+                  (click)="confirmToggle(wh)"
+                  [title]="wh.isActive ? 'Desactivar' : 'Activar'"
+                >
+                  <ion-icon name="power-outline" />
+                </button>
+              </div>
+            }
+
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+</ion-content>
+
+<!-- Create / Edit modal -->
+@if (showModal()) {
+  <div class="modal-backdrop" tabindex="0" (click)="closeModal()" (keydown.escape)="closeModal()">
+    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ modalMode() === 'create' ? 'Nuevo almacén' : 'Editar almacén' }}</h2>
+        <button class="modal-close" (click)="closeModal()"><ion-icon name="close-outline" /></button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submitForm()" class="modal-body">
+        <div class="form-field" [class.has-error]="submitted() && form.get('name')?.invalid">
+          <label class="form-label" for="wh-name">Nombre *</label>
+          <input id="wh-name" class="form-input" formControlName="name" placeholder="Almacén Central" />
+          @if (submitted() && form.get('name')?.hasError('required')) {
+            <span class="form-error">Campo obligatorio</span>
+          }
+        </div>
+
+        <div class="form-field">
+          <label class="form-label" for="wh-address">Dirección</label>
+          <input id="wh-address" class="form-input" formControlName="address" placeholder="Calle Mayor 12, Barcelona" />
+        </div>
+
+        @if (formError()) {
+          <div class="form-alert">
+            <ion-icon name="alert-circle-outline" />
+            {{ formError() }}
+          </div>
+        }
+
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" (click)="closeModal()">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="saving()">
+            @if (saving()) { <ion-spinner name="crescent" /> }
+            @else { {{ modalMode() === 'create' ? 'Crear almacén' : 'Guardar cambios' }} }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Toggle active confirm -->
+@if (toggleTarget()) {
+  <div class="modal-backdrop" tabindex="0" (click)="cancelToggle()" (keydown.escape)="cancelToggle()">
+    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ toggleTarget()!.isActive ? 'Desactivar almacén' : 'Activar almacén' }}</h2>
+      </div>
+      <div class="modal-body">
+        <p class="delete-text">
+          {{ toggleTarget()!.isActive ? '¿Desactivar' : '¿Activar' }}
+          <strong>{{ toggleTarget()!.name }}</strong>?
+          {{ toggleTarget()!.isActive ? 'No aparecerá como opción en nuevos movimientos.' : 'Volverá a estar disponible para movimientos.' }}
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="cancelToggle()">Cancelar</button>
+        <button class="btn-primary" [disabled]="saving()" (click)="executeToggle()">
+          @if (saving()) { <ion-spinner name="crescent" /> }
+          @else { {{ toggleTarget()!.isActive ? 'Desactivar' : 'Activar' }} }
+        </button>
+      </div>
+    </div>
+  </div>
+}
