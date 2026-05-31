@@ -33,8 +33,8 @@ async function bootstrap() {
   );
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('WarehouseApp API')
-    .setDescription('Inventory management system — REST API reference')
+    .setTitle('Mantyx API')
+    .setDescription('Warehouse management SaaS REST API reference')
     .setVersion('1.0')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },

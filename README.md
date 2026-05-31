@@ -1,446 +1,291 @@
-# WarehouseApp
+# Mantyx
 
-Full-stack inventory management system built as a portfolio project demonstrating enterprise-grade architecture across web and mobile platforms.
+**Precision para tu almacen**
+
+Mantyx is a full-stack inventory and WMS SaaS application built as an enterprise-style portfolio project. It demonstrates multi-tenancy, RBAC, stock control, warehouse locations, movement tracking, auditability, realtime alerts, and a clean Angular/Ionic frontend.
 
 ## Overview
 
-WarehouseApp is a real-world inventory management solution that allows businesses to track stock, manage products, assign roles to users, and receive real-time low-stock alerts — all from a single codebase that runs on web and Android.
+Mantyx helps companies manage products, stock, movements, warehouses, locations, users, and operational dashboards from a single monorepo. The project is intentionally practical: architecture choices prioritize maintainability, tenant isolation, demonstrable enterprise patterns, and interview-ready features.
 
 ## Tech Stack
 
 ### Frontend
-- **Angular 21** — standalone components, signal-based, SCSS
-- **Ionic** — UI components optimized for mobile and web *(in progress)*
-- **Capacitor** — native Android bridge (barcode scanning, camera, push notifications) *(in progress)*
+
+- **Angular 21** — standalone components, routing, forms, SCSS.
+- **Ionic 8.8.7** — app shell, side menu, mobile-friendly UI components.
+- **socket.io-client** — realtime low-stock alert integration.
 
 ### Backend
-- **NestJS 11** — modular, enterprise-ready Node.js framework
-- **PostgreSQL 16** — relational database
-- **Prisma 6** — type-safe ORM with migrations
-- **Redis 7** — refresh token storage (bcrypt-hashed), JWT invalidation
-- **Socket.io** — real-time low-stock alerts via WebSockets *(in progress)*
-- **MinIO** — S3-compatible local object storage for product images *(in progress)*
 
-### Auth & Security
-- JWT access tokens (15 min) + refresh tokens (7 days, Redis-backed with bcrypt rotation)
-- Role-Based Access Control (RBAC): `ADMIN`, `MANAGER`, `OPERATOR`
-- Two global `APP_GUARD`s: `JwtAuthGuard` → `RolesGuard`
-- `@Public()` decorator bypasses JWT guard for open endpoints
-- Helmet, CORS, global `ValidationPipe` (whitelist + transform)
+- **NestJS 11** — modular TypeScript API.
+- **PostgreSQL 16** — relational database.
+- **Prisma 6.19.3** — type-safe ORM and migrations.
+- **Redis 7** — refresh-token storage and JWT invalidation/blacklist behavior.
+- **Socket.io** — realtime low-stock alerts gateway.
+- **Swagger / OpenAPI** — API docs at `/api/docs`.
 
-### DevOps & Tooling
-- **Nx 22** — monorepo manager with `affected` commands (only builds/tests what changed)
-- **Docker Compose** — local environment (PostgreSQL, Redis, MinIO)
-- **GitHub Actions** — CI/CD pipeline (format → lint → test → build on every PR)
-- **OpenAPI / Swagger** — interactive API docs at `/api/docs`
+### Tooling
 
-### Testing
-- **Jest** — unit and integration tests (NestJS services, guards, pipes)
-- **Vitest** — unit tests for Angular (via `@angular/build`)
-- **Cypress** — E2E tests for the Angular web app *(planned)*
+- **Nx 22.7.x** — monorepo build/test/lint orchestration.
+- **Docker Compose** — local PostgreSQL and Redis services.
+- **Jest / Vitest** — backend and frontend unit testing setup.
+- **ESLint / Prettier** — linting and formatting.
 
----
+## Product Areas
 
-## Features
+### Implemented Backend Modules
 
-### Core Inventory
-- [x] Product catalog (name, SKU, category, price, stock, minStock)
-- [x] Stock movements — INBOUND (+qty), OUTBOUND (-qty with validation), ADJUSTMENT (absolute value)
-- [x] Full audit trail — every movement creates an `AuditLog` entry (same Prisma transaction)
-- [ ] Low-stock threshold alerts (real-time via WebSocket + push notification)
-- [ ] Barcode / QR code scanning via Capacitor on Android
-- [ ] Product image upload (MinIO)
+- Auth: register, login, refresh, logout, JWT guards, RBAC, throttling.
+- Companies: platform-level company management for `SUPERADMIN`.
+- Users: tenant user management.
+- Categories and brands: tenant-scoped catalog setup.
+- Products: CRUD, search, filters, pagination, soft delete.
+- Stock and movements: inbound, outbound, transfer, adjustment, movement history.
+- Warehouses: warehouses, zones, aisles, and locations.
+- Dashboard: KPIs, alerts, and latest movements.
+- Realtime alerts: stock alerts gateway.
+- Infrastructure: Prisma module, Redis module, global exception filter, Swagger bootstrap.
 
-### Users & Roles
-- [x] User registration and JWT authentication (register, login, refresh, logout)
-- [x] Role-based permissions (ADMIN > MANAGER > OPERATOR) enforced globally
-- [x] Audit log: who changed what and when (entity, action, before/after)
+### Implemented Frontend Areas
 
-### Reporting
-- [ ] Stock summary dashboard
-- [x] Movement history with filters (productId, userId, type, date range, pagination)
-- [ ] Export to CSV
+- Auth pages: login and register.
+- Authenticated Ionic shell with side menu.
+- Dashboard.
+- Products.
+- Stock.
+- Movements.
+- Warehouses drill-down.
+- Management.
+- Administration:
+  - `SUPERADMIN`: global company management.
+  - `ADMIN`: tenant users, categories, and brands.
+- Inventory route and base components exist, but full backend integration is still the next major feature.
 
-### Developer Experience
-- [x] Swagger UI at `/api/docs` with Bearer auth support
-- [x] Shared TypeScript types between frontend and backend (`@warehouse/types`)
-- [x] One-command dev environment (`npm run docker:up`)
-- [ ] Pre-commit hooks (ESLint + Prettier via Husky)
+## Multi-Tenancy And Roles
 
----
+Mantyx is a multi-tenant SaaS. Most business records are scoped by `companyId`.
 
-## Monorepo Structure (Nx 22)
+Roles:
 
-```
-warehouse-app/
+- `SUPERADMIN`: platform owner. Can manage companies globally.
+- `ADMIN`: tenant owner. Manages users, categories, and brands for their own company.
+- `MANAGER`: operational supervisor.
+- `OPERATOR`: warehouse operations user.
+- `VIEWER`: read-only user.
+
+Fresh database bootstrap requirement:
+
+1. Create a `Company` in Prisma Studio or with a seed/script.
+2. Assign the initial non-SUPERADMIN `User.companyId`.
+3. Log in again so the JWT contains the new `companyId`.
+
+## Next Major Feature: Inventory Counts
+
+Inventory counts are the next priority.
+
+The Prisma schema already includes:
+
+- `InventoryCount` with `DRAFT`, `IN_PROGRESS`, `COMPLETED`, and `CANCELLED` statuses.
+- `InventoryCountLine` with expected quantity, counted quantity, difference, and a required `Location` relation.
+
+Target backend endpoints:
+
+| Method   | Endpoint                           | Description                                                |
+| -------- | ---------------------------------- | ---------------------------------------------------------- |
+| `GET`    | `/api/inventory`                   | List tenant inventory counts with pagination/status filter |
+| `POST`   | `/api/inventory`                   | Create a count for a warehouse                             |
+| `GET`    | `/api/inventory/:id`               | Count detail with lines                                    |
+| `PATCH`  | `/api/inventory/:id/start`         | Move `DRAFT` to `IN_PROGRESS`                              |
+| `PATCH`  | `/api/inventory/:id/complete`      | Calculate differences and mark completed                   |
+| `POST`   | `/api/inventory/:id/lines`         | Add a count line                                           |
+| `PATCH`  | `/api/inventory/:id/lines/:lineId` | Register counted quantity                                  |
+| `DELETE` | `/api/inventory/:id/lines/:lineId` | Remove a line only while `DRAFT`                           |
+
+Frontend target:
+
+- Connect the existing inventory area to the API.
+- Support list, status filter, creation, detail, line editing, and completion.
+- Keep `COMPLETED` counts read-only.
+
+## Monorepo Structure
+
+```text
+Mantyx/
 ├── apps/
-│   ├── api/                        # NestJS 11 backend
+│   ├── api/                         # NestJS backend
 │   │   ├── prisma/
-│   │   │   └── schema.prisma       # User, Category, Product, StockMovement, AuditLog
-│   │   ├── src/
-│   │   │   ├── app/                # AppModule (global guards wired here), AppController (/health)
-│   │   │   ├── auth/               # JWT strategies, guards, decorators, AuthService, AuthController
-│   │   │   │   ├── decorators/     # @Public(), @CurrentUser(), @Roles()
-│   │   │   │   ├── dto/            # RegisterDto, LoginDto, AuthTokensDto
-│   │   │   │   ├── guards/         # JwtAuthGuard, JwtRefreshGuard, RolesGuard
-│   │   │   │   ├── strategies/     # jwt.strategy.ts, jwt-refresh.strategy.ts
-│   │   │   │   └── types/          # JwtPayload, JwtRefreshPayload interfaces
-│   │   │   ├── products/           # Full CRUD, soft-delete, lowStock post-filter
-│   │   │   │   └── dto/            # CreateProductDto, UpdateProductDto, ProductQueryDto
-│   │   │   ├── stock/              # Stock movements + audit log (atomic $transaction)
-│   │   │   │   └── dto/            # CreateMovementDto, MovementQueryDto
-│   │   │   ├── prisma/             # PrismaService (@Global), PrismaModule
-│   │   │   ├── redis/              # RedisService (@Global, ioredis), RedisModule
-│   │   │   ├── config/             # env.validation.ts (Joi — validates all vars at boot)
-│   │   │   └── main.ts             # Helmet, CORS, prefix, ValidationPipe, Swagger bootstrap
-│   │   ├── .env.example
-│   │   └── project.json            # Nx targets: build, test, lint, prisma-*
-│   ├── api-e2e/                    # NestJS integration/E2E tests (Jest)
-│   └── web/                        # Angular 21 standalone app (SCSS, routing, Vitest)
-│       └── src/
-│           ├── app/                # AppComponent, app.routes.ts, app.config.ts
-│           └── main.ts
+│   │   │   └── schema.prisma        # Multi-tenant WMS data model
+│   │   └── src/
+│   │       ├── app/                 # AppModule and health controller
+│   │       ├── auth/                # JWT, refresh tokens, guards, decorators
+│   │       ├── brands/              # Tenant brand setup
+│   │       ├── categories/          # Tenant category setup
+│   │       ├── companies/           # SUPERADMIN company management
+│   │       ├── common/              # Global filters and shared backend utilities
+│   │       ├── config/              # Environment validation
+│   │       ├── dashboard/           # KPIs and alerts
+│   │       ├── prisma/              # Prisma module/service
+│   │       ├── products/            # Product catalog
+│   │       ├── redis/               # Redis module/service
+│   │       ├── stock/               # Movements and stock alerts gateway
+│   │       ├── users/               # Tenant user management
+│   │       └── warehouses/          # Warehouses, zones, aisles, locations
+│   ├── api-e2e/                     # Backend e2e project
+│   └── web/                         # Angular + Ionic frontend
+│       └── src/app/
+│           ├── auth/                # Login/register
+│           ├── core/                # Guards, interceptors, services
+│           ├── features/            # Dashboard, products, stock, movements, etc.
+│           └── shell/               # Authenticated Ionic shell/menu
 ├── libs/
-│   └── shared/                     # @warehouse/types — shared DTOs and interfaces
-│       └── src/
-│           ├── index.ts
-│           └── lib/types.ts
+│   └── shared/                      # Shared TypeScript types
 ├── docker/
-│   ├── docker-compose.yml          # PostgreSQL :5432, Redis :6379, MinIO :9000/:9001
-│   └── .env.example
-├── .github/
-│   └── workflows/
-│       └── ci.yml                  # format → lint → test → build (nx affected)
-├── .gitattributes                  # LF line endings enforced across platforms
-├── eslint.config.mjs
-├── jest.config.ts
+│   └── docker-compose.yml           # Local infrastructure
+├── CLAUDE.md                        # Agent operational memory
+├── PROJECT_CONTEXT.md               # Human-readable project context
 ├── nx.json
-├── package.json
-├── tsconfig.base.json              # paths: @warehouse/types → libs/shared/src/index.ts
-└── README.md
+└── package.json
 ```
-
----
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js >= 22
-- Docker and Docker Compose
-- Android Studio (optional, for mobile development)
+- Node.js 22 or newer.
+- pnpm.
+- Docker Desktop.
 
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/joancl99/Warehouse.git
-cd WarehouseApp
-```
-
-### 2. Install dependencies
+If `pnpm` is not available in your shell, use Corepack:
 
 ```bash
-npm install
+corepack enable
+corepack pnpm --version
 ```
 
-### 3. Start infrastructure services
+On Windows, `corepack enable` can require an Administrator shell because it writes shims under the Node.js installation directory. If enabling Corepack is not possible, use `corepack pnpm ...` directly.
+
+### Install Dependencies
 
 ```bash
-npm run docker:up
+pnpm install
 ```
 
-This starts:
-- **PostgreSQL** on port `5432`
-- **Redis** on port `6379`
-- **MinIO** on port `9000` (console UI at `9001`)
-
-### 4. Configure environment variables
+Equivalent Corepack command if `pnpm` is not in `PATH`:
 
 ```bash
-cp apps/api/.env.example apps/api/.env
+corepack pnpm install
 ```
 
-Key variables:
+Do not use `npm install` in this project.
 
-```env
-DATABASE_URL="postgresql://warehouse:warehouse@localhost:5432/warehouse"
-REDIS_URL="redis://:warehouse@localhost:6379"
-JWT_ACCESS_SECRET="change-me-min-16-chars"
-JWT_REFRESH_SECRET="change-me-min-16-chars"
-JWT_ACCESS_EXPIRES_IN="15m"
-JWT_REFRESH_EXPIRES_IN="7d"
-MINIO_ENDPOINT="localhost"
-MINIO_PORT=9000
-MINIO_ACCESS_KEY="minioadmin"
-MINIO_SECRET_KEY="minioadmin"
-CORS_ORIGIN="http://localhost:4200"
-```
-
-### 5. Run database migrations
+### Start Infrastructure
 
 ```bash
-npx nx run api:prisma-migrate
-# When prompted, enter a migration name e.g. "init"
+pnpm run docker:up
 ```
 
-### 6. Start the applications
+This starts local infrastructure declared in `docker/docker-compose.yml`.
 
-```bash
-# API on http://localhost:3000  (Swagger at http://localhost:3000/api/docs)
-npm run start:api
+### Configure Environment
 
-# Web on http://localhost:4200
-npm run start:web
-```
+Create the API environment file from the example if needed:
 
----
-
-## Running the project
-
-### First time
-
-> Do this once after cloning the repository or on a fresh machine.
-
-**1. Open Docker Desktop** and wait until the engine is running.
-
-**2. Install dependencies**
-```bash
-npm install
-```
-
-**3. Create the environment file**
 ```bash
 cp apps/api/.env.example apps/api/.env
 ```
-The default values work out of the box for local development. No changes needed.
 
-**4. Start infrastructure services**
-```bash
-npm run docker:up
-```
-Starts PostgreSQL `:5432`, Redis `:6379` and MinIO `:9000` in the background.
+### Run Database Migrations
 
-**5. Create the database tables**
+On Windows PowerShell, prefer the direct Prisma command because Nx-wrapped interactive prompts can hang:
+
 ```bash
 npx dotenv -e apps/api/.env -- prisma migrate dev --schema=apps/api/prisma/schema.prisma --name init
 ```
-This reads the Prisma schema and creates all tables in PostgreSQL.
 
-**6. Start the API**
-```bash
-npm run start:api
-```
-
-API ready at `http://localhost:3000/api` — Swagger at `http://localhost:3000/api/docs`.
-
----
-
-### Not the first time
-
-> Every day when you want to work on the project.
-
-**1. Open Docker Desktop** and wait until the engine is running.
-
-**2. Start infrastructure services**
-```bash
-npm run docker:up
-```
-
-**3. Start the API**
-```bash
-npm run start:api
-```
-
-That's it. Data is persisted in Docker volumes so the database is exactly where you left it.
-
-**To stop everything when you're done:**
-```bash
-# Ctrl+C in the API terminal
-npm run docker:down
-```
-
----
-
-## npm Scripts
-
-| Script | Description |
-|--------|-------------|
-| `npm run start:api` | Start NestJS API in dev/watch mode |
-| `npm run start:web` | Start Angular web app in dev mode |
-| `npm run build:api` | Production build of the API |
-| `npm run build:web` | Production build of the web app |
-| `npm test` | Run unit tests across all projects |
-| `npm run lint` | Run ESLint across all projects |
-| `npm run docker:up` | Start PostgreSQL, Redis and MinIO |
-| `npm run docker:down` | Stop all Docker services |
-| `npx nx run api:prisma-migrate` | Create and run a new migration |
-| `npx nx run api:prisma-studio` | Open Prisma Studio (DB browser) |
-| `npx nx run api:prisma-reset` | Reset DB and re-run all migrations |
-
----
-
-## Running on Android
+### Start The Applications
 
 ```bash
-# Build the web app
-npm run build:web
-
-# Sync with Capacitor
-npx cap sync android
-
-# Open in Android Studio
-npx cap open android
+pnpm run start:api
+pnpm run start:web
 ```
 
----
+URLs:
 
-## Testing
+- API: `http://localhost:3000/api`
+- Swagger: `http://localhost:3000/api/docs`
+- Web: `http://localhost:4200`
+
+### Open Prisma Studio
 
 ```bash
-# Unit tests (all projects)
-npm test
-
-# Unit tests (single project)
-npx nx test api
-npx nx test web
-
-# Only affected tests (CI mode)
-npx nx affected -t test --base=origin/main
-
-# E2E tests — NestJS integration
-npx nx e2e api-e2e
+pnpm exec prisma studio --schema=apps/api/prisma/schema.prisma
 ```
 
----
+## Common Commands
 
-## CI/CD Pipeline
+| Command                                                   | Description                            |
+| --------------------------------------------------------- | -------------------------------------- |
+| `pnpm run start:api`                                      | Start the NestJS API in dev/watch mode |
+| `pnpm run start:web`                                      | Start the Angular web app              |
+| `pnpm run build:api`                                      | Build the API for production           |
+| `pnpm run build:web`                                      | Build the web app for production       |
+| `pnpm run test`                                           | Run tests across configured projects   |
+| `pnpm run lint`                                           | Run lint across configured projects    |
+| `pnpm run docker:up`                                      | Start local infrastructure             |
+| `pnpm run docker:down`                                    | Stop local infrastructure              |
+| `pnpm nx affected -t lint --base=origin/main --head=HEAD` | Run affected lint before merging       |
 
-GitHub Actions runs on every pull request and push to `main`.
-Uses `nx affected` — only lints, tests and builds projects touched by the PR.
+## Development Rules
 
-| Step | Command |
-|------|---------|
-| Format check | `nx format:check` |
-| Lint | `nx affected -t lint` |
-| Test | `nx affected -t test` |
-| Build | `nx affected -t build --configuration=production` |
-
-### Before merging to main
-
-Always run these locally in `dev` before merging to avoid breaking CI:
-
-```bash
-npx nx format
-npx nx affected -t lint --base=origin/main --head=HEAD
-```
-
-> **Note:** If `nx.json` has an `nxCloudId` field and the workspace is not connected to Nx Cloud, remove it — otherwise CI will abort with an authorization error.
-
----
+- Use `pnpm` for installs and dependency restoration.
+- Use Prisma 6. Do not upgrade to Prisma 7 without a migration plan.
+- Use Nx for build, test, lint, e2e, and affected workflows.
+- Prefer `pnpm nx ...` for direct Nx commands.
+- Every Angular component must use separate `.ts`, `.html`, and `.scss` files.
+- Shared Angular CSS patterns belong in `apps/web/src/styles/_shared.scss`.
+- Component SCSS should only contain component-specific styles.
+- Do not use `WarehouseApp` in user-facing text; use Mantyx.
 
 ## API Reference
 
-Full interactive documentation is auto-generated by Swagger and available at `http://localhost:3000/api/docs` when the API is running.
+Swagger is available at `http://localhost:3000/api/docs` when the API is running.
 
-### Auth
+Representative endpoints:
 
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| `POST` | `/api/auth/register` | Register a new user | Public |
-| `POST` | `/api/auth/login` | Login — returns access + refresh tokens | Public |
-| `POST` | `/api/auth/refresh` | Rotate refresh token | Refresh token |
-| `POST` | `/api/auth/logout` | Revoke refresh token from Redis | Bearer |
-
-### Products
-
-| Method | Endpoint | Description | Roles |
-|--------|----------|-------------|-------|
-| `GET` | `/api/products` | List products (search, categoryId, lowStock, pagination) | All |
-| `GET` | `/api/products/:id` | Get a product by ID | All |
-| `POST` | `/api/products` | Create a product | ADMIN, MANAGER |
-| `PATCH` | `/api/products/:id` | Update a product | ADMIN, MANAGER |
-| `DELETE` | `/api/products/:id` | Soft-delete a product | ADMIN |
-
-### Stock
-
-| Method | Endpoint | Description | Roles |
-|--------|----------|-------------|-------|
-| `POST` | `/api/stock/movements` | Record a stock movement (INBOUND / OUTBOUND / ADJUSTMENT) | All |
-| `GET` | `/api/stock/movements` | List movements (productId, userId, type, dateFrom, dateTo, pagination) | All |
-| `GET` | `/api/stock/movements/:id` | Get a movement by ID | All |
-
----
-
-## Data Models
-
-```
-User          id, email, password, name, role (ADMIN/MANAGER/OPERATOR), refreshToken?, isActive
-Category      id, name (unique)
-Product       id, sku (unique), name, description?, price, stock, minStock, isActive, categoryId
-StockMovement id, type (INBOUND/OUTBOUND/ADJUSTMENT), quantity, previousStock, newStock, notes?, productId, userId
-AuditLog      id, entityType, entityId, action (CREATE/UPDATE/DELETE), changes (JSON), userId
-```
-
-All records include `createdAt` and `updatedAt` timestamps.
-
----
-
-## Architecture Diagram
-
-```
-┌─────────────────────────────────────────────┐
-│              Client Layer                    │
-│  ┌─────────────────┐  ┌──────────────────┐  │
-│  │  Angular (Web)  │  │ Ionic + Capacitor│  │
-│  │   :4200         │  │   (Android APK)  │  │
-│  └────────┬────────┘  └────────┬─────────┘  │
-└───────────┼────────────────────┼────────────┘
-            │ HTTP / WebSocket   │
-┌───────────▼────────────────────▼────────────┐
-│              NestJS API  :3000               │
-│                                              │
-│  Global guards: JwtAuthGuard → RolesGuard    │
-│                                              │
-│  ┌──────────┐ ┌──────────┐ ┌─────────────┐  │
-│  │   Auth   │ │ Products │ │    Stock    │  │
-│  │  Module  │ │  Module  │ │   Module    │  │
-│  └──────────┘ └──────────┘ └─────────────┘  │
-│                                              │
-│  ┌──────────┐ ┌──────────┐ ┌─────────────┐  │
-│  │  Prisma  │ │  Redis   │ │   MinIO     │  │
-│  │  @Global │ │  @Global │ │  (storage)  │  │
-│  └────┬─────┘ └────┬─────┘ └─────────────┘  │
-└───────┼────────────┼────────────────────────┘
-        │            │
-┌───────▼──┐   ┌─────▼──┐
-│PostgreSQL│   │ Redis  │
-│  :5432   │   │  :6379 │
-└──────────┘   └────────┘
-```
-
----
+| Area       | Endpoint Examples                                                                                                 |
+| ---------- | ----------------------------------------------------------------------------------------------------------------- |
+| Auth       | `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout`              |
+| Companies  | `GET /api/companies`, `POST /api/companies`, `PATCH /api/companies/:id`, `PATCH /api/companies/:id/toggle-status` |
+| Users      | Tenant user management endpoints under `/api/users`                                                               |
+| Products   | CRUD and search/filter endpoints under `/api/products`                                                            |
+| Categories | Tenant category endpoints under `/api/categories`                                                                 |
+| Brands     | Tenant brand endpoints under `/api/brands`                                                                        |
+| Stock      | Movement endpoints under `/api/stock`                                                                             |
+| Warehouses | Warehouse, zone, aisle, and location endpoints under `/api/warehouses`                                            |
+| Dashboard  | KPI and alert endpoints under `/api/dashboard`                                                                    |
 
 ## Roadmap
 
-- [x] Project setup and architecture definition
-- [x] Nx 22 monorepo (Angular 21 + NestJS 11 + `@warehouse/types` shared lib)
-- [x] Docker Compose environment (PostgreSQL 16, Redis 7, MinIO)
-- [x] GitHub Actions CI/CD (format → lint → test → build with `nx affected`)
-- [x] NestJS API skeleton — ConfigModule (Joi), Swagger, global ValidationPipe, Helmet, CORS
-- [x] Prisma 6 schema (User, Category, Product, StockMovement, AuditLog) + PrismaModule global
-- [x] JWT authentication — register, login, refresh (Redis-backed + bcrypt rotation), logout
-- [x] RBAC — `@Roles()` decorator + `RolesGuard` as second global `APP_GUARD`
-- [x] Product CRUD — pagination, search, categoryId filter, lowStock filter, soft-delete
-- [x] Stock movements — INBOUND/OUTBOUND/ADJUSTMENT with atomic Prisma transaction + AuditLog
-- [ ] WebSocket gateway — real-time low-stock alerts (Socket.io)
-- [ ] Angular + Ionic web application (product list, movement form, dashboard)
-- [ ] Capacitor Android integration
-- [ ] Barcode / QR scanning feature
-- [ ] Product image upload (MinIO)
-- [ ] E2E tests with Cypress
-- [ ] Production Docker image
-
----
+- [x] Nx monorepo with Angular frontend and NestJS backend.
+- [x] Docker Compose local infrastructure.
+- [x] JWT auth with refresh-token flow.
+- [x] RBAC with global guards.
+- [x] Multi-tenant company model.
+- [x] SUPERADMIN company management.
+- [x] ADMIN tenant management for users, categories, and brands.
+- [x] Product catalog.
+- [x] Stock movements and movement history.
+- [x] Warehouse structure: warehouses, zones, aisles, locations.
+- [x] Dashboard KPIs and alerts.
+- [x] Angular/Ionic shell and main feature pages.
+- [ ] Functional inventory count backend module.
+- [ ] Inventory frontend integration with the count API.
+- [ ] Barcode/QR scanner with Capacitor.
+- [ ] Product image upload storage.
+- [ ] CSV/export flows.
+- [ ] Cypress e2e coverage.
+- [ ] Production Docker image.
 
 ## License
 
