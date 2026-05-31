@@ -1,6 +1,6 @@
 # Mantyx Project Context
 
-Mantyx is a full-stack inventory and WMS SaaS application. The product name is **Mantyx** and the slogan is **"Precision para tu almacen"**.
+Mantyx is a full-stack inventory and WMS SaaS application. The product name is **Mantyx** and the slogan is **"Precisión para tu almacén"**.
 
 This document is the versioned project context for humans and coding agents. Use it together with `CLAUDE.md`, which contains the shorter operational rules.
 
@@ -22,9 +22,8 @@ Core product areas:
 ## Branding
 
 - Official name: Mantyx.
-- Slogan: "Precision para tu almacen".
-- Legacy name: WarehouseApp.
-- Do not use WarehouseApp in user-facing text, headings, or current product documentation.
+- Slogan: "Precisión para tu almacén".
+- Use Mantyx consistently in user-facing text, headings, and current product documentation.
 - The GitHub repository URL can still include legacy naming.
 
 ## Stack

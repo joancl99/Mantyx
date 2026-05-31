@@ -1,6 +1,6 @@
 # Mantyx
 
-**Precision para tu almacen**
+**Precisión para tu almacén**
 
 Mantyx is a full-stack inventory and WMS SaaS application built as an enterprise-style portfolio project. It demonstrates multi-tenancy, RBAC, stock control, warehouse locations, movement tracking, auditability, realtime alerts, and a clean Angular/Ionic frontend.
 
@@ -165,10 +165,15 @@ corepack pnpm --version
 
 On Windows, `corepack enable` can require an Administrator shell because it writes shims under the Node.js installation directory. If enabling Corepack is not possible, use `corepack pnpm ...` directly.
 
-### Install Dependencies
+### First Time Or After Big Changes
+
+Use this flow after cloning the repository, after dependency/tooling changes, or after switching from npm to pnpm.
 
 ```bash
 pnpm install
+pnpm prisma generate --schema=apps/api/prisma/schema.prisma
+pnpm nx build api --configuration=development
+pnpm nx build web --configuration=production
 ```
 
 Equivalent Corepack command if `pnpm` is not in `PATH`:
@@ -179,14 +184,6 @@ corepack pnpm install
 
 Do not use `npm install` in this project.
 
-### Start Infrastructure
-
-```bash
-pnpm run docker:up
-```
-
-This starts local infrastructure declared in `docker/docker-compose.yml`.
-
 ### Configure Environment
 
 Create the API environment file from the example if needed:
@@ -195,7 +192,17 @@ Create the API environment file from the example if needed:
 cp apps/api/.env.example apps/api/.env
 ```
 
+### Start Infrastructure
+
+```bash
+pnpm run docker:up
+```
+
+This starts local infrastructure declared in `docker/docker-compose.yml`.
+
 ### Run Database Migrations
+
+Run migrations only on a fresh database or when the API fails because tables/columns are missing.
 
 On Windows PowerShell, prefer the direct Prisma command because Nx-wrapped interactive prompts can hang:
 
@@ -203,10 +210,34 @@ On Windows PowerShell, prefer the direct Prisma command because Nx-wrapped inter
 npx dotenv -e apps/api/.env -- prisma migrate dev --schema=apps/api/prisma/schema.prisma --name init
 ```
 
+Fresh database bootstrap requirement:
+
+1. Create a `Company` in Prisma Studio or with a seed/script.
+2. Assign the initial non-SUPERADMIN `User.companyId`.
+3. Log in again so the JWT contains the new `companyId`.
+
+### Day-To-Day Startup
+
+Use this flow when the project is already installed and the database already exists.
+
+```bash
+pnpm run docker:up
+pnpm prisma generate --schema=apps/api/prisma/schema.prisma
+```
+
 ### Start The Applications
+
+Run the API and web app in separate terminals.
+
+Terminal 1:
 
 ```bash
 pnpm run start:api
+```
+
+Terminal 2:
+
+```bash
 pnpm run start:web
 ```
 
@@ -236,6 +267,18 @@ pnpm exec prisma studio --schema=apps/api/prisma/schema.prisma
 | `pnpm run docker:down`                                    | Stop local infrastructure              |
 | `pnpm nx affected -t lint --base=origin/main --head=HEAD` | Run affected lint before merging       |
 
+## Quality Checks
+
+Use these commands to verify the project before committing or opening a PR:
+
+```bash
+pnpm nx format:check
+pnpm nx run-many -t lint
+pnpm nx run-many -t test
+pnpm nx build api --configuration=development
+pnpm nx build web --configuration=production
+```
+
 ## Development Rules
 
 - Use `pnpm` for installs and dependency restoration.
@@ -245,7 +288,7 @@ pnpm exec prisma studio --schema=apps/api/prisma/schema.prisma
 - Every Angular component must use separate `.ts`, `.html`, and `.scss` files.
 - Shared Angular CSS patterns belong in `apps/web/src/styles/_shared.scss`.
 - Component SCSS should only contain component-specific styles.
-- Do not use `WarehouseApp` in user-facing text; use Mantyx.
+- Use Mantyx consistently in user-facing text and current project documentation.
 
 ## API Reference
 

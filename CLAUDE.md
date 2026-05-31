@@ -1,8 +1,8 @@
 # Mantyx Project Memory
 
-Mantyx is a full-stack inventory and WMS SaaS application. The official product name is **Mantyx** and the slogan is **"Precision para tu almacen"**.
+Mantyx is a full-stack inventory and WMS SaaS application. The official product name is **Mantyx** and the slogan is **"Precisión para tu almacén"**.
 
-Do not use "WarehouseApp" in user-facing text, titles, documentation headings, or product references. Treat old "WarehouseApp" mentions as legacy naming.
+Use Mantyx in user-facing text, titles, documentation headings, and product references.
 
 ## Product Context
 
