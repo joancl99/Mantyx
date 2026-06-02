@@ -16,22 +16,16 @@ import {
   IonMenuButton,
   IonTitle,
   IonIcon,
-  IonSpinner,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   searchOutline,
-  layersOutline,
-  alertCircleOutline,
-  chevronBackOutline,
-  chevronForwardOutline,
-  closeOutline,
   warningOutline,
-  checkmarkCircleOutline,
 } from 'ionicons/icons';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { StockOverviewItem } from '../../core/models/stock.models';
 import { StockService } from '../../core/services/stock.service';
+import { StockListComponent } from './stock-list/stock-list.component';
 
 @Component({
   selector: 'app-stock',
@@ -45,7 +39,7 @@ import { StockService } from '../../core/services/stock.service';
     IonMenuButton,
     IonTitle,
     IonIcon,
-    IonSpinner,
+    StockListComponent,
   ],
   templateUrl: './stock.component.html',
   styleUrl: './stock.component.scss',
@@ -80,13 +74,7 @@ export class StockComponent implements OnInit {
   constructor() {
     addIcons({
       searchOutline,
-      layersOutline,
-      alertCircleOutline,
-      chevronBackOutline,
-      chevronForwardOutline,
-      closeOutline,
       warningOutline,
-      checkmarkCircleOutline,
     });
   }
 
@@ -134,9 +122,4 @@ export class StockComponent implements OnInit {
     this.load();
   }
 
-  stockStatus(item: StockOverviewItem): 'ok' | 'low' | 'empty' {
-    if (item.totalStock === 0) return 'empty';
-    if (item.totalStock <= item.minStock) return 'low';
-    return 'ok';
-  }
 }

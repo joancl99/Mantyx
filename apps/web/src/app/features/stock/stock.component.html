@@ -36,86 +36,14 @@
       />
     </div>
 
-    <!-- List -->
-    @if (loading()) {
-      <div class="state-center">
-        <ion-spinner name="crescent" class="main-spinner" />
-      </div>
-    } @else if (items().length === 0) {
-      <div class="state-center">
-        <div class="empty-icon">
-          <ion-icon name="layers-outline" />
-        </div>
-        <p class="empty-title">Sin resultados</p>
-        <p class="empty-sub">
-          {{ filterLowStock() ? 'No hay productos con stock bajo' : 'Prueba con otro término de búsqueda' }}
-        </p>
-      </div>
-    } @else {
-      <div class="stock-list">
-
-        <!-- Column headers -->
-        <div class="list-header">
-          <span class="col-product">Producto</span>
-          <span class="col-stock">Stock actual</span>
-          <span class="col-min">Stock mín.</span>
-          <span class="col-status">Estado</span>
-        </div>
-
-        @for (item of items(); track item.productId) {
-          <div class="stock-row" [class]="'row--' + stockStatus(item)">
-
-            <div class="col-product">
-              <span class="product-name">{{ item.name }}</span>
-              <span class="product-sku">{{ item.sku }}</span>
-            </div>
-
-            <div class="col-stock">
-              <span class="stock-qty" [class]="'qty--' + stockStatus(item)">
-                {{ item.totalStock }}
-              </span>
-              <span class="stock-unit">uds.</span>
-            </div>
-
-            <div class="col-min">
-              <span class="min-qty">{{ item.minStock }}</span>
-            </div>
-
-            <div class="col-status">
-              @if (stockStatus(item) === 'empty') {
-                <span class="status-badge status--empty">
-                  <ion-icon name="alert-circle-outline" />
-                  Sin stock
-                </span>
-              } @else if (stockStatus(item) === 'low') {
-                <span class="status-badge status--low">
-                  <ion-icon name="warning-outline" />
-                  Stock bajo
-                </span>
-              } @else {
-                <span class="status-badge status--ok">
-                  <ion-icon name="checkmark-circle-outline" />
-                  OK
-                </span>
-              }
-            </div>
-
-          </div>
-        }
-      </div>
-
-      @if (totalPages() > 1) {
-        <div class="pagination">
-          <button class="page-btn" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">
-            <ion-icon name="chevron-back-outline" />
-          </button>
-          <span class="page-info">{{ currentPage() }} / {{ totalPages() }}</span>
-          <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1)">
-            <ion-icon name="chevron-forward-outline" />
-          </button>
-        </div>
-      }
-    }
+    <app-stock-list
+      [items]="items()"
+      [loading]="loading()"
+      [filterLowStock]="filterLowStock()"
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      (pageChange)="goToPage($event)"
+    />
 
   </div>
 </ion-content>

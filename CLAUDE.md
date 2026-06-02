@@ -73,7 +73,8 @@ Frontend areas currently present:
 - Inventory has feature-local `data-access`, `models`, status helpers, list, filters, create modal, and detail components.
 - Warehouses has shared frontend models in `core/models/warehouse.models.ts` and child components for breadcrumb, warehouse list, and sublevel list.
 - Products has shared frontend models in `core/models/product.models.ts` and child components for filters, list, form modal, and delete modal.
-- Stock and movements use shared stock models in `core/models/stock.models.ts`; movements has filter, list, and create modal components.
+- Stock and movements use shared stock models in `core/models/stock.models.ts`; stock has a list/pagination child component, and movements has filter, list, and create modal components.
+- Dashboard has shared frontend models in `core/models/dashboard.models.ts`; `DashboardService` should remain HTTP-focused.
 - Admin has shared frontend models in `core/models/user.models.ts` and `core/models/company.models.ts`, plus child components for company list, users panel, and catalog panel.
 - `core/services` should remain HTTP/service focused; shared model/DTO types should live in `core/models` or feature-local `models`.
 

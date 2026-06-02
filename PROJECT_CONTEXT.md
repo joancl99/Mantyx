@@ -90,7 +90,7 @@ Fresh database bootstrap:
 ## Current Architecture Notes
 
 - Frontend refactor commits have split large Inventory, Warehouses, Products, Movements, and Admin pages into smaller standalone child components.
-- Shared frontend model/DTO types currently live in `apps/web/src/app/core/models` for products, stock/movements, warehouses, users, and companies.
+- Shared frontend model/DTO types currently live in `apps/web/src/app/core/models` for products, stock/movements, warehouses, users, companies, and dashboard data.
 - Inventory keeps feature-specific data access and models under `apps/web/src/app/features/inventory/data-access` and `apps/web/src/app/features/inventory/models`.
 - `apps/web/src/styles/_shared.scss` contains shared page headers, buttons, filters, modals, forms, empty states, pagination, and common action styles.
 - Keep `core/services` focused on HTTP/service behavior rather than owning reusable model interfaces.

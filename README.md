@@ -103,7 +103,8 @@ Frontend refactor status:
 - Inventory uses feature-local `data-access`, `models`, filters, list, create modal, and detail components.
 - Warehouses uses shared `core/models/warehouse.models.ts` and child components for breadcrumb, warehouse list, and sublevel list.
 - Products uses shared `core/models/product.models.ts` and child components for filters, list, form modal, and delete modal.
-- Stock and movements use shared `core/models/stock.models.ts`; movements has filter, list, and create modal components.
+- Stock and movements use shared `core/models/stock.models.ts`; stock has a list/pagination child component, and movements has filter, list, and create modal components.
+- Dashboard uses shared `core/models/dashboard.models.ts`.
 - Admin uses shared `core/models/user.models.ts` and `core/models/company.models.ts`, with child components for companies, users, and catalog sections.
 - Shared SCSS patterns live in `apps/web/src/styles/_shared.scss`.
 
