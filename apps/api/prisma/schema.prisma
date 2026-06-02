@@ -319,6 +319,7 @@ model InventoryCountLine {
   locationId       String
   location         Location       @relation(fields: [locationId], references: [id])
 
+  @@unique([inventoryCountId, locationId])
   @@map("inventory_count_lines")
 }
 

@@ -269,6 +269,7 @@ pnpm exec prisma studio --schema=apps/api/prisma/schema.prisma
 | `pnpm run build:api`                                      | Build the API for production           |
 | `pnpm run build:web`                                      | Build the web app for production       |
 | `pnpm run test`                                           | Run tests across configured projects   |
+| `pnpm nx test api`                                        | Run API unit tests                     |
 | `pnpm run lint`                                           | Run lint across configured projects    |
 | `pnpm run docker:up`                                      | Start local infrastructure             |
 | `pnpm run docker:down`                                    | Stop local infrastructure              |
@@ -333,7 +334,8 @@ Representative endpoints:
 - [x] Functional inventory count backend module.
 - [x] Inventory frontend integration with the count API.
 - [x] Frontend component refactor for Inventory, Warehouses, Products, Movements, Admin, and model separation.
-- [ ] Tests for critical inventory, stock, products, and warehouses flows.
+- [x] Inventory service unit tests.
+- [ ] Tests for critical stock, products, and warehouses flows.
 - [ ] Barcode/QR scanner with Capacitor.
 - [ ] Product image upload storage.
 - [ ] CSV/export flows.

@@ -164,10 +164,17 @@ export class InventoryService {
 
     const expectedQty = dto.expectedQty ?? (await this.getLocationExpectedQty(dto.locationId, companyId));
 
-    return this.prisma.inventoryCountLine.create({
-      data: { inventoryCountId: id, locationId: dto.locationId, expectedQty },
-      include: inventoryDetailInclude.lines.include,
-    });
+    try {
+      return await this.prisma.inventoryCountLine.create({
+        data: { inventoryCountId: id, locationId: dto.locationId, expectedQty },
+        include: inventoryDetailInclude.lines.include,
+      });
+    } catch (error) {
+      if (this.isUniqueConstraintError(error)) {
+        throw new ConflictException('Location is already included in this count');
+      }
+      throw error;
+    }
   }
 
   async updateLine(
@@ -248,5 +255,9 @@ export class InventoryService {
       _sum: { quantity: true },
     });
     return aggregate._sum.quantity ?? 0;
+  }
+
+  private isUniqueConstraintError(error: unknown): boolean {
+    return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
   }
 }

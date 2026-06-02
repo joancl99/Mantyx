@@ -97,7 +97,7 @@ Fresh database bootstrap:
 
 ## Current Priority
 
-- Inventory counts are implemented. Current priorities are adding tests for critical modules, hardening inventory edge cases, and continuing frontend cleanup where large pages remain.
+- Inventory counts are implemented and have service unit tests. Current priorities are adding tests for stock/products/warehouses, hardening remaining backend edge cases, and continuing frontend cleanup where large pages remain.
 
 ## Visual Direction
 

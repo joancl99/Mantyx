@@ -81,7 +81,7 @@ Frontend areas currently present:
 ## Remaining Product Focus
 
 - Inventory counts are implemented; next improvements are tests, edge-case hardening, and optional cancel support for `CANCELLED` counts.
-- Add tests for critical backend modules: inventory, stock, products, warehouses.
+- Inventory service unit tests exist under `apps/api/src/inventory`; continue adding tests for stock, products, and warehouses.
 - Continue frontend cleanup where useful, especially remaining large pages and shared SCSS growth.
 
 ## Visual Direction
