@@ -47,10 +47,8 @@ import {
   MovementType,
   CreateMovementDto,
 } from '../../core/services/stock.service';
-import {
-  ProductsService,
-  Product,
-} from '../../core/services/products.service';
+import { Product } from '../../core/models/product.models';
+import { ProductsService } from '../../core/services/products.service';
 import { Warehouse } from '../../core/models/warehouse.models';
 import { WarehousesService } from '../../core/services/warehouses.service';
 

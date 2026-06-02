@@ -1,0 +1,87 @@
+@if (loading()) {
+  <div class="state-center">
+    <ion-spinner name="crescent" class="main-spinner" />
+  </div>
+} @else if (products().length === 0) {
+  <div class="state-center">
+    <div class="empty-icon">
+      <ion-icon name="cube-outline" />
+    </div>
+    <p class="empty-title">Sin productos</p>
+    <p class="empty-sub">
+      {{ hasFilters() ? 'Prueba con otros filtros' : 'Crea el primer producto' }}
+    </p>
+  </div>
+} @else {
+  <div class="product-list">
+    @for (product of products(); track product.id) {
+      <div class="product-row">
+        <div class="product-thumb">
+          @if (product.imageUrl) {
+            <img [src]="product.imageUrl" [alt]="product.name" />
+          } @else {
+            <ion-icon name="cube-outline" />
+          }
+        </div>
+        <div class="product-info">
+          <span class="product-name">{{ product.name }}</span>
+          <span class="product-sku">{{ product.sku }}</span>
+          <div class="product-tags">
+            @if (product.category) {
+              <span class="tag tag--category">{{ product.category.name }}</span>
+            }
+            @if (product.brand) {
+              <span class="tag tag--brand">{{ product.brand.name }}</span>
+            }
+          </div>
+        </div>
+        <div class="product-meta">
+          <div class="product-min-stock">
+            <span class="meta-label">Stock mín.</span>
+            <span class="meta-value">{{ product.minStock }}</span>
+          </div>
+        </div>
+        @if (canEdit()) {
+          <div class="product-actions">
+            <button
+              class="action-btn action-btn--edit"
+              (click)="editProduct.emit(product)"
+              title="Editar"
+            >
+              <ion-icon name="create-outline" />
+            </button>
+            @if (canDelete()) {
+              <button
+                class="action-btn action-btn--delete"
+                (click)="deleteProduct.emit(product)"
+                title="Eliminar"
+              >
+                <ion-icon name="trash-outline" />
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  @if (totalPages() > 1) {
+    <div class="pagination">
+      <button
+        class="page-btn"
+        [disabled]="currentPage() === 1"
+        (click)="pageChanged.emit(currentPage() - 1)"
+      >
+        <ion-icon name="chevron-back-outline" />
+      </button>
+      <span class="page-info">{{ currentPage() }} / {{ totalPages() }}</span>
+      <button
+        class="page-btn"
+        [disabled]="currentPage() === totalPages()"
+        (click)="pageChanged.emit(currentPage() + 1)"
+      >
+        <ion-icon name="chevron-forward-outline" />
+      </button>
+    </div>
+  }
+}

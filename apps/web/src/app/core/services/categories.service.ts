@@ -1,11 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-
-export interface Category {
-  id: string;
-  name: string;
-}
+import { Category } from '../models/product.models';
 
 @Injectable({ providedIn: 'root' })
 export class CategoriesService {

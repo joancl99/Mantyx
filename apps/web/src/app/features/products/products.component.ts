@@ -7,17 +7,10 @@ import {
   DestroyRef,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  FormsModule,
-  ReactiveFormsModule,
-  FormGroup,
-  FormControl,
-  Validators,
-} from '@angular/forms';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import {
   IonContent,
   IonIcon,
-  IonSpinner,
   IonHeader,
   IonToolbar,
   IonButtons,
@@ -27,30 +20,22 @@ import {
 import { addIcons } from 'ionicons';
 import {
   addOutline,
-  searchOutline,
-  cubeOutline,
-  createOutline,
-  trashOutline,
-  closeOutline,
-  chevronBackOutline,
-  chevronForwardOutline,
-  filterOutline,
-  checkmarkOutline,
-  alertCircleOutline,
-  imageOutline,
 } from 'ionicons/icons';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import {
-  ProductsService,
-  Product,
-  CreateProductDto,
-} from '../../core/services/products.service';
-import {
-  CategoriesService,
+  Brand,
   Category,
-} from '../../core/services/categories.service';
-import { BrandsService, Brand } from '../../core/services/brands.service';
+  CreateProductDto,
+  Product,
+} from '../../core/models/product.models';
+import { ProductsService } from '../../core/services/products.service';
+import { CategoriesService } from '../../core/services/categories.service';
+import { BrandsService } from '../../core/services/brands.service';
+import { ProductDeleteModalComponent } from './product-delete-modal/product-delete-modal.component';
+import { ProductFiltersComponent } from './product-filters/product-filters.component';
+import { ProductFormModalComponent } from './product-form-modal/product-form-modal.component';
+import { ProductListComponent } from './product-list/product-list.component';
 
 type ModalMode = 'create' | 'edit';
 
@@ -58,16 +43,17 @@ type ModalMode = 'create' | 'edit';
   selector: 'app-products',
   standalone: true,
   imports: [
-    FormsModule,
-    ReactiveFormsModule,
     IonContent,
     IonIcon,
-    IonSpinner,
     IonHeader,
     IonToolbar,
     IonButtons,
     IonMenuButton,
     IonTitle,
+    ProductDeleteModalComponent,
+    ProductFiltersComponent,
+    ProductFormModalComponent,
+    ProductListComponent,
   ],
   styleUrl: './products.component.scss',
   templateUrl: './products.component.html',
@@ -136,17 +122,6 @@ export class ProductsComponent implements OnInit {
   constructor() {
     addIcons({
       addOutline,
-      searchOutline,
-      cubeOutline,
-      createOutline,
-      trashOutline,
-      closeOutline,
-      chevronBackOutline,
-      chevronForwardOutline,
-      filterOutline,
-      checkmarkOutline,
-      alertCircleOutline,
-      imageOutline,
     });
   }
 

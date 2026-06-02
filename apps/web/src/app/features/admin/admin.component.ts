@@ -43,8 +43,9 @@ import {
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { UsersService, CompanyUser, UserRole } from '../../core/services/users.service';
-import { CategoriesService, Category } from '../../core/services/categories.service';
-import { BrandsService, Brand } from '../../core/services/brands.service';
+import { Brand, Category } from '../../core/models/product.models';
+import { CategoriesService } from '../../core/services/categories.service';
+import { BrandsService } from '../../core/services/brands.service';
 import { CompaniesService, CompanyInfo, CreateCompanyDto } from '../../core/services/companies.service';
 
 type AdminTab = 'usuarios' | 'categorias' | 'marcas';

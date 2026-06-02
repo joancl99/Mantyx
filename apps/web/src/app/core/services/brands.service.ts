@@ -1,11 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-
-export interface Brand {
-  id: string;
-  name: string;
-}
+import { Brand } from '../models/product.models';
 
 @Injectable({ providedIn: 'root' })
 export class BrandsService {
