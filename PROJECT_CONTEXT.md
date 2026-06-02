@@ -68,6 +68,7 @@ Fresh database bootstrap:
 - Stock and movements: inbound, outbound, transfer, adjustment, movement history.
 - Low-stock realtime base: Socket.io gateway in the stock area.
 - Warehouses: warehouses, zones, aisles, locations.
+- Inventory counts: tenant-scoped list/detail, creation, start, completion, and line add/update/delete flows.
 - Dashboard: KPIs, alerts, latest movements.
 - Common infrastructure: Prisma module, Redis module, global exception filter, Swagger bootstrap.
 
@@ -84,36 +85,19 @@ Fresh database bootstrap:
 - Admin page with role-specific views:
   - `SUPERADMIN`: global company management.
   - `ADMIN`: tenant users, categories, and brands.
-- Inventory route and base components exist, but the full backend integration is still pending.
+- Inventory counts are connected to the backend API with list, status filter, creation, detail, line editing, completion, and completed read-only handling.
+
+## Current Architecture Notes
+
+- Frontend refactor commits have split large Inventory, Warehouses, Products, Movements, and Admin pages into smaller standalone child components.
+- Shared frontend model/DTO types currently live in `apps/web/src/app/core/models` for products, stock/movements, warehouses, users, and companies.
+- Inventory keeps feature-specific data access and models under `apps/web/src/app/features/inventory/data-access` and `apps/web/src/app/features/inventory/models`.
+- `apps/web/src/styles/_shared.scss` contains shared page headers, buttons, filters, modals, forms, empty states, pagination, and common action styles.
+- Keep `core/services` focused on HTTP/service behavior rather than owning reusable model interfaces.
 
 ## Current Priority
 
-The next major feature is inventory counts.
-
-Prisma already includes:
-
-- `InventoryCount` with `DRAFT`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`.
-- `InventoryCountLine` with expected quantity, counted quantity, difference, and a required `Location` relation.
-
-Backend target:
-
-- Add `apps/api/src/inventory/`.
-- Import `InventoryModule` in `AppModule`.
-- Implement tenant-scoped endpoints:
-  - `GET /inventory`
-  - `POST /inventory`
-  - `GET /inventory/:id`
-  - `PATCH /inventory/:id/start`
-  - `PATCH /inventory/:id/complete`
-  - `POST /inventory/:id/lines`
-  - `PATCH /inventory/:id/lines/:lineId`
-  - `DELETE /inventory/:id/lines/:lineId`
-
-Frontend target:
-
-- Connect the existing inventory route/components to the backend API.
-- Support count list, status filter, creation, detail, line add/edit/delete, and complete action.
-- Keep completed counts read-only.
+- Inventory counts are implemented. Current priorities are adding tests for critical modules, hardening inventory edge cases, and continuing frontend cleanup where large pages remain.
 
 ## Visual Direction
 
@@ -158,7 +142,7 @@ Rules:
 - The workspace declares `packageManager: pnpm@11.5.0`; if `pnpm` is not on PATH, use Corepack (`corepack pnpm ...`) or enable it locally. On Windows, `corepack enable` can require an Administrator shell.
 - Prefer `pnpm nx ...` for direct Nx commands.
 - Package scripts call local Nx directly and should be run through `pnpm`.
-- OpenCode autoskills startup is disabled to avoid extra resource usage when opening the tool.
+- Project skills are managed with `npx autoskills`; installed skills are locked in `skills-lock.json`.
 - Use Prisma 6. Do not upgrade to Prisma 7 without a migration plan.
 - If adding Prisma dependencies, pin to `prisma@^6` and `@prisma/client@^6`.
 

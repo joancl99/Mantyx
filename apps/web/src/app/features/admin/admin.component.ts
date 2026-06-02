@@ -42,21 +42,18 @@ import {
   addOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
-import { UsersService, CompanyUser, UserRole } from '../../core/services/users.service';
+import { CompanyUser, USER_ROLE_LABELS, UserRole } from '../../core/models/user.models';
+import { UsersService } from '../../core/services/users.service';
 import { Brand, Category } from '../../core/models/product.models';
 import { CategoriesService } from '../../core/services/categories.service';
 import { BrandsService } from '../../core/services/brands.service';
-import { CompaniesService, CompanyInfo, CreateCompanyDto } from '../../core/services/companies.service';
+import { CompanyInfo, CreateCompanyDto } from '../../core/models/company.models';
+import { CompaniesService } from '../../core/services/companies.service';
+import { AdminCatalogPanelComponent } from './admin-catalog-panel/admin-catalog-panel.component';
+import { AdminCompanyListComponent } from './admin-company-list/admin-company-list.component';
+import { AdminUsersPanelComponent } from './admin-users-panel/admin-users-panel.component';
 
 type AdminTab = 'usuarios' | 'categorias' | 'marcas';
-
-const ROLE_LABELS: Record<UserRole, string> = {
-  SUPERADMIN: 'Superadmin',
-  ADMIN: 'Administrador',
-  MANAGER: 'Manager',
-  OPERATOR: 'Operario',
-  VIEWER: 'Solo lectura',
-};
 
 @Component({
   selector: 'app-admin',
@@ -72,6 +69,9 @@ const ROLE_LABELS: Record<UserRole, string> = {
     IonTitle,
     IonIcon,
     IonSpinner,
+    AdminCatalogPanelComponent,
+    AdminCompanyListComponent,
+    AdminUsersPanelComponent,
   ],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.scss',
@@ -230,7 +230,7 @@ export class AdminComponent implements OnInit {
   }
 
   roleLabel(role: UserRole): string {
-    return ROLE_LABELS[role] ?? role;
+    return USER_ROLE_LABELS[role] ?? role;
   }
 
   openCreateUser() {
@@ -484,12 +484,4 @@ export class AdminComponent implements OnInit {
     });
   }
 
-  companyStatusLabel(status: string): string {
-    const map: Record<string, string> = { ACTIVE: 'Activa', INACTIVE: 'Inactiva', SUSPENDED: 'Suspendida' };
-    return map[status] ?? status;
-  }
-
-  companyInitials(name: string): string {
-    return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
-  }
 }

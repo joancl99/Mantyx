@@ -1,0 +1,67 @@
+<header class="page-header">
+  <div class="page-header__left">
+    <h1 class="page-title">Empresas</h1>
+    <span class="page-subtitle">
+      {{ companies().length }} empresa{{ companies().length === 1 ? '' : 's' }} registrada{{ companies().length === 1 ? '' : 's' }}
+    </span>
+  </div>
+  <button class="btn-primary" (click)="createCompany.emit()">
+    <ion-icon name="add-outline" />
+    Nueva empresa
+  </button>
+</header>
+
+<div class="filters-bar">
+  <div class="search-wrap search-wrap--grow">
+    <ion-icon name="search-outline" class="search-icon" />
+    <input
+      class="search-input"
+      placeholder="Buscar empresa..."
+      [ngModel]="search()"
+      (ngModelChange)="searchChange.emit($event)"
+    />
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
+} @else if (companies().length === 0) {
+  <div class="state-center">
+    <div class="empty-icon"><ion-icon name="shield-outline" /></div>
+    <p class="empty-title">Sin empresas</p>
+    <p class="empty-sub">Crea la primera empresa cliente</p>
+  </div>
+} @else {
+  <div class="company-list">
+    @for (company of companies(); track company.id) {
+      <div class="company-row">
+        <div class="company-avatar">{{ companyInitials(company.name) }}</div>
+        <div class="company-info">
+          <span class="company-name">{{ company.name }}</span>
+          <span class="company-meta">
+            {{ company.slug }}
+            @if (company.taxId) { · {{ company.taxId }} }
+            · {{ company._count.users }} usuario{{ company._count.users === 1 ? '' : 's' }}
+            · {{ company._count.warehouses }} almacén{{ company._count.warehouses === 1 ? '' : 'es' }}
+          </span>
+        </div>
+        <span class="company-status company-status--{{ company.status.toLowerCase() }}">
+          {{ companyStatusLabel(company.status) }}
+        </span>
+        <div class="company-actions">
+          <button class="action-btn action-btn--edit" (click)="editCompany.emit(company)" title="Editar">
+            <ion-icon name="create-outline" />
+          </button>
+          <button
+            class="action-btn"
+            [class]="company.status === 'ACTIVE' ? 'action-btn--deactivate' : 'action-btn--activate'"
+            (click)="toggleCompany.emit(company)"
+            [title]="company.status === 'ACTIVE' ? 'Desactivar' : 'Activar'"
+          >
+            <ion-icon name="power-outline" />
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+}

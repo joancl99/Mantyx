@@ -50,6 +50,7 @@ Backend modules currently present:
 - Products: product CRUD, search/filter/pagination, soft delete.
 - Stock and movements: inbound, outbound, transfer, adjustment, movement history, low-stock alerts gateway.
 - Warehouses: warehouses, zones, aisles, and locations.
+- Inventory counts: tenant-scoped count list/detail, create, start, complete, line add/update/delete.
 - Dashboard: KPIs, alerts, and latest movements.
 - Global exception filter, Prisma module, Redis module, Swagger bootstrap.
 
@@ -64,29 +65,23 @@ Frontend areas currently present:
 - Warehouses drill-down.
 - Management.
 - Admin: different views for `SUPERADMIN` and `ADMIN`.
-- Inventory route/components exist, but the full inventory count backend module is still the next major focus.
+- Inventory counts: list, filters, creation modal, detail, line editing, start/complete actions, completed read-only state.
 
-## Next Major Feature
+## Current Frontend Architecture
 
-Inventory counts are the next priority.
+- Feature containers are being kept lean by extracting list/filter/modal/detail components where practical.
+- Inventory has feature-local `data-access`, `models`, status helpers, list, filters, create modal, and detail components.
+- Warehouses has shared frontend models in `core/models/warehouse.models.ts` and child components for breadcrumb, warehouse list, and sublevel list.
+- Products has shared frontend models in `core/models/product.models.ts` and child components for filters, list, form modal, and delete modal.
+- Stock and movements use shared stock models in `core/models/stock.models.ts`; movements has filter, list, and create modal components.
+- Admin has shared frontend models in `core/models/user.models.ts` and `core/models/company.models.ts`, plus child components for company list, users panel, and catalog panel.
+- `core/services` should remain HTTP/service focused; shared model/DTO types should live in `core/models` or feature-local `models`.
 
-Existing Prisma schema includes:
+## Remaining Product Focus
 
-- `InventoryCount` with status `DRAFT`, `IN_PROGRESS`, `COMPLETED`, `CANCELLED`.
-- `InventoryCountLine` with expected quantity, counted quantity, difference, and required `Location` relation.
-
-Backend still needs a functional `apps/api/src/inventory/` module and `AppModule` import if not already implemented. Expected endpoints:
-
-- `GET /inventory` list counts by tenant with pagination/status filter.
-- `POST /inventory` create a count for a warehouse.
-- `GET /inventory/:id` count detail with lines.
-- `PATCH /inventory/:id/start` move `DRAFT` to `IN_PROGRESS`.
-- `PATCH /inventory/:id/complete` calculate differences and mark completed.
-- `POST /inventory/:id/lines` add a line in `DRAFT` or `IN_PROGRESS`.
-- `PATCH /inventory/:id/lines/:lineId` register `countedQty`.
-- `DELETE /inventory/:id/lines/:lineId` remove a line only in `DRAFT`.
-
-Frontend should connect the existing inventory area to that API and keep `COMPLETED` counts read-only.
+- Inventory counts are implemented; next improvements are tests, edge-case hardening, and optional cancel support for `CANCELLED` counts.
+- Add tests for critical backend modules: inventory, stock, products, warehouses.
+- Continue frontend cleanup where useful, especially remaining large pages and shared SCSS growth.
 
 ## Visual Direction
 
@@ -116,7 +111,7 @@ Frontend should connect the existing inventory area to that API and keep `COMPLE
 
 - Use `pnpm` for dependency installation and restoring dependencies.
 - Do not run `npm install` in this project.
-- OpenCode autoskills startup is disabled to avoid extra resource usage when opening the tool.
+- Project skills are managed with `npx autoskills`; rerun it after stack or skill changes. Installed skills are locked in `skills-lock.json`.
 - The workspace declares `packageManager: pnpm@11.5.0`; if `pnpm` is not on PATH, use Corepack (`corepack pnpm ...`) or enable it locally. On Windows, `corepack enable` can require an Administrator shell.
 - Package scripts call local Nx directly and should be run through `pnpm`, for example `pnpm run start:api`.
 - For direct Nx commands, prefer `pnpm nx ...`.

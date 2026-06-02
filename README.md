@@ -43,6 +43,7 @@ Mantyx helps companies manage products, stock, movements, warehouses, locations,
 - Products: CRUD, search, filters, pagination, soft delete.
 - Stock and movements: inbound, outbound, transfer, adjustment, movement history.
 - Warehouses: warehouses, zones, aisles, and locations.
+- Inventory counts: list/detail, creation, start, completion, and line add/update/delete.
 - Dashboard: KPIs, alerts, and latest movements.
 - Realtime alerts: stock alerts gateway.
 - Infrastructure: Prisma module, Redis module, global exception filter, Swagger bootstrap.
@@ -60,7 +61,7 @@ Mantyx helps companies manage products, stock, movements, warehouses, locations,
 - Administration:
   - `SUPERADMIN`: global company management.
   - `ADMIN`: tenant users, categories, and brands.
-- Inventory route and base components exist, but full backend integration is still the next major feature.
+- Inventory counts: list, filters, creation modal, detail, line editing, start/complete actions, and completed read-only state.
 
 ## Multi-Tenancy And Roles
 
@@ -80,16 +81,11 @@ Fresh database bootstrap requirement:
 2. Assign the initial non-SUPERADMIN `User.companyId`.
 3. Log in again so the JWT contains the new `companyId`.
 
-## Next Major Feature: Inventory Counts
+## Current Product Focus
 
-Inventory counts are the next priority.
+Inventory counts are implemented and connected end to end. Current follow-up work is focused on tests, edge-case hardening, and selected operational enhancements.
 
-The Prisma schema already includes:
-
-- `InventoryCount` with `DRAFT`, `IN_PROGRESS`, `COMPLETED`, and `CANCELLED` statuses.
-- `InventoryCountLine` with expected quantity, counted quantity, difference, and a required `Location` relation.
-
-Target backend endpoints:
+Implemented inventory API endpoints:
 
 | Method   | Endpoint                           | Description                                                |
 | -------- | ---------------------------------- | ---------------------------------------------------------- |
@@ -102,11 +98,14 @@ Target backend endpoints:
 | `PATCH`  | `/api/inventory/:id/lines/:lineId` | Register counted quantity                                  |
 | `DELETE` | `/api/inventory/:id/lines/:lineId` | Remove a line only while `DRAFT`                           |
 
-Frontend target:
+Frontend refactor status:
 
-- Connect the existing inventory area to the API.
-- Support list, status filter, creation, detail, line editing, and completion.
-- Keep `COMPLETED` counts read-only.
+- Inventory uses feature-local `data-access`, `models`, filters, list, create modal, and detail components.
+- Warehouses uses shared `core/models/warehouse.models.ts` and child components for breadcrumb, warehouse list, and sublevel list.
+- Products uses shared `core/models/product.models.ts` and child components for filters, list, form modal, and delete modal.
+- Stock and movements use shared `core/models/stock.models.ts`; movements has filter, list, and create modal components.
+- Admin uses shared `core/models/user.models.ts` and `core/models/company.models.ts`, with child components for companies, users, and catalog sections.
+- Shared SCSS patterns live in `apps/web/src/styles/_shared.scss`.
 
 ## Monorepo Structure
 
@@ -125,6 +124,7 @@ Mantyx/
 │   │       ├── common/              # Global filters and shared backend utilities
 │   │       ├── config/              # Environment validation
 │   │       ├── dashboard/           # KPIs and alerts
+│   │       ├── inventory/           # Inventory counts and count lines
 │   │       ├── prisma/              # Prisma module/service
 │   │       ├── products/            # Product catalog
 │   │       ├── redis/               # Redis module/service
@@ -135,7 +135,7 @@ Mantyx/
 │   └── web/                         # Angular + Ionic frontend
 │       └── src/app/
 │           ├── auth/                # Login/register
-│           ├── core/                # Guards, interceptors, services
+│           ├── core/                # Guards, interceptors, services, shared frontend models
 │           ├── features/            # Dashboard, products, stock, movements, etc.
 │           └── shell/               # Authenticated Ionic shell/menu
 ├── libs/
@@ -312,6 +312,7 @@ Representative endpoints:
 | Brands     | Tenant brand endpoints under `/api/brands`                                                                        |
 | Stock      | Movement endpoints under `/api/stock`                                                                             |
 | Warehouses | Warehouse, zone, aisle, and location endpoints under `/api/warehouses`                                            |
+| Inventory  | Inventory count endpoints under `/api/inventory`                                                                  |
 | Dashboard  | KPI and alert endpoints under `/api/dashboard`                                                                    |
 
 ## Roadmap
@@ -328,8 +329,10 @@ Representative endpoints:
 - [x] Warehouse structure: warehouses, zones, aisles, locations.
 - [x] Dashboard KPIs and alerts.
 - [x] Angular/Ionic shell and main feature pages.
-- [ ] Functional inventory count backend module.
-- [ ] Inventory frontend integration with the count API.
+- [x] Functional inventory count backend module.
+- [x] Inventory frontend integration with the count API.
+- [x] Frontend component refactor for Inventory, Warehouses, Products, Movements, Admin, and model separation.
+- [ ] Tests for critical inventory, stock, products, and warehouses flows.
 - [ ] Barcode/QR scanner with Capacitor.
 - [ ] Product image upload storage.
 - [ ] CSV/export flows.
