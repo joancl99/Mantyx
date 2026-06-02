@@ -7,18 +7,10 @@ import {
   DestroyRef,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import {
-  FormsModule,
-  ReactiveFormsModule,
-  FormGroup,
-  FormControl,
-  Validators,
-} from '@angular/forms';
-import { DatePipe } from '@angular/common';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
 import {
   IonContent,
   IonIcon,
-  IonSpinner,
   IonHeader,
   IonToolbar,
   IonButtons,
@@ -28,85 +20,37 @@ import {
 import { addIcons } from 'ionicons';
 import {
   addOutline,
-  arrowDownOutline,
-  arrowUpOutline,
-  swapHorizontalOutline,
-  refreshOutline,
-  returnDownBackOutline,
-  closeOutline,
-  chevronBackOutline,
-  chevronForwardOutline,
-  alertCircleOutline,
-  filterOutline,
-  documentTextOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import {
-  StockService,
   StockMovement,
   MovementType,
   CreateMovementDto,
-} from '../../core/services/stock.service';
+} from '../../core/models/stock.models';
+import { StockService } from '../../core/services/stock.service';
 import { Product } from '../../core/models/product.models';
 import { ProductsService } from '../../core/services/products.service';
 import { Warehouse } from '../../core/models/warehouse.models';
 import { WarehousesService } from '../../core/services/warehouses.service';
-
-interface TypeConfig {
-  label: string;
-  icon: string;
-  cssClass: string;
-  sign: string;
-}
-
-const TYPE_CONFIG: Record<MovementType, TypeConfig> = {
-  INBOUND: {
-    label: 'Entrada',
-    icon: 'arrow-down-outline',
-    cssClass: 'type--inbound',
-    sign: '+',
-  },
-  OUTBOUND: {
-    label: 'Salida',
-    icon: 'arrow-up-outline',
-    cssClass: 'type--outbound',
-    sign: '-',
-  },
-  TRANSFER: {
-    label: 'Traslado',
-    icon: 'swap-horizontal-outline',
-    cssClass: 'type--transfer',
-    sign: '↔',
-  },
-  ADJUSTMENT: {
-    label: 'Ajuste',
-    icon: 'refresh-outline',
-    cssClass: 'type--adjustment',
-    sign: '~',
-  },
-  RETURN: {
-    label: 'Devolución',
-    icon: 'return-down-back-outline',
-    cssClass: 'type--return',
-    sign: '+',
-  },
-};
+import { CreateMovementModalComponent } from './create-movement-modal/create-movement-modal.component';
+import { MovementFiltersComponent } from './movement-filters/movement-filters.component';
+import { MovementListComponent } from './movement-list/movement-list.component';
+import { MOVEMENT_FORM_TYPES, MOVEMENT_TYPE_CONFIG } from './movement-types';
 
 @Component({
   selector: 'app-movements',
   standalone: true,
   imports: [
-    FormsModule,
-    ReactiveFormsModule,
-    DatePipe,
     IonContent,
     IonIcon,
-    IonSpinner,
     IonHeader,
     IonToolbar,
     IonButtons,
     IonMenuButton,
     IonTitle,
+    CreateMovementModalComponent,
+    MovementFiltersComponent,
+    MovementListComponent,
   ],
   templateUrl: './movements.component.html',
   styleUrl: './movements.component.scss',
@@ -118,12 +62,8 @@ export class MovementsComponent implements OnInit {
   private readonly warehousesService = inject(WarehousesService);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly typeConfig = TYPE_CONFIG;
-  readonly availableTypes: MovementType[] = [
-    'INBOUND',
-    'OUTBOUND',
-    'RETURN',
-  ];
+  readonly typeConfig = MOVEMENT_TYPE_CONFIG;
+  readonly availableTypes = MOVEMENT_FORM_TYPES;
 
   // ── State ──────────────────────────────────────────────────────────────────
   readonly movements = signal<StockMovement[]>([]);
@@ -169,17 +109,6 @@ export class MovementsComponent implements OnInit {
   constructor() {
     addIcons({
       addOutline,
-      arrowDownOutline,
-      arrowUpOutline,
-      swapHorizontalOutline,
-      refreshOutline,
-      returnDownBackOutline,
-      closeOutline,
-      chevronBackOutline,
-      chevronForwardOutline,
-      alertCircleOutline,
-      filterOutline,
-      documentTextOutline,
     });
   }
 
@@ -301,28 +230,4 @@ export class MovementsComponent implements OnInit {
       });
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
-  typeLabel(type: MovementType): string {
-    return TYPE_CONFIG[type]?.label ?? type;
-  }
-
-  typeCssClass(type: MovementType): string {
-    return TYPE_CONFIG[type]?.cssClass ?? '';
-  }
-
-  typeIcon(type: MovementType): string {
-    return TYPE_CONFIG[type]?.icon ?? 'document-text-outline';
-  }
-
-  quantityDisplay(m: StockMovement): string {
-    const cfg = TYPE_CONFIG[m.type];
-    if (!cfg) return String(m.quantity);
-    if (m.type === 'OUTBOUND') return `-${m.quantity}`;
-    if (m.type === 'INBOUND' || m.type === 'RETURN') return `+${m.quantity}`;
-    return String(m.quantity);
-  }
-
-  stockDelta(m: StockMovement): string {
-    return `${m.previousStock} → ${m.newStock}`;
-  }
 }

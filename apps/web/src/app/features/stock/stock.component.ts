@@ -30,10 +30,8 @@ import {
   checkmarkCircleOutline,
 } from 'ionicons/icons';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
-import {
-  StockService,
-  StockOverviewItem,
-} from '../../core/services/stock.service';
+import { StockOverviewItem } from '../../core/models/stock.models';
+import { StockService } from '../../core/services/stock.service';
 
 @Component({
   selector: 'app-stock',

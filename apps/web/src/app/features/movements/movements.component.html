@@ -22,241 +22,40 @@
       }
     </header>
 
-    <!-- Filters -->
-    <div class="filters-bar">
-      <select class="filter-select" (change)="onTypeFilter($event)">
-        <option value="">Todos los tipos</option>
-        <option value="INBOUND">Entradas</option>
-        <option value="OUTBOUND">Salidas</option>
-        <option value="TRANSFER">Traslados</option>
-        <option value="ADJUSTMENT">Ajustes</option>
-        <option value="RETURN">Devoluciones</option>
-      </select>
+    <app-movement-filters
+      [filterType]="filterType()"
+      [filterDateFrom]="filterDateFrom()"
+      [filterDateTo]="filterDateTo()"
+      [hasActiveFilters]="hasActiveFilters()"
+      (typeChanged)="onTypeFilter($event)"
+      (dateFromChanged)="onDateFromFilter($event)"
+      (dateToChanged)="onDateToFilter($event)"
+      (filtersCleared)="clearFilters()"
+    />
 
-      <div class="date-range">
-        <input
-          class="filter-input"
-          type="date"
-          [value]="filterDateFrom()"
-          (change)="onDateFromFilter($event)"
-          title="Desde"
-        />
-        <span class="date-sep">—</span>
-        <input
-          class="filter-input"
-          type="date"
-          [value]="filterDateTo()"
-          (change)="onDateToFilter($event)"
-          title="Hasta"
-        />
-      </div>
-
-      @if (hasActiveFilters()) {
-        <button class="btn-clear" (click)="clearFilters()">
-          <ion-icon name="close-outline" />
-          Limpiar
-        </button>
-      }
-    </div>
-
-    <!-- List -->
-    @if (loading()) {
-      <div class="state-center">
-        <ion-spinner name="crescent" class="main-spinner" />
-      </div>
-    } @else if (movements().length === 0) {
-      <div class="state-center">
-        <div class="empty-icon">
-          <ion-icon name="swap-horizontal-outline" />
-        </div>
-        <p class="empty-title">Sin movimientos</p>
-        <p class="empty-sub">
-          {{ hasActiveFilters() ? 'Prueba con otros filtros' : 'Aún no hay movimientos registrados' }}
-        </p>
-      </div>
-    } @else {
-      <div class="movement-list">
-        @for (m of movements(); track m.id) {
-          <div class="movement-row">
-
-            <!-- Type badge -->
-            <div class="type-badge {{ typeCssClass(m.type) }}">
-              <ion-icon [name]="typeIcon(m.type)" />
-              <span>{{ typeLabel(m.type) }}</span>
-            </div>
-
-            <!-- Product info -->
-            <div class="movement-product">
-              <span class="product-name">{{ m.product.name }}</span>
-              <span class="product-sku">{{ m.product.sku }}</span>
-            </div>
-
-            <!-- Quantity -->
-            <div class="movement-qty {{ typeCssClass(m.type) }}">
-              <span class="qty-value">{{ quantityDisplay(m) }}</span>
-              <span class="qty-delta">{{ stockDelta(m) }}</span>
-            </div>
-
-            <!-- Meta -->
-            <div class="movement-meta">
-              <span class="meta-warehouse">{{ m.warehouse.name }}</span>
-              <span class="meta-user">{{ m.user.name }}</span>
-            </div>
-
-            <!-- Date -->
-            <div class="movement-date">
-              {{ m.createdAt | date: 'dd/MM/yy HH:mm' }}
-            </div>
-
-          </div>
-        }
-      </div>
-
-      @if (totalPages() > 1) {
-        <div class="pagination">
-          <button
-            class="page-btn"
-            [disabled]="currentPage() === 1"
-            (click)="goToPage(currentPage() - 1)"
-          >
-            <ion-icon name="chevron-back-outline" />
-          </button>
-          <span class="page-info">{{ currentPage() }} / {{ totalPages() }}</span>
-          <button
-            class="page-btn"
-            [disabled]="currentPage() === totalPages()"
-            (click)="goToPage(currentPage() + 1)"
-          >
-            <ion-icon name="chevron-forward-outline" />
-          </button>
-        </div>
-      }
-    }
+    <app-movement-list
+      [movements]="movements()"
+      [loading]="loading()"
+      [hasActiveFilters]="hasActiveFilters()"
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      (pageChanged)="goToPage($event)"
+    />
 
   </div>
 </ion-content>
 
-<!-- Create movement modal -->
 @if (showModal()) {
-  <div
-    class="modal-backdrop"
-    tabindex="0"
-    (click)="closeModal()"
-    (keydown.escape)="closeModal()"
-  >
-    <div class="modal" role="presentation" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2 class="modal-title">Nuevo movimiento</h2>
-        <button class="modal-close" (click)="closeModal()">
-          <ion-icon name="close-outline" />
-        </button>
-      </div>
-
-      <form [formGroup]="form" (ngSubmit)="submitForm()" class="modal-body">
-
-        <!-- Type selector — visual pills -->
-        <div class="form-field">
-          <span class="form-label">Tipo *</span>
-          <div class="type-pills" role="group" aria-label="Tipo de movimiento">
-            @for (t of availableTypes; track t) {
-              <button
-                type="button"
-                class="type-pill {{ typeConfig[t].cssClass }}"
-                [class.active]="form.get('type')?.value === t"
-                (click)="form.get('type')?.setValue(t)"
-              >
-                <ion-icon [name]="typeConfig[t].icon" />
-                {{ typeConfig[t].label }}
-              </button>
-            }
-          </div>
-        </div>
-
-        <!-- Product -->
-        <div
-          class="form-field"
-          [class.has-error]="submitted() && form.get('productId')?.invalid"
-        >
-          <label class="form-label" for="mov-product">Producto *</label>
-          <select id="mov-product" class="form-input" formControlName="productId">
-            <option value="">Seleccionar producto</option>
-            @for (p of products(); track p.id) {
-              <option [value]="p.id">{{ p.name }} — {{ p.sku }}</option>
-            }
-          </select>
-          @if (submitted() && form.get('productId')?.hasError('required')) {
-            <span class="form-error">Selecciona un producto</span>
-          }
-        </div>
-
-        <!-- Warehouse -->
-        <div
-          class="form-field"
-          [class.has-error]="submitted() && form.get('warehouseId')?.invalid"
-        >
-          <label class="form-label" for="mov-warehouse">Almacén *</label>
-          <select id="mov-warehouse" class="form-input" formControlName="warehouseId">
-            <option value="">Seleccionar almacén</option>
-            @for (w of warehouses(); track w.id) {
-              <option [value]="w.id">{{ w.name }}</option>
-            }
-          </select>
-          @if (submitted() && form.get('warehouseId')?.hasError('required')) {
-            <span class="form-error">Selecciona un almacén</span>
-          }
-        </div>
-
-        <!-- Quantity -->
-        <div
-          class="form-field"
-          [class.has-error]="submitted() && form.get('quantity')?.invalid"
-        >
-          <label class="form-label" for="mov-quantity">Cantidad *</label>
-          <input
-            id="mov-quantity"
-            class="form-input"
-            type="number"
-            formControlName="quantity"
-            min="1"
-            placeholder="1"
-          />
-          @if (submitted() && form.get('quantity')?.invalid) {
-            <span class="form-error">Mínimo 1 unidad</span>
-          }
-        </div>
-
-        <!-- Notes -->
-        <div class="form-field">
-          <label class="form-label" for="mov-notes">Notas</label>
-          <textarea
-            id="mov-notes"
-            class="form-input form-textarea"
-            formControlName="notes"
-            rows="3"
-            placeholder="Referencia, motivo, albarán..."
-          ></textarea>
-        </div>
-
-        @if (formError()) {
-          <div class="form-alert">
-            <ion-icon name="alert-circle-outline" />
-            {{ formError() }}
-          </div>
-        }
-
-        <div class="modal-footer">
-          <button type="button" class="btn-ghost" (click)="closeModal()">
-            Cancelar
-          </button>
-          <button type="submit" class="btn-primary" [disabled]="saving()">
-            @if (saving()) {
-              <ion-spinner name="crescent" />
-            } @else {
-              Registrar movimiento
-            }
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+  <app-create-movement-modal
+    [form]="form"
+    [products]="products()"
+    [warehouses]="warehouses()"
+    [availableTypes]="availableTypes"
+    [typeConfig]="typeConfig"
+    [submitted]="submitted()"
+    [saving]="saving()"
+    [formError]="formError()"
+    (closeModal)="closeModal()"
+    (submitForm)="submitForm()"
+  />
 }
