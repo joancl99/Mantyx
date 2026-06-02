@@ -204,6 +204,12 @@ This starts local infrastructure declared in `docker/docker-compose.yml`.
 
 Run migrations only on a fresh database or when the API fails because tables/columns are missing.
 
+Check migration status without changing the database:
+
+```bash
+npx dotenv -e apps/api/.env -- prisma migrate status --schema=apps/api/prisma/schema.prisma
+```
+
 On Windows PowerShell, prefer the direct Prisma command because Nx-wrapped interactive prompts can hang:
 
 ```bash
