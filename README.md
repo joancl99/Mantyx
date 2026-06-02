@@ -344,7 +344,9 @@ Representative endpoints:
 - [x] Frontend component refactor for Inventory, Warehouses, Products, Movements, Admin, and model separation.
 - [x] Inventory service unit tests.
 - [x] Inventory line uniqueness hardening and migration.
-- [ ] Tests for critical stock, products, and warehouses flows.
+- [x] Stock service unit tests and source-location stock guards.
+- [x] Products service unit tests and tenant-scoped catalog ownership guards.
+- [x] Warehouses service unit tests for scoping, hierarchy, duplicates, and protected deletes.
 - [ ] Barcode/QR scanner with Capacitor.
 - [ ] Product image upload storage.
 - [ ] CSV/export flows.

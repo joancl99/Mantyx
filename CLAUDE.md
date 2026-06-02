@@ -82,7 +82,10 @@ Frontend areas currently present:
 
 - Inventory counts are implemented and hardened with service unit tests under `apps/api/src/inventory`.
 - Inventory lines are unique per `(inventoryCountId, locationId)` via Prisma schema and migration `20260602142000_inventory_line_location_unique`.
-- Continue adding tests for stock, products, and warehouses; optional Inventory follow-up is cancel support for `CANCELLED` counts.
+- Stock service now has focused unit tests for movement scoping, source-location stock guards, inbound audit/alerts, and overview filtering.
+- Products service now validates category/brand tenant ownership and has unit tests for product scoping, catalog ownership, duplicate SKU handling, and soft delete.
+- Warehouses service now has unit tests for company scoping, hierarchy ownership, duplicate handling, and protected deletes.
+- Optional Inventory follow-up is cancel support for `CANCELLED` counts.
 - Continue frontend cleanup where useful, especially remaining large pages and shared SCSS growth.
 
 ## Visual Direction

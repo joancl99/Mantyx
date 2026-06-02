@@ -98,7 +98,10 @@ Fresh database bootstrap:
 ## Current Priority
 
 - Inventory counts are implemented, have service unit tests, and enforce unique count lines per location with migration `20260602142000_inventory_line_location_unique`.
-- Current priorities are adding tests for stock/products/warehouses, hardening remaining backend edge cases, and continuing frontend cleanup where large pages remain.
+- Stock service has focused unit tests for movement scoping, source-location stock guards, inbound audit/alerts, and overview filtering.
+- Products service validates category/brand tenant ownership and has unit tests for product scoping, catalog ownership, duplicate SKU handling, and soft delete.
+- Warehouses service has unit tests for company scoping, hierarchy ownership, duplicate handling, and protected deletes.
+- Current priorities are hardening remaining backend edge cases and continuing frontend cleanup where large pages remain.
 
 ## Visual Direction
 

@@ -76,6 +76,15 @@ export class StockService {
         }
         newStock = previousStock - quantity;
         if (fromLocationId) {
+          const sourceEntry = await tx.stockEntry.findFirst({
+            where: { productId, locationId: fromLocationId },
+          });
+          const sourceStock = sourceEntry?.quantity ?? 0;
+          if (sourceStock < quantity) {
+            throw new BadRequestException(
+              `Insufficient stock at source location: available ${sourceStock}, requested ${quantity}`,
+            );
+          }
           await tx.stockEntry.update({
             where: {
               productId_variantId_locationId: {
@@ -91,6 +100,15 @@ export class StockService {
         if (!fromLocationId || !toLocationId) {
           throw new BadRequestException(
             'TRANSFER requires fromLocationId and toLocationId',
+          );
+        }
+        const sourceEntry = await tx.stockEntry.findFirst({
+          where: { productId, locationId: fromLocationId },
+        });
+        const sourceStock = sourceEntry?.quantity ?? 0;
+        if (sourceStock < quantity) {
+          throw new BadRequestException(
+            `Insufficient stock at source location: available ${sourceStock}, requested ${quantity}`,
           );
         }
         await tx.stockEntry.update({

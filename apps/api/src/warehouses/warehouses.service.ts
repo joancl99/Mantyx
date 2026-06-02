@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateWarehouseDto } from './dto/create-warehouse.dto';
 import { UpdateWarehouseDto } from './dto/update-warehouse.dto';
@@ -38,7 +39,14 @@ export class WarehousesService {
       where: { companyId, name: dto.name },
     });
     if (exists) throw new ConflictException(`Ya existe un almacén con el nombre "${dto.name}"`);
-    return this.prisma.warehouse.create({ data: { ...dto, companyId }, select: WH_SELECT });
+    try {
+      return await this.prisma.warehouse.create({ data: { ...dto, companyId }, select: WH_SELECT });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+        throw new ConflictException(`Ya existe un almacén con el nombre "${dto.name}"`);
+      }
+      throw e;
+    }
   }
 
   async update(id: string, dto: UpdateWarehouseDto, companyId: string) {
@@ -49,7 +57,14 @@ export class WarehousesService {
       });
       if (conflict) throw new ConflictException(`Ya existe un almacén con el nombre "${dto.name}"`);
     }
-    return this.prisma.warehouse.update({ where: { id }, data: dto, select: WH_SELECT });
+    try {
+      return await this.prisma.warehouse.update({ where: { id }, data: dto, select: WH_SELECT });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+        throw new ConflictException(`Ya existe un almacén con el nombre "${dto.name}"`);
+      }
+      throw e;
+    }
   }
 
   async toggleActive(id: string, companyId: string) {
