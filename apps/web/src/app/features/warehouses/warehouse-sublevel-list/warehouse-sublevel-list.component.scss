@@ -1,0 +1,87 @@
+:host {
+  display: contents;
+}
+
+.sub-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sub-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--wh-surface);
+  border: 1px solid var(--wh-border);
+  border-radius: 10px;
+  transition: background 0.15s;
+
+  &:hover { background: var(--wh-surface-hover); }
+}
+
+.sub-row__icon {
+  --sub-icon-bg: rgba(16, 185, 129, 0.12);
+  --sub-icon-color: #10b981;
+
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--sub-icon-color);
+  background: var(--sub-icon-bg);
+  font-size: 16px;
+
+  &--zone {
+    --sub-icon-bg: rgba(245, 158, 11, 0.12);
+    --sub-icon-color: var(--wh-accent);
+  }
+
+  &--aisle {
+    --sub-icon-bg: rgba(59, 130, 246, 0.12);
+    --sub-icon-color: #3b82f6;
+  }
+}
+
+.sub-row__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--wh-text);
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &--code {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    letter-spacing: 0.3px;
+  }
+}
+
+.sub-row__count {
+  flex-shrink: 0;
+  color: var(--wh-text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.sub-row__actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.action-btn--enter {
+  color: var(--wh-accent);
+  &:hover { background: rgba(245, 158, 11, 0.12); }
+}
+
+@media (max-width: 480px) {
+  .sub-row__count { display: none; }
+}

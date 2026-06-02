@@ -51,10 +51,8 @@ import {
   ProductsService,
   Product,
 } from '../../core/services/products.service';
-import {
-  WarehousesService,
-  Warehouse,
-} from '../../core/services/warehouses.service';
+import { Warehouse } from '../../core/models/warehouse.models';
+import { WarehousesService } from '../../core/services/warehouses.service';
 
 interface TypeConfig {
   label: string;

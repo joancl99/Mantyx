@@ -8,257 +8,81 @@
 <ion-content [scrollY]="true" [fullscreen]="true">
   <div class="warehouses-page">
 
-    <!-- Breadcrumb (hidden at root) -->
-    @if (currentView() !== 'warehouses') {
-      <nav class="breadcrumb">
-        <button class="back-btn" (click)="goBack()" title="Atrás">
-          <ion-icon name="arrow-back-outline" />
-        </button>
-        <div class="bc-trail">
-          <button class="bc-link" (click)="goToLevel('warehouses')">Almacenes</button>
-          @if (selectedWarehouse()) {
-            <ion-icon name="chevron-forward-outline" class="bc-sep" />
-            @if (currentView() === 'zones') {
-              <span class="bc-current">{{ selectedWarehouse()!.name }}</span>
-            } @else {
-              <button class="bc-link" (click)="goToLevel('zones')">{{ selectedWarehouse()!.name }}</button>
-            }
-          }
-          @if (selectedZone()) {
-            <ion-icon name="chevron-forward-outline" class="bc-sep" />
-            @if (currentView() === 'aisles') {
-              <span class="bc-current">{{ selectedZone()!.name }}</span>
-            } @else {
-              <button class="bc-link" (click)="goToLevel('aisles')">{{ selectedZone()!.name }}</button>
-            }
-          }
-          @if (selectedAisle()) {
-            <ion-icon name="chevron-forward-outline" class="bc-sep" />
-            <span class="bc-current">{{ selectedAisle()!.name }}</span>
-          }
-        </div>
-      </nav>
-    }
+    <app-warehouse-breadcrumb
+      [currentView]="currentView()"
+      [selectedWarehouse]="selectedWarehouse()"
+      [selectedZone]="selectedZone()"
+      [selectedAisle]="selectedAisle()"
+      (back)="goBack()"
+      (levelChange)="goToLevel($event)"
+    />
 
     <!-- ── WAREHOUSES VIEW ────────────────────────────────────────────────────── -->
     @if (currentView() === 'warehouses') {
-      <header class="page-header">
-        <div class="page-header__left">
-          <h1 class="page-title">Almacenes</h1>
-          <span class="page-subtitle">{{ activeCount() }} activo{{ activeCount() === 1 ? '' : 's' }} · {{ totalCount() }} total</span>
-        </div>
-        @if (canEdit()) {
-          <button class="btn-primary" (click)="openCreateWh()">
-            <ion-icon name="add-outline" />
-            Nuevo almacén
-          </button>
-        }
-      </header>
-
-      @if (whLoading()) {
-        <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
-      } @else if (warehouses().length === 0) {
-        <div class="state-center">
-          <div class="empty-icon"><ion-icon name="business-outline" /></div>
-          <p class="empty-title">Sin almacenes</p>
-          <p class="empty-sub">Crea el primer almacén para empezar</p>
-        </div>
-      } @else {
-        <div class="wh-list">
-          @for (wh of warehouses(); track wh.id) {
-            <div class="wh-row" [class.inactive]="!wh.isActive">
-              <div class="wh-icon"><ion-icon name="business-outline" /></div>
-              <div class="wh-info">
-                <div class="wh-name-row">
-                  <span class="wh-name">{{ wh.name }}</span>
-                  @if (!wh.isActive) { <span class="badge-inactive">Inactivo</span> }
-                </div>
-                @if (wh.address) {
-                  <span class="wh-address">
-                    <ion-icon name="location-outline" />{{ wh.address }}
-                  </span>
-                }
-              </div>
-              <button class="wh-manage-btn" (click)="enterZones(wh)" title="Gestionar ubicaciones">
-                <ion-icon name="layers-outline" />
-                <span>{{ wh._count.zones }} zona{{ wh._count.zones === 1 ? '' : 's' }}</span>
-                <ion-icon name="chevron-forward-outline" class="enter-arrow" />
-              </button>
-              @if (canEdit()) {
-                <div class="wh-actions">
-                  <button class="action-btn action-btn--edit" (click)="openEditWh(wh)" title="Editar">
-                    <ion-icon name="create-outline" />
-                  </button>
-                  <button
-                    class="action-btn"
-                    [class]="wh.isActive ? 'action-btn--deactivate' : 'action-btn--activate'"
-                    (click)="confirmToggle(wh)"
-                    [title]="wh.isActive ? 'Desactivar' : 'Activar'"
-                  >
-                    <ion-icon name="power-outline" />
-                  </button>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      }
+      <app-warehouse-list
+        [warehouses]="warehouses()"
+        [loading]="whLoading()"
+        [canEdit]="canEdit()"
+        [activeCount]="activeCount()"
+        [totalCount]="totalCount()"
+        (createWarehouse)="openCreateWh()"
+        (editWarehouse)="openEditWh($event)"
+        (toggleWarehouse)="confirmToggle($event)"
+        (manageWarehouse)="enterZones($event)"
+      />
     }
 
     <!-- ── ZONES VIEW ────────────────────────────────────────────────────────── -->
     @if (currentView() === 'zones') {
-      <header class="page-header">
-        <div class="page-header__left">
-          <h1 class="page-title">Zonas</h1>
-          <span class="page-subtitle">{{ zones().length }} zona{{ zones().length === 1 ? '' : 's' }} en {{ selectedWarehouse()!.name }}</span>
-        </div>
-        @if (canManage()) {
-          <button class="btn-primary" (click)="openCreate('zone')">
-            <ion-icon name="add-outline" />
-            Nueva zona
-          </button>
-        }
-      </header>
-
-      @if (subLoading()) {
-        <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
-      } @else if (zones().length === 0) {
-        <div class="state-center">
-          <div class="empty-icon"><ion-icon name="layers-outline" /></div>
-          <p class="empty-title">Sin zonas</p>
-          <p class="empty-sub">Crea la primera zona para organizar los pasillos</p>
-        </div>
-      } @else {
-        <div class="sub-list">
-          @for (zone of zones(); track zone.id) {
-            <div class="sub-row">
-              <div class="sub-row__icon sub-row__icon--zone">
-                <ion-icon name="layers-outline" />
-              </div>
-              <span class="sub-row__name">{{ zone.name }}</span>
-              <span class="sub-row__count">{{ zone._count.aisles }} pasillo{{ zone._count.aisles === 1 ? '' : 's' }}</span>
-              <div class="sub-row__actions">
-                @if (canManage()) {
-                  <button class="action-btn action-btn--edit" (click)="openEdit(zone.id, zone.name, 'zone')" title="Renombrar">
-                    <ion-icon name="create-outline" />
-                  </button>
-                }
-                @if (canEdit()) {
-                  <button class="action-btn action-btn--delete" (click)="confirmDelete(zone.id, zone.name, 'zone')" title="Eliminar">
-                    <ion-icon name="trash-outline" />
-                  </button>
-                }
-                <button class="action-btn action-btn--enter" (click)="enterAisles(zone)" title="Ver pasillos">
-                  <ion-icon name="chevron-forward-outline" />
-                </button>
-              </div>
-            </div>
-          }
-        </div>
-      }
+      <app-warehouse-sublevel-list
+        view="zones"
+        [loading]="subLoading()"
+        [canManage]="canManage()"
+        [canEdit]="canEdit()"
+        [zones]="zones()"
+        [aisles]="aisles()"
+        [locations]="locations()"
+        [warehouseName]="selectedWarehouse()!.name"
+        (createLevel)="openCreate($event)"
+        (editItem)="openEdit($event.id, $event.value, $event.level)"
+        (deleteItem)="confirmDelete($event.id, $event.label, $event.level)"
+        (enterZone)="enterAisles($event)"
+      />
     }
 
     <!-- ── AISLES VIEW ───────────────────────────────────────────────────────── -->
     @if (currentView() === 'aisles') {
-      <header class="page-header">
-        <div class="page-header__left">
-          <h1 class="page-title">Pasillos</h1>
-          <span class="page-subtitle">{{ aisles().length }} pasillo{{ aisles().length === 1 ? '' : 's' }} en {{ selectedZone()!.name }}</span>
-        </div>
-        @if (canManage()) {
-          <button class="btn-primary" (click)="openCreate('aisle')">
-            <ion-icon name="add-outline" />
-            Nuevo pasillo
-          </button>
-        }
-      </header>
-
-      @if (subLoading()) {
-        <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
-      } @else if (aisles().length === 0) {
-        <div class="state-center">
-          <div class="empty-icon"><ion-icon name="git-branch-outline" /></div>
-          <p class="empty-title">Sin pasillos</p>
-          <p class="empty-sub">Crea el primer pasillo para agregar ubicaciones</p>
-        </div>
-      } @else {
-        <div class="sub-list">
-          @for (aisle of aisles(); track aisle.id) {
-            <div class="sub-row">
-              <div class="sub-row__icon sub-row__icon--aisle">
-                <ion-icon name="git-branch-outline" />
-              </div>
-              <span class="sub-row__name">{{ aisle.name }}</span>
-              <span class="sub-row__count">{{ aisle._count.locations }} ubicación{{ aisle._count.locations === 1 ? '' : 'es' }}</span>
-              <div class="sub-row__actions">
-                @if (canManage()) {
-                  <button class="action-btn action-btn--edit" (click)="openEdit(aisle.id, aisle.name, 'aisle')" title="Renombrar">
-                    <ion-icon name="create-outline" />
-                  </button>
-                }
-                @if (canEdit()) {
-                  <button class="action-btn action-btn--delete" (click)="confirmDelete(aisle.id, aisle.name, 'aisle')" title="Eliminar">
-                    <ion-icon name="trash-outline" />
-                  </button>
-                }
-                <button class="action-btn action-btn--enter" (click)="enterLocations(aisle)" title="Ver ubicaciones">
-                  <ion-icon name="chevron-forward-outline" />
-                </button>
-              </div>
-            </div>
-          }
-        </div>
-      }
+      <app-warehouse-sublevel-list
+        view="aisles"
+        [loading]="subLoading()"
+        [canManage]="canManage()"
+        [canEdit]="canEdit()"
+        [zones]="zones()"
+        [aisles]="aisles()"
+        [locations]="locations()"
+        [zoneName]="selectedZone()!.name"
+        (createLevel)="openCreate($event)"
+        (editItem)="openEdit($event.id, $event.value, $event.level)"
+        (deleteItem)="confirmDelete($event.id, $event.label, $event.level)"
+        (enterAisle)="enterLocations($event)"
+      />
     }
 
     <!-- ── LOCATIONS VIEW ───────────────────────────────────────────────────── -->
     @if (currentView() === 'locations') {
-      <header class="page-header">
-        <div class="page-header__left">
-          <h1 class="page-title">Ubicaciones</h1>
-          <span class="page-subtitle">{{ locations().length }} ubicación{{ locations().length === 1 ? '' : 'es' }} en {{ selectedAisle()!.name }}</span>
-        </div>
-        @if (canManage()) {
-          <button class="btn-primary" (click)="openCreate('location')">
-            <ion-icon name="add-outline" />
-            Nueva ubicación
-          </button>
-        }
-      </header>
-
-      @if (subLoading()) {
-        <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
-      } @else if (locations().length === 0) {
-        <div class="state-center">
-          <div class="empty-icon"><ion-icon name="cube-outline" /></div>
-          <p class="empty-title">Sin ubicaciones</p>
-          <p class="empty-sub">Añade ubicaciones (ej. A-01-01) para registrar stock</p>
-        </div>
-      } @else {
-        <div class="sub-list">
-          @for (loc of locations(); track loc.id) {
-            <div class="sub-row">
-              <div class="sub-row__icon sub-row__icon--location">
-                <ion-icon name="cube-outline" />
-              </div>
-              <span class="sub-row__name sub-row__name--code">{{ loc.code }}</span>
-              <span class="sub-row__count">{{ loc._count.stockEntries }} artículo{{ loc._count.stockEntries === 1 ? '' : 's' }}</span>
-              <div class="sub-row__actions">
-                @if (canManage()) {
-                  <button class="action-btn action-btn--edit" (click)="openEdit(loc.id, loc.code, 'location')" title="Editar código">
-                    <ion-icon name="create-outline" />
-                  </button>
-                }
-                @if (canEdit()) {
-                  <button class="action-btn action-btn--delete" (click)="confirmDelete(loc.id, loc.code, 'location')" title="Eliminar">
-                    <ion-icon name="trash-outline" />
-                  </button>
-                }
-              </div>
-            </div>
-          }
-        </div>
-      }
+      <app-warehouse-sublevel-list
+        view="locations"
+        [loading]="subLoading()"
+        [canManage]="canManage()"
+        [canEdit]="canEdit()"
+        [zones]="zones()"
+        [aisles]="aisles()"
+        [locations]="locations()"
+        [aisleName]="selectedAisle()!.name"
+        (createLevel)="openCreate($event)"
+        (editItem)="openEdit($event.id, $event.value, $event.level)"
+        (deleteItem)="confirmDelete($event.id, $event.label, $event.level)"
+      />
     }
 
   </div>

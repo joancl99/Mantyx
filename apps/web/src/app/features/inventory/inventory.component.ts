@@ -23,9 +23,9 @@ import {
   Aisle,
   Location,
   Warehouse,
-  WarehousesService,
   Zone,
-} from '../../core/services/warehouses.service';
+} from '../../core/models/warehouse.models';
+import { WarehousesService } from '../../core/services/warehouses.service';
 import { CreateInventoryCountModalComponent } from './create-inventory-count-modal/create-inventory-count-modal.component';
 import { InventoryCountDetailComponent } from './inventory-count-detail/inventory-count-detail.component';
 import { InventoryCountListComponent } from './inventory-count-list/inventory-count-list.component';

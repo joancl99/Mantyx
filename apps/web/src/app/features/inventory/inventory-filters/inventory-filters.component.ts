@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-import { Warehouse } from '../../../core/services/warehouses.service';
+import { Warehouse } from '../../../core/models/warehouse.models';
 import { InventoryCountStatus } from '../models/inventory.models';
 
 @Component({

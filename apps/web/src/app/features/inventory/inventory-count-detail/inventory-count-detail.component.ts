@@ -13,7 +13,7 @@ import {
   InventoryCount,
   InventoryCountLine,
 } from '../models/inventory.models';
-import { Aisle, Location, Zone } from '../../../core/services/warehouses.service';
+import { Aisle, Location, Zone } from '../../../core/models/warehouse.models';
 import { inventoryStatusLabel } from '../inventory-status';
 
 @Component({

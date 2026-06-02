@@ -33,9 +33,7 @@ import {
   powerOutline,
   closeOutline,
   alertCircleOutline,
-  locationOutline,
   layersOutline,
-  arrowBackOutline,
   chevronForwardOutline,
   gitBranchOutline,
   trashOutline,
@@ -43,16 +41,21 @@ import {
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import {
-  WarehousesService,
-  Warehouse,
-  Zone,
   Aisle,
-  Location,
   CreateWarehouseDto,
+  Location,
+  Warehouse,
+  WarehouseSubLevel,
+  Zone,
+} from '../../core/models/warehouse.models';
+import {
+  WarehousesService,
 } from '../../core/services/warehouses.service';
+import { WarehouseBreadcrumbComponent } from './warehouse-breadcrumb/warehouse-breadcrumb.component';
+import { WarehouseListComponent } from './warehouse-list/warehouse-list.component';
+import { WarehouseSublevelListComponent } from './warehouse-sublevel-list/warehouse-sublevel-list.component';
 
 type View = 'warehouses' | 'zones' | 'aisles' | 'locations';
-type SubLevel = 'zone' | 'aisle' | 'location';
 
 @Component({
   selector: 'app-warehouses',
@@ -68,6 +71,9 @@ type SubLevel = 'zone' | 'aisle' | 'location';
     IonTitle,
     IonIcon,
     IonSpinner,
+    WarehouseBreadcrumbComponent,
+    WarehouseListComponent,
+    WarehouseSublevelListComponent,
   ],
   templateUrl: './warehouses.component.html',
   styleUrl: './warehouses.component.scss',
@@ -128,20 +134,20 @@ export class WarehousesComponent implements OnInit {
 
   readonly showSubModal = signal(false);
   readonly subModalMode = signal<'create' | 'edit'>('create');
-  readonly subLevel = signal<SubLevel>('zone');
+  readonly subLevel = signal<WarehouseSubLevel>('zone');
   readonly subEditingId = signal<string | null>(null);
   readonly subSubmitted = signal(false);
   readonly subError = signal('');
   readonly subForm = new FormControl('', [Validators.required, Validators.minLength(1)]);
 
-  readonly deleteTarget = signal<{ id: string; label: string; level: SubLevel } | null>(null);
+  readonly deleteTarget = signal<{ id: string; label: string; level: WarehouseSubLevel } | null>(null);
   readonly deleteError = signal('');
 
   constructor() {
     addIcons({
       addOutline, businessOutline, createOutline, powerOutline,
-      closeOutline, alertCircleOutline, locationOutline, layersOutline,
-      arrowBackOutline, chevronForwardOutline, gitBranchOutline,
+      closeOutline, alertCircleOutline, layersOutline,
+      chevronForwardOutline, gitBranchOutline,
       trashOutline, cubeOutline,
     });
   }
@@ -287,7 +293,7 @@ export class WarehousesComponent implements OnInit {
   }
 
   // ── Sub-level CRUD ────────────────────────────────────────────────────────────
-  openCreate(level: SubLevel) {
+  openCreate(level: WarehouseSubLevel) {
     this.subForm.reset('');
     this.subSubmitted.set(false);
     this.subError.set('');
@@ -297,7 +303,7 @@ export class WarehousesComponent implements OnInit {
     this.showSubModal.set(true);
   }
 
-  openEdit(id: string, value: string, level: SubLevel) {
+  openEdit(id: string, value: string, level: WarehouseSubLevel) {
     this.subForm.setValue(value);
     this.subSubmitted.set(false);
     this.subError.set('');
@@ -311,17 +317,17 @@ export class WarehousesComponent implements OnInit {
 
   subModalTitle(): string {
     const mode = this.subModalMode() === 'create' ? 'Nueva' : 'Editar';
-    const labels: Record<SubLevel, string> = { zone: 'zona', aisle: 'pasillo', location: 'ubicación' };
+    const labels: Record<WarehouseSubLevel, string> = { zone: 'zona', aisle: 'pasillo', location: 'ubicación' };
     return `${mode} ${labels[this.subLevel()]}`;
   }
 
   subModalLabel(): string {
-    const labels: Record<SubLevel, string> = { zone: 'Nombre', aisle: 'Nombre', location: 'Código' };
+    const labels: Record<WarehouseSubLevel, string> = { zone: 'Nombre', aisle: 'Nombre', location: 'Código' };
     return labels[this.subLevel()];
   }
 
   subModalPlaceholder(): string {
-    const ph: Record<SubLevel, string> = { zone: 'Zona A', aisle: 'Pasillo 1', location: 'A-01-01' };
+    const ph: Record<WarehouseSubLevel, string> = { zone: 'Zona A', aisle: 'Pasillo 1', location: 'A-01-01' };
     return ph[this.subLevel()];
   }
 
@@ -359,7 +365,7 @@ export class WarehousesComponent implements OnInit {
     });
   }
 
-  confirmDelete(id: string, label: string, level: SubLevel) {
+  confirmDelete(id: string, label: string, level: WarehouseSubLevel) {
     this.deleteError.set('');
     this.deleteTarget.set({ id, label, level });
   }
@@ -386,8 +392,8 @@ export class WarehousesComponent implements OnInit {
     });
   }
 
-  deleteLevelLabel(level: SubLevel): string {
-    const labels: Record<SubLevel, string> = { zone: 'zona', aisle: 'pasillo', location: 'ubicación' };
+  deleteLevelLabel(level: WarehouseSubLevel): string {
+    const labels: Record<WarehouseSubLevel, string> = { zone: 'zona', aisle: 'pasillo', location: 'ubicación' };
     return labels[level];
   }
 }

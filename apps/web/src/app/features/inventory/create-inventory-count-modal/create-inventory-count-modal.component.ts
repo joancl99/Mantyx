@@ -3,7 +3,7 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
-import { Warehouse } from '../../../core/services/warehouses.service';
+import { Warehouse } from '../../../core/models/warehouse.models';
 
 @Component({
   selector: 'app-create-inventory-count-modal',
