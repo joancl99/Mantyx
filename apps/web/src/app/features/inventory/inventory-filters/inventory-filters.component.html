@@ -1,0 +1,20 @@
+<div class="filters-bar">
+  <div class="filter-selects">
+    <select class="filter-select" (change)="statusChange.emit($any($event.target).value)">
+      @for (option of statusOptions(); track option.value) {
+        <option [value]="option.value" [selected]="selectedStatus() === option.value">
+          {{ option.label }}
+        </option>
+      }
+    </select>
+
+    <select class="filter-select" (change)="warehouseChange.emit($any($event.target).value)">
+      <option value="">Todos los almacenes</option>
+      @for (warehouse of warehouses(); track warehouse.id) {
+        <option [value]="warehouse.id" [selected]="selectedWarehouse() === warehouse.id">
+          {{ warehouse.name }}
+        </option>
+      }
+    </select>
+  </div>
+</div>

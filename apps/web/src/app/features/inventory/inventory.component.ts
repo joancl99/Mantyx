@@ -1,36 +1,24 @@
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import {
   IonButtons,
   IonContent,
   IonHeader,
   IonIcon,
   IonMenuButton,
-  IonSpinner,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import {
-  addOutline,
-  archiveOutline,
-  checkmarkCircleOutline,
-  chevronBackOutline,
-  chevronForwardOutline,
-  closeOutline,
-  listOutline,
-  playOutline,
-  refreshOutline,
-  trashOutline,
-} from 'ionicons/icons';
+import { addOutline } from 'ionicons/icons';
 import {
   AddInventoryLineDto,
   InventoryCount,
   InventoryCountLine,
   InventoryCountStatus,
-  InventoryService,
-} from '../../core/services/inventory.service';
+} from './models/inventory.models';
+import { InventoryService } from './data-access/inventory.service';
 import {
   Aisle,
   Location,
@@ -38,20 +26,16 @@ import {
   WarehousesService,
   Zone,
 } from '../../core/services/warehouses.service';
-
-const STATUS_OPTIONS: { value: InventoryCountStatus | ''; label: string }[] = [
-  { value: '', label: 'Todos los estados' },
-  { value: 'DRAFT', label: 'Borrador' },
-  { value: 'IN_PROGRESS', label: 'En progreso' },
-  { value: 'COMPLETED', label: 'Completado' },
-  { value: 'CANCELLED', label: 'Cancelado' },
-];
+import { CreateInventoryCountModalComponent } from './create-inventory-count-modal/create-inventory-count-modal.component';
+import { InventoryCountDetailComponent } from './inventory-count-detail/inventory-count-detail.component';
+import { InventoryCountListComponent } from './inventory-count-list/inventory-count-list.component';
+import { InventoryFiltersComponent } from './inventory-filters/inventory-filters.component';
+import { INVENTORY_STATUS_OPTIONS } from './inventory-status';
 
 @Component({
   selector: 'app-inventory',
   standalone: true,
   imports: [
-    ReactiveFormsModule,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -59,7 +43,10 @@ const STATUS_OPTIONS: { value: InventoryCountStatus | ''; label: string }[] = [
     IonButtons,
     IonMenuButton,
     IonIcon,
-    IonSpinner,
+    InventoryCountListComponent,
+    InventoryCountDetailComponent,
+    CreateInventoryCountModalComponent,
+    InventoryFiltersComponent,
   ],
   templateUrl: './inventory.component.html',
   styleUrl: './inventory.component.scss',
@@ -89,17 +76,13 @@ export class InventoryComponent implements OnInit {
   readonly currentPage = signal(1);
   readonly total = signal(0);
   readonly pageSize = 20;
-  readonly statusOptions = STATUS_OPTIONS;
+  readonly statusOptions = INVENTORY_STATUS_OPTIONS;
 
   readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
   readonly totalLabel = computed(() => {
     const t = this.total();
     return t === 0 ? 'Sin conteos' : `${t} conteo${t === 1 ? '' : 's'}`;
   });
-  readonly selectedLines = computed(() => this.selectedCount()?.lines ?? []);
-  readonly isReadOnly = computed(() => this.selectedCount()?.status === 'COMPLETED');
-  readonly canStart = computed(() => this.selectedCount()?.status === 'DRAFT');
-  readonly canComplete = computed(() => this.selectedCount()?.status === 'IN_PROGRESS');
 
   readonly createForm = new FormGroup({
     name: new FormControl('', [Validators.required, Validators.minLength(2)]),
@@ -114,18 +97,7 @@ export class InventoryComponent implements OnInit {
   });
 
   constructor() {
-    addIcons({
-      addOutline,
-      archiveOutline,
-      checkmarkCircleOutline,
-      chevronBackOutline,
-      chevronForwardOutline,
-      closeOutline,
-      listOutline,
-      playOutline,
-      refreshOutline,
-      trashOutline,
-    });
+    addIcons({ addOutline });
   }
 
   ngOnInit() {
@@ -174,14 +146,14 @@ export class InventoryComponent implements OnInit {
       });
   }
 
-  onStatusChange(event: Event) {
-    this.selectedStatus.set((event.target as HTMLSelectElement).value as InventoryCountStatus | '');
+  onStatusChange(status: InventoryCountStatus | '') {
+    this.selectedStatus.set(status);
     this.currentPage.set(1);
     this.loadCounts();
   }
 
-  onWarehouseFilterChange(event: Event) {
-    this.selectedWarehouse.set((event.target as HTMLSelectElement).value);
+  onWarehouseFilterChange(warehouseId: string) {
+    this.selectedWarehouse.set(warehouseId);
     this.currentPage.set(1);
     this.loadCounts();
   }
@@ -245,8 +217,7 @@ export class InventoryComponent implements OnInit {
     });
   }
 
-  onZoneChange(event: Event) {
-    const zoneId = (event.target as HTMLSelectElement).value;
+  onZoneChange(zoneId: string) {
     this.lineForm.patchValue({ zoneId, aisleId: '', locationId: '' });
     this.aisles.set([]);
     this.locations.set([]);
@@ -254,8 +225,7 @@ export class InventoryComponent implements OnInit {
     if (count && zoneId) this.loadAisles(count.warehouseId, zoneId);
   }
 
-  onAisleChange(event: Event) {
-    const aisleId = (event.target as HTMLSelectElement).value;
+  onAisleChange(aisleId: string) {
     this.lineForm.patchValue({ aisleId, locationId: '' });
     this.locations.set([]);
     const count = this.selectedCount();
@@ -286,13 +256,11 @@ export class InventoryComponent implements OnInit {
     });
   }
 
-  updateLine(line: InventoryCountLine, event: Event) {
+  updateLine(event: { line: InventoryCountLine; countedQty: number }) {
     const count = this.selectedCount();
     if (!count) return;
-    const value = Number((event.target as HTMLInputElement).value);
-    if (Number.isNaN(value) || value < 0) return;
 
-    this.inventoryService.updateLine(count.id, line.id, value).subscribe({
+    this.inventoryService.updateLine(count.id, event.line.id, event.countedQty).subscribe({
       next: () => this.loadDetail(count),
       error: (err) => this.handleActionError(err, 'Error al actualizar la línea'),
     });
@@ -309,15 +277,6 @@ export class InventoryComponent implements OnInit {
       },
       error: (err) => this.handleActionError(err, 'Error al eliminar la línea'),
     });
-  }
-
-  statusLabel(status: InventoryCountStatus) {
-    return STATUS_OPTIONS.find((option) => option.value === status)?.label ?? status;
-  }
-
-  lineLocationLabel(line: InventoryCountLine) {
-    const aisle = line.location.aisle;
-    return `${aisle.zone.name} / ${aisle.name} / ${line.location.code}`;
   }
 
   private loadWarehouses() {
