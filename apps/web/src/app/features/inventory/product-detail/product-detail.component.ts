@@ -6,5 +6,6 @@ import { IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton 
   standalone: true,
   imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton],
   templateUrl: './product-detail.component.html',
+  styleUrl: './product-detail.component.scss',
 })
 export class ProductDetailComponent {}

@@ -158,6 +158,7 @@ Rules:
 - The workspace declares `packageManager: pnpm@11.5.0`; if `pnpm` is not on PATH, use Corepack (`corepack pnpm ...`) or enable it locally. On Windows, `corepack enable` can require an Administrator shell.
 - Prefer `pnpm nx ...` for direct Nx commands.
 - Package scripts call local Nx directly and should be run through `pnpm`.
+- OpenCode autoskills startup is disabled to avoid extra resource usage when opening the tool.
 - Use Prisma 6. Do not upgrade to Prisma 7 without a migration plan.
 - If adding Prisma dependencies, pin to `prisma@^6` and `@prisma/client@^6`.
 

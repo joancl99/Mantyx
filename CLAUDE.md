@@ -116,6 +116,7 @@ Frontend should connect the existing inventory area to that API and keep `COMPLE
 
 - Use `pnpm` for dependency installation and restoring dependencies.
 - Do not run `npm install` in this project.
+- OpenCode autoskills startup is disabled to avoid extra resource usage when opening the tool.
 - The workspace declares `packageManager: pnpm@11.5.0`; if `pnpm` is not on PATH, use Corepack (`corepack pnpm ...`) or enable it locally. On Windows, `corepack enable` can require an Administrator shell.
 - Package scripts call local Nx directly and should be run through `pnpm`, for example `pnpm run start:api`.
 - For direct Nx commands, prefer `pnpm nx ...`.

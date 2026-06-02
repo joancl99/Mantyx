@@ -8,6 +8,7 @@ import { CategoriesModule } from '../categories/categories.module';
 import { ProductsModule } from '../products/products.module';
 import { CompaniesModule } from '../companies/companies.module';
 import { DashboardModule } from '../dashboard/dashboard.module';
+import { InventoryModule } from '../inventory/inventory.module';
 import { StockModule } from '../stock/stock.module';
 import { UsersModule } from '../users/users.module';
 import { WarehousesModule } from '../warehouses/warehouses.module';
@@ -41,6 +42,7 @@ import { AppService } from './app.service';
     WarehousesModule,
     CompaniesModule,
     DashboardModule,
+    InventoryModule,
   ],
   controllers: [AppController],
   providers: [

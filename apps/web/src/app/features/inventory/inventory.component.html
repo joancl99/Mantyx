@@ -6,4 +6,223 @@
     <ion-title>Inventario</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content></ion-content>
+
+<ion-content [scrollY]="true" [fullscreen]="true">
+  <div class="inventory-page">
+    <header class="page-header">
+      <div class="page-header__left">
+        <h1 class="page-title">Conteos de inventario</h1>
+        <span class="page-subtitle">{{ totalLabel() }}</span>
+      </div>
+      <button class="btn-primary" (click)="openCreate()">
+        <ion-icon name="add-outline" />
+        Nuevo conteo
+      </button>
+    </header>
+
+    <div class="filters-bar">
+      <div class="filter-selects">
+        <select class="filter-select" (change)="onStatusChange($event)">
+          @for (option of statusOptions; track option.value) {
+            <option [value]="option.value" [selected]="selectedStatus() === option.value">
+              {{ option.label }}
+            </option>
+          }
+        </select>
+        <select class="filter-select" (change)="onWarehouseFilterChange($event)">
+          <option value="">Todos los almacenes</option>
+          @for (warehouse of warehouses(); track warehouse.id) {
+            <option [value]="warehouse.id" [selected]="selectedWarehouse() === warehouse.id">
+              {{ warehouse.name }}
+            </option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="inventory-grid">
+      <section class="counts-panel">
+        @if (loading()) {
+          <div class="state-center compact">
+            <ion-spinner name="crescent" class="main-spinner" />
+          </div>
+        } @else if (counts().length === 0) {
+          <div class="state-center compact">
+            <div class="empty-icon"><ion-icon name="archive-outline" /></div>
+            <p class="empty-title">Sin conteos</p>
+            <p class="empty-sub">Crea el primer conteo de inventario</p>
+          </div>
+        } @else {
+          <div class="count-list">
+            @for (count of counts(); track count.id) {
+              <button
+                class="count-row"
+                [class.active]="selectedCount()?.id === count.id"
+                (click)="loadDetail(count)"
+              >
+                <span class="count-main">
+                  <span class="count-name">{{ count.name }}</span>
+                  <span class="count-meta">{{ count.warehouse.name }} · {{ count._count.lines }} líneas</span>
+                </span>
+                <span class="status-badge" [class]="'status--' + count.status.toLowerCase()">
+                  {{ statusLabel(count.status) }}
+                </span>
+              </button>
+            }
+          </div>
+
+          @if (totalPages() > 1) {
+            <div class="pagination">
+              <button class="page-btn" [disabled]="currentPage() === 1" (click)="goToPage(currentPage() - 1)">
+                <ion-icon name="chevron-back-outline" />
+              </button>
+              <span class="page-info">{{ currentPage() }} / {{ totalPages() }}</span>
+              <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="goToPage(currentPage() + 1)">
+                <ion-icon name="chevron-forward-outline" />
+              </button>
+            </div>
+          }
+        }
+      </section>
+
+      <section class="detail-panel">
+        @if (detailLoading()) {
+          <div class="state-center compact">
+            <ion-spinner name="crescent" class="main-spinner" />
+          </div>
+        } @else if (!selectedCount()) {
+          <div class="state-center compact">
+            <div class="empty-icon"><ion-icon name="list-outline" /></div>
+            <p class="empty-title">Selecciona un conteo</p>
+            <p class="empty-sub">Revisa líneas, cantidades y diferencias</p>
+          </div>
+        } @else {
+          <div class="detail-header">
+            <div>
+              <h2>{{ selectedCount()!.name }}</h2>
+              <p>{{ selectedCount()!.warehouse.name }} · {{ statusLabel(selectedCount()!.status) }}</p>
+            </div>
+            <div class="detail-actions">
+              @if (canStart()) {
+                <button class="btn-ghost" [disabled]="saving()" (click)="startSelected()">
+                  <ion-icon name="play-outline" />
+                  Iniciar
+                </button>
+              }
+              @if (canComplete()) {
+                <button class="btn-primary" [disabled]="saving()" (click)="completeSelected()">
+                  <ion-icon name="checkmark-circle-outline" />
+                  Completar
+                </button>
+              }
+            </div>
+          </div>
+
+          @if (formError()) {
+            <div class="form-alert">{{ formError() }}</div>
+          }
+
+          @if (!isReadOnly()) {
+            <form class="line-form" [formGroup]="lineForm" (ngSubmit)="submitLine()">
+              <select class="form-input" formControlName="zoneId" (change)="onZoneChange($event)">
+                <option value="">Zona</option>
+                @for (zone of zones(); track zone.id) {
+                  <option [value]="zone.id">{{ zone.name }}</option>
+                }
+              </select>
+              <select class="form-input" formControlName="aisleId" (change)="onAisleChange($event)">
+                <option value="">Pasillo</option>
+                @for (aisle of aisles(); track aisle.id) {
+                  <option [value]="aisle.id">{{ aisle.name }}</option>
+                }
+              </select>
+              <select class="form-input" formControlName="locationId">
+                <option value="">Ubicación</option>
+                @for (location of locations(); track location.id) {
+                  <option [value]="location.id">{{ location.code }}</option>
+                }
+              </select>
+              <input class="form-input qty-input" type="number" min="0" formControlName="expectedQty" placeholder="Esperado auto" />
+              <button class="btn-primary" type="submit" [disabled]="saving()">
+                <ion-icon name="add-outline" />
+                Línea
+              </button>
+            </form>
+            @if (lineSubmitted() && lineForm.invalid) {
+              <p class="inline-error">Selecciona zona, pasillo y ubicación válidos.</p>
+            }
+          }
+
+          @if (selectedLines().length === 0) {
+            <div class="empty-lines">Aún no hay líneas para este conteo.</div>
+          } @else {
+            <div class="line-list">
+              <div class="line-header">
+                <span>Ubicación</span>
+                <span>Esperado</span>
+                <span>Contado</span>
+                <span>Dif.</span>
+                <span></span>
+              </div>
+              @for (line of selectedLines(); track line.id) {
+                <div class="line-row">
+                  <span class="line-location">{{ lineLocationLabel(line) }}</span>
+                  <span class="line-number">{{ line.expectedQty }}</span>
+                  <input
+                    class="form-input counted-input"
+                    type="number"
+                    min="0"
+                    [value]="line.countedQty ?? ''"
+                    [disabled]="isReadOnly()"
+                    (change)="updateLine(line, $event)"
+                  />
+                  <span class="line-number" [class.diff-negative]="(line.difference ?? 0) < 0" [class.diff-positive]="(line.difference ?? 0) > 0">
+                    {{ line.difference === null ? '-' : line.difference }}
+                  </span>
+                  <button class="action-btn action-btn--delete" [disabled]="selectedCount()!.status !== 'DRAFT'" (click)="removeLine(line)">
+                    <ion-icon name="trash-outline" />
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        }
+      </section>
+    </div>
+  </div>
+</ion-content>
+
+@if (showCreate()) {
+  <div class="modal-backdrop" tabindex="0" (click)="closeCreate()" (keydown.escape)="closeCreate()">
+    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Nuevo conteo</h2>
+        <button class="modal-close" (click)="closeCreate()"><ion-icon name="close-outline" /></button>
+      </div>
+      <form class="modal-body" [formGroup]="createForm" (ngSubmit)="submitCreate()">
+        <div class="form-field" [class.has-error]="submitted() && createForm.get('name')?.invalid">
+          <label class="form-label" for="inventory-name">Nombre *</label>
+          <input id="inventory-name" class="form-input" formControlName="name" placeholder="Conteo mensual" />
+        </div>
+        <div class="form-field" [class.has-error]="submitted() && createForm.get('warehouseId')?.invalid">
+          <label class="form-label" for="inventory-warehouse">Almacén *</label>
+          <select id="inventory-warehouse" class="form-input" formControlName="warehouseId">
+            <option value="">Seleccionar almacén</option>
+            @for (warehouse of warehouses(); track warehouse.id) {
+              <option [value]="warehouse.id">{{ warehouse.name }}</option>
+            }
+          </select>
+        </div>
+        @if (formError()) {
+          <div class="form-alert">{{ formError() }}</div>
+        }
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" (click)="closeCreate()">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="saving()">
+            @if (saving()) { <ion-spinner name="crescent" /> } @else { Crear conteo }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
