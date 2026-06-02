@@ -80,8 +80,9 @@ Frontend areas currently present:
 
 ## Remaining Product Focus
 
-- Inventory counts are implemented; next improvements are tests, edge-case hardening, and optional cancel support for `CANCELLED` counts.
-- Inventory service unit tests exist under `apps/api/src/inventory`; continue adding tests for stock, products, and warehouses.
+- Inventory counts are implemented and hardened with service unit tests under `apps/api/src/inventory`.
+- Inventory lines are unique per `(inventoryCountId, locationId)` via Prisma schema and migration `20260602142000_inventory_line_location_unique`.
+- Continue adding tests for stock, products, and warehouses; optional Inventory follow-up is cancel support for `CANCELLED` counts.
 - Continue frontend cleanup where useful, especially remaining large pages and shared SCSS growth.
 
 ## Visual Direction
@@ -131,6 +132,14 @@ On Windows PowerShell, Nx-wrapped interactive Prisma migrations can hang. Prefer
 ```bash
 npx dotenv -e apps/api/.env -- prisma migrate dev --schema=apps/api/prisma/schema.prisma --name <migration-name>
 ```
+
+For applying already-created migrations to an existing database, use:
+
+```bash
+npx dotenv -e apps/api/.env -- prisma migrate deploy --schema=apps/api/prisma/schema.prisma
+```
+
+Before applying migrations that add unique constraints, check whether existing data violates the constraint.
 
 ## GitHub And CI
 

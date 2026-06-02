@@ -97,7 +97,8 @@ Fresh database bootstrap:
 
 ## Current Priority
 
-- Inventory counts are implemented and have service unit tests. Current priorities are adding tests for stock/products/warehouses, hardening remaining backend edge cases, and continuing frontend cleanup where large pages remain.
+- Inventory counts are implemented, have service unit tests, and enforce unique count lines per location with migration `20260602142000_inventory_line_location_unique`.
+- Current priorities are adding tests for stock/products/warehouses, hardening remaining backend edge cases, and continuing frontend cleanup where large pages remain.
 
 ## Visual Direction
 
@@ -150,6 +151,12 @@ Windows Prisma migration command:
 
 ```bash
 npx dotenv -e apps/api/.env -- prisma migrate dev --schema=apps/api/prisma/schema.prisma --name <migration-name>
+```
+
+Apply committed migrations to an existing database with:
+
+```bash
+npx dotenv -e apps/api/.env -- prisma migrate deploy --schema=apps/api/prisma/schema.prisma
 ```
 
 ## Repository

@@ -217,6 +217,14 @@ On Windows PowerShell, prefer the direct Prisma command because Nx-wrapped inter
 npx dotenv -e apps/api/.env -- prisma migrate dev --schema=apps/api/prisma/schema.prisma --name init
 ```
 
+Apply committed migrations to an existing database without creating a new migration:
+
+```bash
+npx dotenv -e apps/api/.env -- prisma migrate deploy --schema=apps/api/prisma/schema.prisma
+```
+
+The inventory line uniqueness migration requires no duplicate `(inventoryCountId, locationId)` rows in `inventory_count_lines` before it is applied.
+
 Fresh database bootstrap requirement:
 
 1. Create a `Company` in Prisma Studio or with a seed/script.
@@ -335,6 +343,7 @@ Representative endpoints:
 - [x] Inventory frontend integration with the count API.
 - [x] Frontend component refactor for Inventory, Warehouses, Products, Movements, Admin, and model separation.
 - [x] Inventory service unit tests.
+- [x] Inventory line uniqueness hardening and migration.
 - [ ] Tests for critical stock, products, and warehouses flows.
 - [ ] Barcode/QR scanner with Capacitor.
 - [ ] Product image upload storage.
