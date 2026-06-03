@@ -14,7 +14,7 @@ import { addIcons } from 'ionicons';
 import {
   homeOutline,
   cubeOutline,
-  layersOutline,
+  analyticsOutline,
   swapHorizontalOutline,
   clipboardOutline,
   businessOutline,
@@ -25,7 +25,6 @@ import {
   barcodeOutline,
   shieldCheckmarkOutline,
   downloadOutline,
-  analyticsOutline,
   sendOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../core/services/auth.service';
@@ -65,14 +64,8 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     label: 'Stock',
-    icon: 'layers-outline',
-    route: '/app/stock',
-    roles: ALL_ROLES,
-  },
-  {
-    label: 'Consulta Stock',
     icon: 'analytics-outline',
-    route: '/app/stock-query',
+    route: '/app/stock',
     roles: ALL_ROLES,
   },
   {
@@ -153,7 +146,7 @@ export class ShellComponent {
     addIcons({
       homeOutline,
       cubeOutline,
-      layersOutline,
+      analyticsOutline,
       swapHorizontalOutline,
       clipboardOutline,
       businessOutline,
@@ -164,7 +157,6 @@ export class ShellComponent {
       barcodeOutline,
       shieldCheckmarkOutline,
       downloadOutline,
-      analyticsOutline,
       sendOutline,
     });
   }

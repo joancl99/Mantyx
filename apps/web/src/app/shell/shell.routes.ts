@@ -42,13 +42,6 @@ export const shellRoutes: Route[] = [
       ),
   },
   {
-    path: 'stock-query',
-    loadComponent: () =>
-      import('../features/stock-query/stock-query.component').then(
-        (m) => m.StockQueryComponent,
-      ),
-  },
-  {
     path: 'receptions',
     loadComponent: () =>
       import('../features/receptions/receptions.component').then(
