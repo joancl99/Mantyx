@@ -265,8 +265,8 @@ This builds and starts:
 
 - **postgres** — PostgreSQL 16, data persisted in a named volume.
 - **redis** — Redis 7, protected with the password in `.env`.
-- **api** — NestJS API (Node 22 Alpine). Runs `prisma migrate deploy` automatically on startup, then serves on port 3000.
-- **web** — Angular app served by Nginx 1.27 on port 80. Nginx proxies `/api`, `/uploads` (product images), and `/ws` (Socket.io WebSocket) to the API container.
+- **api** — NestJS API (Node 24 Alpine, 3-stage build with a pruned production install). Runs `prisma migrate deploy` automatically on startup, then serves on port 3000.
+- **web** — Angular app served by `nginx:stable-alpine-slim` on port 80. Nginx proxies `/api`, `/uploads` (product images), and `/ws` (Socket.io WebSocket) to the API container.
 
 Uploaded product images are stored in a named Docker volume (`uploads_data`) so they persist across container restarts.
 
@@ -389,7 +389,7 @@ Representative endpoints:
 - [x] Product image upload — Multer diskStorage, image picker with live preview.
 - [x] CSV export flows (Stock, Movements, Receptions, Expeditions + albarán modal).
 - [x] Realtime low-stock alerts — Socket.io gateway connected to shell with Ionic toast.
-- [x] Production Docker image — multi-stage Dockerfile.api + Dockerfile.web + docker-compose.prod.yml.
+- [x] Production Docker images — 3-stage pruned Dockerfile.api (Node 24) + nginx-slim Dockerfile.web + docker-compose.prod.yml, hardened to 0 critical/high CVEs.
 - [x] Frontend route guard and Reception/Expedition modal unit tests.
 - [x] API e2e health check that runs in-process without `api:serve`.
 - [x] CI quality gate with explicit format, lint, test, build, and e2e steps.
