@@ -93,6 +93,7 @@ Fresh database bootstrap:
 - Shared frontend model/DTO types currently live in `apps/web/src/app/core/models` for products, stock/movements, warehouses, users, companies, and dashboard data.
 - Inventory keeps feature-specific data access and models under `apps/web/src/app/features/inventory/data-access` and `apps/web/src/app/features/inventory/models`.
 - Inventory line location selector state has been extracted to feature-local `inventory-line-location-state.ts`.
+- Products list/filter/pagination/search state has been extracted to feature-local `products-list-state.ts`.
 - `apps/web/src/styles/_shared.scss` contains shared page headers, buttons, filters, modals, forms, empty states, pagination, and common action styles.
 - Keep `core/services` focused on HTTP/service behavior rather than owning reusable model interfaces; auth and socket payload types now live under `core/models`.
 
@@ -103,6 +104,7 @@ Remaining frontend refactor work:
 - Admin category/brand catalog orchestration has been extracted to feature-local `admin-catalog-state.ts`; remaining Admin cleanup is mostly user/company modal orchestration.
 - Warehouses hierarchy navigation has been extracted to feature-local `warehouse-navigation-state.ts`; remaining Warehouses cleanup is mostly warehouse/sublevel modal and CRUD orchestration.
 - Inventory line location selection has been extracted; remaining Inventory cleanup is mostly detail actions and create/detail orchestration.
+- Products list state has been extracted; remaining Products cleanup is mostly form and delete orchestration.
 - Dashboard has a large component SCSS file; only promote repeated patterns to `_shared.scss` when reused by another feature.
 - Shared activate/deactivate action button variants are centralized in `_shared.scss`.
 - Management is currently a routed placeholder page.

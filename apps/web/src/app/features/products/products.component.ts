@@ -21,7 +21,6 @@ import { addIcons } from 'ionicons';
 import {
   addOutline,
 } from 'ionicons/icons';
-import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import {
   Brand,
@@ -36,6 +35,7 @@ import { ProductDeleteModalComponent } from './product-delete-modal/product-dele
 import { ProductFiltersComponent } from './product-filters/product-filters.component';
 import { ProductFormModalComponent } from './product-form-modal/product-form-modal.component';
 import { ProductListComponent } from './product-list/product-list.component';
+import { ProductsListState } from './products-list-state';
 
 type ModalMode = 'create' | 'edit';
 
@@ -66,26 +66,10 @@ export class ProductsComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   // ── State ──────────────────────────────────────────────────────
-  readonly products = signal<Product[]>([]);
   readonly categories = signal<Category[]>([]);
   readonly brands = signal<Brand[]>([]);
-  readonly loading = signal(true);
   readonly saving = signal(false);
-
-  readonly searchQuery = signal('');
-  readonly selectedCategory = signal('');
-  readonly selectedBrand = signal('');
-  readonly currentPage = signal(1);
-  readonly total = signal(0);
-  readonly pageSize = 20;
-
-  readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.total() / this.pageSize)),
-  );
-  readonly totalLabel = computed(() => {
-    const t = this.total();
-    return t === 0 ? 'Sin resultados' : `${t} producto${t === 1 ? '' : 's'}`;
-  });
+  readonly list = new ProductsListState(this.productsService, this.destroyRef);
 
   // ── Permissions ─────────────────────────────────────────────
   readonly canEdit = computed(() => {
@@ -117,8 +101,6 @@ export class ProductsComponent implements OnInit {
     brandId: new FormControl(''),
   });
 
-  private readonly searchSubject = new Subject<string>();
-
   constructor() {
     addIcons({
       addOutline,
@@ -127,18 +109,8 @@ export class ProductsComponent implements OnInit {
 
   ngOnInit() {
     this.loadFilters();
-    this.loadProducts();
-
-    this.searchSubject
-      .pipe(
-        debounceTime(350),
-        distinctUntilChanged(),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe(() => {
-        this.currentPage.set(1);
-        this.loadProducts();
-      });
+    this.list.connectSearch();
+    this.list.load();
   }
 
   private loadFilters() {
@@ -151,50 +123,6 @@ export class ProductsComponent implements OnInit {
       .getAll()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((brands) => this.brands.set(brands));
-  }
-
-  loadProducts() {
-    this.loading.set(true);
-    this.productsService
-      .getAll({
-        search: this.searchQuery() || undefined,
-        categoryId: this.selectedCategory() || undefined,
-        brandId: this.selectedBrand() || undefined,
-        page: this.currentPage(),
-        limit: this.pageSize,
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (res) => {
-          this.products.set(res.data);
-          this.total.set(res.total);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
-  }
-
-  onSearch(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    this.searchQuery.set(value);
-    this.searchSubject.next(value);
-  }
-
-  onCategoryChange(event: Event) {
-    this.selectedCategory.set((event.target as HTMLSelectElement).value);
-    this.currentPage.set(1);
-    this.loadProducts();
-  }
-
-  onBrandChange(event: Event) {
-    this.selectedBrand.set((event.target as HTMLSelectElement).value);
-    this.currentPage.set(1);
-    this.loadProducts();
-  }
-
-  goToPage(page: number) {
-    this.currentPage.set(page);
-    this.loadProducts();
   }
 
   // ── Modal ──────────────────────────────────────────────────────
@@ -255,7 +183,7 @@ export class ProductsComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.showModal.set(false);
-        this.loadProducts();
+        this.list.load();
       },
       error: (err) => {
         this.saving.set(false);
@@ -283,7 +211,7 @@ export class ProductsComponent implements OnInit {
       next: () => {
         this.saving.set(false);
         this.deleteTarget.set(null);
-        this.loadProducts();
+        this.list.load();
       },
       error: (err) => {
         this.saving.set(false);

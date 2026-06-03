@@ -11,7 +11,7 @@
     <header class="page-header">
       <div class="page-header__left">
         <h1 class="page-title">Productos</h1>
-        <span class="page-subtitle">{{ totalLabel() }}</span>
+        <span class="page-subtitle">{{ list.totalLabel() }}</span>
       </div>
       @if (canEdit()) {
         <button class="btn-primary" (click)="openCreate()">
@@ -22,29 +22,29 @@
     </header>
 
     <app-product-filters
-      [searchQuery]="searchQuery()"
-      [selectedCategory]="selectedCategory()"
-      [selectedBrand]="selectedBrand()"
+      [searchQuery]="list.searchQuery()"
+      [selectedCategory]="list.selectedCategory()"
+      [selectedBrand]="list.selectedBrand()"
       [categories]="categories()"
       [brands]="brands()"
-      (searchChanged)="onSearch($event)"
-      (categoryChanged)="onCategoryChange($event)"
-      (brandChanged)="onBrandChange($event)"
+      (searchChanged)="list.onSearch($event)"
+      (categoryChanged)="list.onCategoryChange($event)"
+      (brandChanged)="list.onBrandChange($event)"
     />
 
     <app-product-list
-      [products]="products()"
-      [loading]="loading()"
+      [products]="list.products()"
+      [loading]="list.loading()"
       [canEdit]="canEdit()"
       [canDelete]="canDelete()"
-      [searchQuery]="searchQuery()"
-      [selectedCategory]="selectedCategory()"
-      [selectedBrand]="selectedBrand()"
-      [currentPage]="currentPage()"
-      [totalPages]="totalPages()"
+      [searchQuery]="list.searchQuery()"
+      [selectedCategory]="list.selectedCategory()"
+      [selectedBrand]="list.selectedBrand()"
+      [currentPage]="list.currentPage()"
+      [totalPages]="list.totalPages()"
       (editProduct)="openEdit($event)"
       (deleteProduct)="confirmDelete($event)"
-      (pageChanged)="goToPage($event)"
+      (pageChanged)="list.goToPage($event)"
     />
   </div>
 </ion-content>
