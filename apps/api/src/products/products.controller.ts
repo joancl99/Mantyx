@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -10,14 +11,21 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBearerAuth,
+  ApiConsumes,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
+import { diskStorage } from 'multer';
+import { extname, join } from 'path';
+import { randomUUID } from 'crypto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtPayload } from '../auth/types/jwt-payload.interface';
@@ -25,6 +33,14 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductsService } from './products.service';
+
+const ALLOWED_TYPES = /\.(jpg|jpeg|png|webp)$/i;
+const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+
+const imageStorage = diskStorage({
+  destination: join(process.cwd(), 'uploads', 'products'),
+  filename: (_req, file, cb) => cb(null, `${randomUUID()}${extname(file.originalname)}`),
+});
 
 @ApiTags('Products')
 @ApiBearerAuth('access-token')
@@ -76,5 +92,30 @@ export class ProductsController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.products.remove(id, user.companyId!);
+  }
+
+  @Patch(':id/image')
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({ summary: 'Upload product image (ADMIN, MANAGER)' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: imageStorage,
+      limits: { fileSize: MAX_SIZE },
+      fileFilter: (_req, file, cb) => {
+        if (!ALLOWED_TYPES.test(extname(file.originalname))) {
+          return cb(new BadRequestException('Only jpg, png and webp images are allowed'), false);
+        }
+        cb(null, true);
+      },
+    }),
+  )
+  uploadImage(
+    @CurrentUser() user: JwtPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) throw new BadRequestException('No file provided');
+    return this.products.uploadImage(id, user.companyId!, file);
   }
 }

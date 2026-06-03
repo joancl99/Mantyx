@@ -58,8 +58,9 @@
     [submitted]="submitted()"
     [saving]="saving()"
     [formError]="formError()"
+    [currentImageUrl]="editingProduct()?.imageUrl ?? null"
     (closeModal)="closeModal()"
-    (submitForm)="submitForm()"
+    (submitForm)="submitForm($event)"
   />
 }
 

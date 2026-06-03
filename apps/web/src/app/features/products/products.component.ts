@@ -7,6 +7,7 @@ import {
   DestroyRef,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { of, switchMap } from 'rxjs';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import {
   IonContent,
@@ -156,7 +157,7 @@ export class ProductsComponent implements OnInit {
     this.showModal.set(false);
   }
 
-  submitForm() {
+  submitForm(file: File | null) {
     this.submitted.set(true);
     if (this.form.invalid) return;
 
@@ -174,24 +175,29 @@ export class ProductsComponent implements OnInit {
       brandId: raw.brandId || undefined,
     };
 
-    const request$ =
+    const save$ =
       this.modalMode() === 'create'
         ? this.productsService.create(dto)
         : this.productsService.update(this.editingProduct()!.id, dto);
 
-    request$.subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.showModal.set(false);
-        this.list.load();
-      },
-      error: (err) => {
-        this.saving.set(false);
-        this.formError.set(
-          err?.error?.message ?? 'Error al guardar el producto',
-        );
-      },
-    });
+    save$
+      .pipe(
+        switchMap((product) =>
+          file ? this.productsService.uploadImage(product.id, file) : of(product),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.showModal.set(false);
+          this.list.load();
+        },
+        error: (err) => {
+          this.saving.set(false);
+          this.formError.set(err?.error?.message ?? 'Error al guardar el producto');
+        },
+      });
   }
 
   // ── Delete ──────────────────────────────────────────────────────

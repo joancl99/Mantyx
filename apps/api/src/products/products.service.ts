@@ -4,6 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { existsSync, mkdirSync, unlinkSync } from 'fs';
+import { join } from 'path';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
@@ -125,6 +127,26 @@ export class ProductsService {
     await this.prisma.product.update({
       where: { id },
       data: { isActive: false },
+    });
+  }
+
+  async uploadImage(id: string, companyId: string, file: Express.Multer.File) {
+    const product = await this.findOne(id, companyId);
+
+    // Delete previous image file if it exists on disk
+    if (product.imageUrl) {
+      const prevPath = join(process.cwd(), product.imageUrl.replace(/^\//, ''));
+      if (existsSync(prevPath)) unlinkSync(prevPath);
+    }
+
+    const uploadsDir = join(process.cwd(), 'uploads', 'products');
+    if (!existsSync(uploadsDir)) mkdirSync(uploadsDir, { recursive: true });
+
+    const imageUrl = `/uploads/products/${file.filename}`;
+    return this.prisma.product.update({
+      where: { id },
+      data: { imageUrl },
+      include: productInclude,
     });
   }
 }

@@ -55,3 +55,9 @@ apps/api/.env
 *.env.local
 
 __screenshots__/
+
+# Uploaded product images (keep folder structure via .gitkeep)
+uploads/products/*.jpg
+uploads/products/*.jpeg
+uploads/products/*.png
+uploads/products/*.webp
