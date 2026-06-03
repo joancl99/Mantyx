@@ -2,7 +2,13 @@ import type { Route } from '@angular/router';
 import { roleGuard } from '../core/guards/role.guard';
 import type { UserRole } from '../core/models/user.models';
 
-const ALL_ROLES: UserRole[] = ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR', 'VIEWER'];
+const ALL_ROLES: UserRole[] = [
+  'SUPERADMIN',
+  'ADMIN',
+  'MANAGER',
+  'OPERATOR',
+  'VIEWER',
+];
 const OPERATOR_UP: UserRole[] = ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'];
 const MANAGERS_UP: UserRole[] = ['SUPERADMIN', 'ADMIN', 'MANAGER'];
 const ADMINS_UP: UserRole[] = ['SUPERADMIN', 'ADMIN'];

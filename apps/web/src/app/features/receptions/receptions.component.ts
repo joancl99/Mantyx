@@ -1,4 +1,11 @@
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin } from 'rxjs';
 import {
@@ -15,7 +22,10 @@ import { addOutline, downloadOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
 import { StockService } from '../../core/services/stock.service';
-import { CreateMovementDto, StockMovement } from '../../core/models/stock.models';
+import {
+  CreateMovementDto,
+  StockMovement,
+} from '../../core/models/stock.models';
 import { ReceptionsListState } from './receptions-list-state';
 import { ReceptionFiltersComponent } from './reception-filters/reception-filters.component';
 import { ReceptionListComponent } from './reception-list/reception-list.component';
@@ -74,14 +84,33 @@ export class ReceptionsComponent implements OnInit {
 
   exportCsv() {
     this.stockService
-      .getAll({ type: 'INBOUND', limit: 9999, dateFrom: this.list.filterDateFrom() || undefined, dateTo: this.list.filterDateTo() || undefined })
+      .getAll({
+        type: 'INBOUND',
+        limit: 9999,
+        dateFrom: this.list.filterDateFrom() || undefined,
+        dateTo: this.list.filterDateTo() || undefined,
+      })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res) => {
-        const headers = ['Fecha', 'Producto', 'SKU', 'Cantidad', 'Stock anterior', 'Stock nuevo', 'Almacén', 'Notas'];
+        const headers = [
+          'Fecha',
+          'Producto',
+          'SKU',
+          'Cantidad',
+          'Stock anterior',
+          'Stock nuevo',
+          'Almacén',
+          'Notas',
+        ];
         const rows = res.data.map((m: StockMovement) => [
           new Date(m.createdAt).toLocaleDateString('es-ES'),
-          m.product.name, m.product.sku, m.quantity,
-          m.previousStock, m.newStock, m.warehouse.name, m.notes ?? '',
+          m.product.name,
+          m.product.sku,
+          m.quantity,
+          m.previousStock,
+          m.newStock,
+          m.warehouse.name,
+          m.notes ?? '',
         ]);
         this.csvExport.export('recepciones', headers, rows);
       });

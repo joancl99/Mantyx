@@ -19,7 +19,9 @@
   justify-content: center;
   flex-shrink: 0;
 
-  ion-icon { font-size: 18px; }
+  ion-icon {
+    font-size: 18px;
+  }
 }
 
 .section {
@@ -69,7 +71,9 @@
   border-radius: 10px;
   transition: border-color 0.15s;
 
-  &.line-error { border-color: var(--wh-danger); }
+  &.line-error {
+    border-color: var(--wh-danger);
+  }
 }
 
 .line-number {
@@ -108,8 +112,12 @@
   cursor: pointer;
   transition: background 0.15s;
 
-  &:hover { background: rgba(245, 158, 11, 0.18); }
-  ion-icon { font-size: 14px; }
+  &:hover {
+    background: rgba(245, 158, 11, 0.18);
+  }
+  ion-icon {
+    font-size: 14px;
+  }
 }
 
 .btn-remove-line {
@@ -132,10 +140,16 @@
     color: var(--wh-danger);
     border-color: rgba(239, 68, 68, 0.3);
   }
-  ion-icon { font-size: 14px; }
+  ion-icon {
+    font-size: 14px;
+  }
 }
 
 @media (max-width: 600px) {
-  .line-fields { grid-template-columns: 1fr; }
-  .location-cascade { grid-template-columns: 1fr; }
+  .line-fields {
+    grid-template-columns: 1fr;
+  }
+  .location-cascade {
+    grid-template-columns: 1fr;
+  }
 }

@@ -1,8 +1,12 @@
 <div class="scanner-overlay">
-  <div class="scanner-overlay__backdrop" (click)="cancel()"></div>
+  <button
+    type="button"
+    class="scanner-overlay__backdrop"
+    aria-label="Cerrar escáner"
+    (click)="cancel()"
+  ></button>
 
   <div class="scanner-overlay__panel">
-
     <div class="scanner-overlay__header">
       <div class="scanner-overlay__title">
         <ion-icon name="scan-outline" />
@@ -14,7 +18,12 @@
     </div>
 
     <div class="scanner-overlay__viewport">
-      <video #videoEl class="scanner-overlay__video" autoplay playsinline></video>
+      <video
+        #videoEl
+        class="scanner-overlay__video"
+        autoplay
+        playsinline
+      ></video>
 
       @if (loading) {
         <div class="scanner-overlay__status">
@@ -47,6 +56,5 @@
     <button class="scanner-overlay__cancel-btn" (click)="cancel()">
       Cancelar
     </button>
-
   </div>
 </div>

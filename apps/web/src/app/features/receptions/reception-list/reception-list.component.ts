@@ -33,7 +33,12 @@ export class ReceptionListComponent {
   );
 
   constructor() {
-    addIcons({ archiveOutline, arrowDownOutline, chevronBackOutline, chevronForwardOutline });
+    addIcons({
+      archiveOutline,
+      arrowDownOutline,
+      chevronBackOutline,
+      chevronForwardOutline,
+    });
   }
 
   stockDelta(m: StockMovement): string {

@@ -75,7 +75,12 @@ export class MovementsComponent implements OnInit {
   // ── Permissions ──────────────────────────────────────────────────────────
   readonly canCreate = computed(() => {
     const role = this.auth.currentUser()?.role;
-    return role === 'SUPERADMIN' || role === 'ADMIN' || role === 'MANAGER' || role === 'OPERATOR';
+    return (
+      role === 'SUPERADMIN' ||
+      role === 'ADMIN' ||
+      role === 'MANAGER' ||
+      role === 'OPERATOR'
+    );
   });
 
   // ── Modal ────────────────────────────────────────────────────────────────
@@ -118,14 +123,35 @@ export class MovementsComponent implements OnInit {
   // ── Modal ────────────────────────────────────────────────────────────────
   exportCsv() {
     this.stockService
-      .getAll({ limit: 9999, type: this.list.filterType() || undefined, dateFrom: this.list.filterDateFrom() || undefined, dateTo: this.list.filterDateTo() || undefined })
+      .getAll({
+        limit: 9999,
+        type: this.list.filterType() || undefined,
+        dateFrom: this.list.filterDateFrom() || undefined,
+        dateTo: this.list.filterDateTo() || undefined,
+      })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res) => {
-        const headers = ['Fecha', 'Tipo', 'Producto', 'SKU', 'Cantidad', 'Stock anterior', 'Stock nuevo', 'Almacén', 'Notas'];
+        const headers = [
+          'Fecha',
+          'Tipo',
+          'Producto',
+          'SKU',
+          'Cantidad',
+          'Stock anterior',
+          'Stock nuevo',
+          'Almacén',
+          'Notas',
+        ];
         const rows = res.data.map((m: StockMovement) => [
           new Date(m.createdAt).toLocaleDateString('es-ES'),
-          m.type, m.product.name, m.product.sku, m.quantity,
-          m.previousStock, m.newStock, m.warehouse.name, m.notes ?? '',
+          m.type,
+          m.product.name,
+          m.product.sku,
+          m.quantity,
+          m.previousStock,
+          m.newStock,
+          m.warehouse.name,
+          m.notes ?? '',
         ]);
         this.csvExport.export('movimientos', headers, rows);
       });
@@ -170,9 +196,10 @@ export class MovementsComponent implements OnInit {
         },
         error: (err) => {
           this.saving.set(false);
-          this.formError.set(err?.error?.message ?? 'Error al registrar el movimiento');
+          this.formError.set(
+            err?.error?.message ?? 'Error al registrar el movimiento',
+          );
         },
       });
   }
-
 }

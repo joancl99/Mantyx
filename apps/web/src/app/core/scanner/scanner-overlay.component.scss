@@ -9,7 +9,10 @@
   &__backdrop {
     position: absolute;
     inset: 0;
+    padding: 0;
     background: rgba(0, 0, 0, 0.75);
+    border: 0;
+    cursor: pointer;
   }
 
   &__panel {
@@ -140,10 +143,34 @@
   border-style: solid;
   border-width: 0;
 
-  &--tl { top: 25%; left: 15%; border-top-width: 3px; border-left-width: 3px; border-radius: 3px 0 0 0; }
-  &--tr { top: 25%; right: 15%; border-top-width: 3px; border-right-width: 3px; border-radius: 0 3px 0 0; }
-  &--bl { bottom: 25%; left: 15%; border-bottom-width: 3px; border-left-width: 3px; border-radius: 0 0 0 3px; }
-  &--br { bottom: 25%; right: 15%; border-bottom-width: 3px; border-right-width: 3px; border-radius: 0 0 3px 0; }
+  &--tl {
+    top: 25%;
+    left: 15%;
+    border-top-width: 3px;
+    border-left-width: 3px;
+    border-radius: 3px 0 0 0;
+  }
+  &--tr {
+    top: 25%;
+    right: 15%;
+    border-top-width: 3px;
+    border-right-width: 3px;
+    border-radius: 0 3px 0 0;
+  }
+  &--bl {
+    bottom: 25%;
+    left: 15%;
+    border-bottom-width: 3px;
+    border-left-width: 3px;
+    border-radius: 0 0 0 3px;
+  }
+  &--br {
+    bottom: 25%;
+    right: 15%;
+    border-bottom-width: 3px;
+    border-right-width: 3px;
+    border-radius: 0 0 3px 0;
+  }
 }
 
 .crosshair-line {
@@ -157,6 +184,11 @@
 }
 
 @keyframes scan-line {
-  0%, 100% { top: 30%; }
-  50% { top: 70%; }
+  0%,
+  100% {
+    top: 30%;
+  }
+  50% {
+    top: 70%;
+  }
 }

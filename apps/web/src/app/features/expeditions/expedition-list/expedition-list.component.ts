@@ -33,7 +33,12 @@ export class ExpeditionListComponent {
   );
 
   constructor() {
-    addIcons({ arrowUpOutline, chevronBackOutline, chevronForwardOutline, sendOutline });
+    addIcons({
+      arrowUpOutline,
+      chevronBackOutline,
+      chevronForwardOutline,
+      sendOutline,
+    });
   }
 
   stockDelta(m: StockMovement): string {

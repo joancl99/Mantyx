@@ -76,13 +76,13 @@ Mantyx helps companies manage products, stock, movements, warehouses, locations,
 
 Mantyx is a multi-tenant SaaS. Most business records are scoped by `companyId`.
 
-| Role | Scope |
-|---|---|
-| `SUPERADMIN` | Platform owner. Manages companies globally. |
-| `ADMIN` | Tenant owner. Manages users, categories, and brands for their company. |
-| `MANAGER` | Operational supervisor. |
-| `OPERATOR` | Warehouse operations. |
-| `VIEWER` | Read-only. |
+| Role         | Scope                                                                  |
+| ------------ | ---------------------------------------------------------------------- |
+| `SUPERADMIN` | Platform owner. Manages companies globally.                            |
+| `ADMIN`      | Tenant owner. Manages users, categories, and brands for their company. |
+| `MANAGER`    | Operational supervisor.                                                |
+| `OPERATOR`   | Warehouse operations.                                                  |
+| `VIEWER`     | Read-only.                                                             |
 
 Fresh database bootstrap requirement:
 
@@ -289,18 +289,18 @@ Required native permissions after `cap add`:
 
 ## Common Commands
 
-| Command | Description |
-|---|---|
-| `pnpm run start:api` | Start the NestJS API in dev/watch mode |
-| `pnpm run start:web` | Start the Angular web app |
-| `pnpm run build:api` | Build the API for production |
-| `pnpm run build:web` | Build the web app for production |
-| `pnpm run test` | Run tests across configured projects |
-| `pnpm nx test api` | Run API unit tests |
-| `pnpm run lint` | Run lint across configured projects |
-| `pnpm run docker:up` | Start local infrastructure |
-| `pnpm run docker:down` | Stop local infrastructure |
-| `pnpm nx affected -t lint --base=origin/main --head=HEAD` | Run affected lint before merging |
+| Command                                                   | Description                            |
+| --------------------------------------------------------- | -------------------------------------- |
+| `pnpm run start:api`                                      | Start the NestJS API in dev/watch mode |
+| `pnpm run start:web`                                      | Start the Angular web app              |
+| `pnpm run build:api`                                      | Build the API for production           |
+| `pnpm run build:web`                                      | Build the web app for production       |
+| `pnpm run test`                                           | Run tests across configured projects   |
+| `pnpm nx test api`                                        | Run API unit tests                     |
+| `pnpm run lint`                                           | Run lint across configured projects    |
+| `pnpm run docker:up`                                      | Start local infrastructure             |
+| `pnpm run docker:down`                                    | Stop local infrastructure              |
+| `pnpm nx affected -t lint --base=origin/main --head=HEAD` | Run affected lint before merging       |
 
 ## Quality Checks
 
@@ -331,18 +331,18 @@ Swagger is available at `http://localhost:3000/api/docs` when the API is running
 
 Representative endpoints:
 
-| Area | Endpoint Examples |
-|---|---|
-| Auth | `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout` |
-| Companies | `GET /api/companies`, `POST /api/companies`, `PATCH /api/companies/:id/toggle-status` |
-| Users | Tenant user management under `/api/users` |
-| Products | CRUD and search/filter under `/api/products` |
-| Categories | Tenant category endpoints under `/api/categories` |
-| Brands | Tenant brand endpoints under `/api/brands` |
-| Stock | Movement endpoints under `/api/stock` |
-| Warehouses | Warehouse, zone, aisle, and location endpoints under `/api/warehouses` |
-| Inventory | Inventory count endpoints under `/api/inventory` |
-| Dashboard | KPI and alert endpoints under `/api/dashboard` |
+| Area       | Endpoint Examples                                                                                    |
+| ---------- | ---------------------------------------------------------------------------------------------------- |
+| Auth       | `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout` |
+| Companies  | `GET /api/companies`, `POST /api/companies`, `PATCH /api/companies/:id/toggle-status`                |
+| Users      | Tenant user management under `/api/users`                                                            |
+| Products   | CRUD and search/filter under `/api/products`                                                         |
+| Categories | Tenant category endpoints under `/api/categories`                                                    |
+| Brands     | Tenant brand endpoints under `/api/brands`                                                           |
+| Stock      | Movement endpoints under `/api/stock`                                                                |
+| Warehouses | Warehouse, zone, aisle, and location endpoints under `/api/warehouses`                               |
+| Inventory  | Inventory count endpoints under `/api/inventory`                                                     |
+| Dashboard  | KPI and alert endpoints under `/api/dashboard`                                                       |
 
 ## Roadmap
 

@@ -35,7 +35,10 @@ describe('roleGuard', () => {
     currentRole = 'MANAGER';
 
     const result = TestBed.runInInjectionContext(() =>
-      roleGuard(routeWithRoles(['SUPERADMIN', 'ADMIN', 'MANAGER']), {} as never),
+      roleGuard(
+        routeWithRoles(['SUPERADMIN', 'ADMIN', 'MANAGER']),
+        {} as never,
+      ),
     );
 
     expect(result).toBe(true);

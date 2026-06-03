@@ -45,10 +45,20 @@ export class StockService {
         throw new NotFoundException(`Warehouse ${warehouseId} not found`);
 
       if (fromLocationId) {
-        await this.findMovementLocation(tx, fromLocationId, warehouseId, companyId);
+        await this.findMovementLocation(
+          tx,
+          fromLocationId,
+          warehouseId,
+          companyId,
+        );
       }
       if (toLocationId) {
-        await this.findMovementLocation(tx, toLocationId, warehouseId, companyId);
+        await this.findMovementLocation(
+          tx,
+          toLocationId,
+          warehouseId,
+          companyId,
+        );
       }
 
       // Compute previous stock across all locations for this product
@@ -275,7 +285,12 @@ export class StockService {
 
   async getOverview(
     companyId: string,
-    query: { search?: string; lowStock?: boolean; page?: number; limit?: number },
+    query: {
+      search?: string;
+      lowStock?: boolean;
+      page?: number;
+      limit?: number;
+    },
   ) {
     const { search, lowStock, page = 1, limit = 30 } = query;
     const skip = (page - 1) * limit;
@@ -355,7 +370,8 @@ export class StockService {
         aisle: { zone: { warehouse: { id: warehouseId, companyId } } },
       },
     });
-    if (!location) throw new NotFoundException(`Location ${locationId} not found`);
+    if (!location)
+      throw new NotFoundException(`Location ${locationId} not found`);
     return location;
   }
 }

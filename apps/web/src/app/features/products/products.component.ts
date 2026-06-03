@@ -19,9 +19,7 @@ import {
   IonTitle,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import {
-  addOutline,
-} from 'ionicons/icons';
+import { addOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import {
   Brand,
@@ -183,7 +181,9 @@ export class ProductsComponent implements OnInit {
     save$
       .pipe(
         switchMap((product) =>
-          file ? this.productsService.uploadImage(product.id, file) : of(product),
+          file
+            ? this.productsService.uploadImage(product.id, file)
+            : of(product),
         ),
         takeUntilDestroyed(this.destroyRef),
       )
@@ -195,7 +195,9 @@ export class ProductsComponent implements OnInit {
         },
         error: (err) => {
           this.saving.set(false);
-          this.formError.set(err?.error?.message ?? 'Error al guardar el producto');
+          this.formError.set(
+            err?.error?.message ?? 'Error al guardar el producto',
+          );
         },
       });
   }

@@ -4,15 +4,23 @@
   (click)="closeModal.emit()"
   (keydown.escape)="closeModal.emit()"
 >
-  <div class="modal modal--reception" role="presentation" (click)="$event.stopPropagation()">
-
+  <div
+    class="modal modal--reception"
+    role="presentation"
+    (click)="$event.stopPropagation()"
+  >
     @if (submitSucceeded()) {
       <div class="modal-success">
         <div class="success-icon">
           <ion-icon name="checkmark-circle-outline" />
         </div>
         <h2 class="success-title">Recepción registrada</h2>
-        <p class="success-sub">{{ lastSubmittedData?.lines?.length }} línea{{ lastSubmittedData?.lines?.length === 1 ? '' : 's' }} registradas correctamente.</p>
+        <p class="success-sub">
+          {{ lastSubmittedData?.lines?.length }} línea{{
+            lastSubmittedData?.lines?.length === 1 ? '' : 's'
+          }}
+          registradas correctamente.
+        </p>
         <div class="success-actions">
           <button class="btn-export" (click)="exportCsv()">
             <ion-icon name="download-outline" />
@@ -22,192 +30,242 @@
         </div>
       </div>
     } @else {
-
-    <div class="modal-header">
-      <div class="modal-header-left">
-        <div class="modal-icon">
-          <ion-icon name="archive-outline" />
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <div class="modal-icon">
+            <ion-icon name="archive-outline" />
+          </div>
+          <h2 class="modal-title">Nueva Recepción</h2>
         </div>
-        <h2 class="modal-title">Nueva Recepción</h2>
+        <button class="modal-close" (click)="closeModal.emit()">
+          <ion-icon name="close-outline" />
+        </button>
       </div>
-      <button class="modal-close" (click)="closeModal.emit()">
-        <ion-icon name="close-outline" />
-      </button>
-    </div>
 
-    <div class="modal-body">
+      <div class="modal-body">
+        <!-- Destination section -->
+        <div class="section">
+          <p class="section-label">Almacén de destino</p>
 
-      <!-- Destination section -->
-      <div class="section">
-        <p class="section-label">Almacén de destino</p>
-
-        <div class="form-field" [class.has-error]="submitted && !selectedWarehouseId">
-          <label class="form-label">Almacén *</label>
-          <select
-            class="form-input"
-            [(ngModel)]="selectedWarehouseId"
-            (ngModelChange)="onWarehouseChange($event)"
+          <div
+            class="form-field"
+            [class.has-error]="submitted && !selectedWarehouseId"
           >
-            <option value="">Seleccionar almacén</option>
-            @for (wh of warehouses(); track wh.id) {
-              <option [value]="wh.id">{{ wh.name }}</option>
-            }
-          </select>
-          @if (submitted && !selectedWarehouseId) {
-            <span class="form-error">Selecciona un almacén</span>
-          }
-        </div>
-
-        @if (zones().length > 0) {
-          <div class="location-cascade">
-            <div class="form-field">
-              <label class="form-label">Zona</label>
-              <select
-                class="form-input"
-                [(ngModel)]="selectedZoneId"
-                (ngModelChange)="onZoneChange($event)"
-              >
-                <option value="">Seleccionar zona</option>
-                @for (zone of zones(); track zone.id) {
-                  <option [value]="zone.id">{{ zone.name }}</option>
-                }
-              </select>
-            </div>
-
-            @if (aisles().length > 0) {
-              <div class="form-field">
-                <label class="form-label">Pasillo</label>
-                <select
-                  class="form-input"
-                  [(ngModel)]="selectedAisleId"
-                  (ngModelChange)="onAisleChange($event)"
-                >
-                  <option value="">Seleccionar pasillo</option>
-                  @for (aisle of aisles(); track aisle.id) {
-                    <option [value]="aisle.id">{{ aisle.name }}</option>
-                  }
-                </select>
-              </div>
-            }
-
-            @if (locations().length > 0) {
-              <div class="form-field" [class.has-error]="submitted && !selectedLocationId">
-                <label class="form-label">Ubicación *</label>
-                <select class="form-input" [(ngModel)]="selectedLocationId">
-                  <option value="">Seleccionar ubicación</option>
-                  @for (loc of locations(); track loc.id) {
-                    <option [value]="loc.id">{{ loc.code }}</option>
-                  }
-                </select>
-                @if (submitted && !selectedLocationId) {
-                  <span class="form-error">Selecciona una ubicación</span>
-                }
-              </div>
+            <label class="form-label" for="reception-warehouse"
+              >Almacén *</label
+            >
+            <select
+              id="reception-warehouse"
+              class="form-input"
+              [(ngModel)]="selectedWarehouseId"
+              (ngModelChange)="onWarehouseChange($event)"
+            >
+              <option value="">Seleccionar almacén</option>
+              @for (wh of warehouses(); track wh.id) {
+                <option [value]="wh.id">{{ wh.name }}</option>
+              }
+            </select>
+            @if (submitted && !selectedWarehouseId) {
+              <span class="form-error">Selecciona un almacén</span>
             }
           </div>
-        }
-      </div>
 
-      <!-- Lines section -->
-      <div class="section">
-        <div class="section-header">
-          <p class="section-label">Líneas de recepción</p>
-          <button type="button" class="btn-add-line" (click)="addLine()">
-            <ion-icon name="add-outline" />
-            Añadir línea
-          </button>
-        </div>
-
-        <div class="lines-list">
-          @for (line of lines; track $index; let i = $index) {
-            <div class="line-row" [class.line-error]="submitted && !isLineValid(line)">
-              <div class="line-number">{{ i + 1 }}</div>
-
-              <div class="line-fields">
-                <div class="form-field" [class.has-error]="submitted && !line.productId">
-                  <label class="form-label">Producto *</label>
-                  <div class="input-with-scan">
-                    <select class="form-input" [(ngModel)]="line.productId">
-                      <option value="">Seleccionar producto</option>
-                      @for (product of products(); track product.id) {
-                        <option [value]="product.id">{{ product.name }} — {{ product.sku }}</option>
-                      }
-                    </select>
-                    <button type="button" class="btn-scan" (click)="scanLine(line)" title="Escanear código">
-                      <ion-icon name="barcode-outline" />
-                    </button>
-                  </div>
-                  @if (submitted && !line.productId) {
-                    <span class="form-error">Requerido</span>
+          @if (zones().length > 0) {
+            <div class="location-cascade">
+              <div class="form-field">
+                <label class="form-label" for="reception-zone">Zona</label>
+                <select
+                  id="reception-zone"
+                  class="form-input"
+                  [(ngModel)]="selectedZoneId"
+                  (ngModelChange)="onZoneChange($event)"
+                >
+                  <option value="">Seleccionar zona</option>
+                  @for (zone of zones(); track zone.id) {
+                    <option [value]="zone.id">{{ zone.name }}</option>
                   }
-                </div>
-
-                <div class="form-field" [class.has-error]="submitted && line.quantity < 1">
-                  <label class="form-label">Cantidad *</label>
-                  <input
-                    class="form-input"
-                    type="number"
-                    min="1"
-                    [(ngModel)]="line.quantity"
-                    placeholder="1"
-                  />
-                  @if (submitted && line.quantity < 1) {
-                    <span class="form-error">Mínimo 1</span>
-                  }
-                </div>
-
-                <div class="form-field">
-                  <label class="form-label">Notas</label>
-                  <input
-                    class="form-input"
-                    type="text"
-                    [(ngModel)]="line.notes"
-                    placeholder="Albarán, referencia..."
-                  />
-                </div>
+                </select>
               </div>
 
-              @if (lines.length > 1) {
-                <button
-                  type="button"
-                  class="btn-remove-line"
-                  (click)="removeLine(i)"
-                  title="Eliminar línea"
+              @if (aisles().length > 0) {
+                <div class="form-field">
+                  <label class="form-label" for="reception-aisle"
+                    >Pasillo</label
+                  >
+                  <select
+                    id="reception-aisle"
+                    class="form-input"
+                    [(ngModel)]="selectedAisleId"
+                    (ngModelChange)="onAisleChange($event)"
+                  >
+                    <option value="">Seleccionar pasillo</option>
+                    @for (aisle of aisles(); track aisle.id) {
+                      <option [value]="aisle.id">{{ aisle.name }}</option>
+                    }
+                  </select>
+                </div>
+              }
+
+              @if (locations().length > 0) {
+                <div
+                  class="form-field"
+                  [class.has-error]="submitted && !selectedLocationId"
                 >
-                  <ion-icon name="trash-outline" />
-                </button>
+                  <label class="form-label" for="reception-location"
+                    >Ubicación *</label
+                  >
+                  <select
+                    id="reception-location"
+                    class="form-input"
+                    [(ngModel)]="selectedLocationId"
+                  >
+                    <option value="">Seleccionar ubicación</option>
+                    @for (loc of locations(); track loc.id) {
+                      <option [value]="loc.id">{{ loc.code }}</option>
+                    }
+                  </select>
+                  @if (submitted && !selectedLocationId) {
+                    <span class="form-error">Selecciona una ubicación</span>
+                  }
+                </div>
               }
             </div>
           }
         </div>
+
+        <!-- Lines section -->
+        <div class="section">
+          <div class="section-header">
+            <p class="section-label">Líneas de recepción</p>
+            <button type="button" class="btn-add-line" (click)="addLine()">
+              <ion-icon name="add-outline" />
+              Añadir línea
+            </button>
+          </div>
+
+          <div class="lines-list">
+            @for (line of lines; track $index; let i = $index) {
+              <div
+                class="line-row"
+                [class.line-error]="submitted && !isLineValid(line)"
+              >
+                <div class="line-number">{{ i + 1 }}</div>
+
+                <div class="line-fields">
+                  <div
+                    class="form-field"
+                    [class.has-error]="submitted && !line.productId"
+                  >
+                    <label class="form-label" [for]="'reception-product-' + i"
+                      >Producto *</label
+                    >
+                    <div class="input-with-scan">
+                      <select
+                        [id]="'reception-product-' + i"
+                        class="form-input"
+                        [(ngModel)]="line.productId"
+                      >
+                        <option value="">Seleccionar producto</option>
+                        @for (product of products(); track product.id) {
+                          <option [value]="product.id">
+                            {{ product.name }} — {{ product.sku }}
+                          </option>
+                        }
+                      </select>
+                      <button
+                        type="button"
+                        class="btn-scan"
+                        (click)="scanLine(line)"
+                        title="Escanear código"
+                      >
+                        <ion-icon name="barcode-outline" />
+                      </button>
+                    </div>
+                    @if (submitted && !line.productId) {
+                      <span class="form-error">Requerido</span>
+                    }
+                  </div>
+
+                  <div
+                    class="form-field"
+                    [class.has-error]="submitted && line.quantity < 1"
+                  >
+                    <label class="form-label" [for]="'reception-quantity-' + i"
+                      >Cantidad *</label
+                    >
+                    <input
+                      [id]="'reception-quantity-' + i"
+                      class="form-input"
+                      type="number"
+                      min="1"
+                      [(ngModel)]="line.quantity"
+                      placeholder="1"
+                    />
+                    @if (submitted && line.quantity < 1) {
+                      <span class="form-error">Mínimo 1</span>
+                    }
+                  </div>
+
+                  <div class="form-field">
+                    <label class="form-label" [for]="'reception-notes-' + i"
+                      >Notas</label
+                    >
+                    <input
+                      [id]="'reception-notes-' + i"
+                      class="form-input"
+                      type="text"
+                      [(ngModel)]="line.notes"
+                      placeholder="Albarán, referencia..."
+                    />
+                  </div>
+                </div>
+
+                @if (lines.length > 1) {
+                  <button
+                    type="button"
+                    class="btn-remove-line"
+                    (click)="removeLine(i)"
+                    title="Eliminar línea"
+                  >
+                    <ion-icon name="trash-outline" />
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        @if (formError()) {
+          <div class="form-alert">
+            <ion-icon name="alert-circle-outline" />
+            {{ formError() }}
+          </div>
+        } @else if (submitted && selectedWarehouseId && !selectedLocationId) {
+          <div class="form-alert">
+            <ion-icon name="alert-circle-outline" />
+            Selecciona una ubicación de destino
+          </div>
+        }
       </div>
 
-      @if (formError()) {
-        <div class="form-alert">
-          <ion-icon name="alert-circle-outline" />
-          {{ formError() }}
-        </div>
-      } @else if (submitted && selectedWarehouseId && !selectedLocationId) {
-        <div class="form-alert">
-          <ion-icon name="alert-circle-outline" />
-          Selecciona una ubicación de destino
-        </div>
-      }
-
-    </div>
-
-    <div class="modal-footer">
-      <button type="button" class="btn-ghost" (click)="closeModal.emit()">Cancelar</button>
-      <button type="button" class="btn-primary" [disabled]="saving()" (click)="submit()">
-        @if (saving()) {
-          <ion-spinner name="crescent" />
-        } @else {
-          Registrar recepción
-        }
-      </button>
-    </div>
-
-    } <!-- end @else (form state) -->
-
+      <div class="modal-footer">
+        <button type="button" class="btn-ghost" (click)="closeModal.emit()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="saving()"
+          (click)="submit()"
+        >
+          @if (saving()) {
+            <ion-spinner name="crescent" />
+          } @else {
+            Registrar recepción
+          }
+        </button>
+      </div>
+    }
+    <!-- end @else (form state) -->
   </div>
 </div>

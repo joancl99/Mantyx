@@ -44,7 +44,8 @@ const imageStorage = diskStorage({
     mkdirSync(uploadDir, { recursive: true });
     cb(null, uploadDir);
   },
-  filename: (_req, file, cb) => cb(null, `${randomUUID()}${extname(file.originalname)}`),
+  filename: (_req, file, cb) =>
+    cb(null, `${randomUUID()}${extname(file.originalname)}`),
 });
 
 @ApiTags('Products')
@@ -109,7 +110,12 @@ export class ProductsController {
       limits: { fileSize: MAX_SIZE },
       fileFilter: (_req, file, cb) => {
         if (!ALLOWED_TYPES.test(extname(file.originalname))) {
-          return cb(new BadRequestException('Only jpg, png and webp images are allowed'), false);
+          return cb(
+            new BadRequestException(
+              'Only jpg, png and webp images are allowed',
+            ),
+            false,
+          );
         }
         cb(null, true);
       },

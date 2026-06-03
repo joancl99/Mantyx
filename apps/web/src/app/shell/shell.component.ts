@@ -178,7 +178,12 @@ export class ShellComponent implements OnInit {
       .subscribe((alert) => this.showLowStockToast(alert));
   }
 
-  private async showLowStockToast(alert: { name: string; sku: string; stock: number; minStock: number }) {
+  private async showLowStockToast(alert: {
+    name: string;
+    sku: string;
+    stock: number;
+    minStock: number;
+  }) {
     const toast = await this.toastCtrl.create({
       message: `Stock bajo: ${alert.name} (${alert.sku}) — ${alert.stock}/${alert.minStock}`,
       duration: 5000,

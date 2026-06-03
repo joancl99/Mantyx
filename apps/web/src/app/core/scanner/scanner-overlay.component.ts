@@ -20,7 +20,8 @@ import { ScannerService } from '../services/scanner.service';
   styleUrl: './scanner-overlay.component.scss',
 })
 export class ScannerOverlayComponent implements OnInit, OnDestroy {
-  @ViewChild('videoEl', { static: true }) videoRef!: ElementRef<HTMLVideoElement>;
+  @ViewChild('videoEl', { static: true })
+  videoRef!: ElementRef<HTMLVideoElement>;
 
   private readonly scannerService = inject(ScannerService);
   private codeReader: BrowserMultiFormatReader | null = null;

@@ -15,7 +15,9 @@
   border-radius: 12px;
   transition: border-color 0.15s;
 
-  &:hover { border-color: rgba(239, 68, 68, 0.4); }
+  &:hover {
+    border-color: rgba(239, 68, 68, 0.4);
+  }
 }
 
 .expedition-badge {
@@ -30,7 +32,9 @@
   font-weight: 600;
   white-space: nowrap;
 
-  ion-icon { font-size: 14px; }
+  ion-icon {
+    font-size: 14px;
+  }
 }
 
 .expedition-product {
@@ -100,5 +104,7 @@
     grid-template-columns: 80px 1fr 70px;
   }
   .expedition-meta,
-  .expedition-date { display: none; }
+  .expedition-date {
+    display: none;
+  }
 }

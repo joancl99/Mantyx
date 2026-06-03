@@ -24,7 +24,9 @@ function createPrismaMock(): any {
       count: jest.fn(),
     },
     auditLog: { create: jest.fn() },
-    $transaction: jest.fn(async (callback: (tx: any) => unknown) => callback(prisma)),
+    $transaction: jest.fn(async (callback: (tx: any) => unknown) =>
+      callback(prisma),
+    ),
   };
 
   return prisma;
@@ -45,7 +47,9 @@ describe('StockService', () => {
   it('scopes movement detail by company through warehouse ownership', async () => {
     prisma.stockMovement.findFirst.mockResolvedValue(null);
 
-    await expect(service.findOne('movement-1', 'company-1')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(
+      service.findOne('movement-1', 'company-1'),
+    ).rejects.toBeInstanceOf(NotFoundException);
     expect(prisma.stockMovement.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'movement-1', warehouse: { companyId: 'company-1' } },
@@ -62,7 +66,10 @@ describe('StockService', () => {
     });
     prisma.warehouse.findFirst.mockResolvedValue({ id: 'warehouse-1' });
     prisma.stockEntry.aggregate.mockResolvedValue({ _sum: { quantity: 10 } });
-    prisma.stockEntry.findFirst.mockResolvedValue({ id: 'entry-1', quantity: 3 });
+    prisma.stockEntry.findFirst.mockResolvedValue({
+      id: 'entry-1',
+      quantity: 3,
+    });
 
     await expect(
       service.createMovement(
@@ -165,7 +172,9 @@ describe('StockService', () => {
     expect(prisma.location.findFirst).toHaveBeenCalledWith({
       where: {
         id: 'foreign-location',
-        aisle: { zone: { warehouse: { id: 'warehouse-1', companyId: 'company-1' } } },
+        aisle: {
+          zone: { warehouse: { id: 'warehouse-1', companyId: 'company-1' } },
+        },
       },
     });
     expect(prisma.stockMovement.create).not.toHaveBeenCalled();
@@ -180,7 +189,10 @@ describe('StockService', () => {
     });
     prisma.warehouse.findFirst.mockResolvedValue({ id: 'warehouse-1' });
     prisma.stockEntry.aggregate.mockResolvedValue({ _sum: { quantity: 10 } });
-    prisma.stockEntry.findFirst.mockResolvedValue({ id: 'entry-1', quantity: 1 });
+    prisma.stockEntry.findFirst.mockResolvedValue({
+      id: 'entry-1',
+      quantity: 1,
+    });
 
     await expect(
       service.createMovement(
@@ -210,7 +222,9 @@ describe('StockService', () => {
       minStock: 2,
     });
     prisma.warehouse.findFirst.mockResolvedValue({ id: 'warehouse-1' });
-    prisma.location.findFirst.mockResolvedValueOnce({ id: 'location-1' }).mockResolvedValueOnce(null);
+    prisma.location.findFirst
+      .mockResolvedValueOnce({ id: 'location-1' })
+      .mockResolvedValueOnce(null);
 
     await expect(
       service.createMovement(
@@ -230,13 +244,17 @@ describe('StockService', () => {
     expect(prisma.location.findFirst).toHaveBeenNthCalledWith(1, {
       where: {
         id: 'location-1',
-        aisle: { zone: { warehouse: { id: 'warehouse-1', companyId: 'company-1' } } },
+        aisle: {
+          zone: { warehouse: { id: 'warehouse-1', companyId: 'company-1' } },
+        },
       },
     });
     expect(prisma.location.findFirst).toHaveBeenNthCalledWith(2, {
       where: {
         id: 'foreign-location',
-        aisle: { zone: { warehouse: { id: 'warehouse-1', companyId: 'company-1' } } },
+        aisle: {
+          zone: { warehouse: { id: 'warehouse-1', companyId: 'company-1' } },
+        },
       },
     });
     expect(prisma.stockMovement.create).not.toHaveBeenCalled();
@@ -316,7 +334,9 @@ describe('StockService', () => {
       },
     ]);
 
-    await expect(service.getOverview('company-1', { lowStock: true })).resolves.toEqual({
+    await expect(
+      service.getOverview('company-1', { lowStock: true }),
+    ).resolves.toEqual({
       data: [
         {
           productId: 'product-1',
@@ -331,7 +351,9 @@ describe('StockService', () => {
       limit: 30,
     });
     expect(prisma.product.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { companyId: 'company-1', isActive: true } }),
+      expect.objectContaining({
+        where: { companyId: 'company-1', isActive: true },
+      }),
     );
   });
 });

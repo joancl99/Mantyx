@@ -1,11 +1,33 @@
-import { Component, DestroyRef, inject, input, OnInit, output, signal } from '@angular/core';
+import {
+  Component,
+  CUSTOM_ELEMENTS_SCHEMA,
+  DestroyRef,
+  inject,
+  input,
+  OnInit,
+  output,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { addOutline, alertCircleOutline, archiveOutline, barcodeOutline, checkmarkCircleOutline, closeOutline, downloadOutline, trashOutline } from 'ionicons/icons';
+import {
+  addOutline,
+  alertCircleOutline,
+  archiveOutline,
+  barcodeOutline,
+  checkmarkCircleOutline,
+  closeOutline,
+  downloadOutline,
+  trashOutline,
+} from 'ionicons/icons';
 import { Product } from '../../../core/models/product.models';
-import { Aisle, Location, Warehouse, Zone } from '../../../core/models/warehouse.models';
+import {
+  Aisle,
+  Location,
+  Warehouse,
+  Zone,
+} from '../../../core/models/warehouse.models';
 import { CsvExportService } from '../../../core/services/csv-export.service';
 import { ProductsService } from '../../../core/services/products.service';
 import { ScannerService } from '../../../core/services/scanner.service';
@@ -26,9 +48,10 @@ export interface ReceptionSubmitData {
 @Component({
   selector: 'app-create-reception-modal',
   standalone: true,
-  imports: [FormsModule, IonIcon, IonSpinner],
+  imports: [FormsModule],
   templateUrl: './create-reception-modal.component.html',
   styleUrl: './create-reception-modal.component.scss',
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class CreateReceptionModalComponent implements OnInit {
   private readonly warehousesService = inject(WarehousesService);
@@ -64,7 +87,16 @@ export class CreateReceptionModalComponent implements OnInit {
   submitted = false;
 
   constructor() {
-    addIcons({ addOutline, alertCircleOutline, archiveOutline, barcodeOutline, checkmarkCircleOutline, closeOutline, downloadOutline, trashOutline });
+    addIcons({
+      addOutline,
+      alertCircleOutline,
+      archiveOutline,
+      barcodeOutline,
+      checkmarkCircleOutline,
+      closeOutline,
+      downloadOutline,
+      trashOutline,
+    });
   }
 
   ngOnInit() {
@@ -128,7 +160,12 @@ export class CreateReceptionModalComponent implements OnInit {
   }
 
   isFormValid(): boolean {
-    return !!this.selectedWarehouseId && !!this.selectedLocationId && this.lines.length > 0 && this.lines.every((l) => this.isLineValid(l));
+    return (
+      !!this.selectedWarehouseId &&
+      !!this.selectedLocationId &&
+      this.lines.length > 0 &&
+      this.lines.every((l) => this.isLineValid(l))
+    );
   }
 
   scanLine(line: ReceptionLine) {
@@ -160,12 +197,32 @@ export class CreateReceptionModalComponent implements OnInit {
 
   exportCsv() {
     if (!this.lastSubmittedData) return;
-    const warehouse = this.warehouses().find((w) => w.id === this.lastSubmittedData!.warehouseId);
-    const location = this.locations().find((l) => l.id === this.lastSubmittedData!.toLocationId);
-    const headers = ['Producto', 'SKU', 'Barcode', 'Cantidad', 'Almacén', 'Ubicación destino', 'Notas'];
+    const warehouse = this.warehouses().find(
+      (w) => w.id === this.lastSubmittedData!.warehouseId,
+    );
+    const location = this.locations().find(
+      (l) => l.id === this.lastSubmittedData!.toLocationId,
+    );
+    const headers = [
+      'Producto',
+      'SKU',
+      'Barcode',
+      'Cantidad',
+      'Almacén',
+      'Ubicación destino',
+      'Notas',
+    ];
     const rows = this.lastSubmittedData.lines.map((line) => {
       const product = this.products().find((p) => p.id === line.productId);
-      return [product?.name ?? '', product?.sku ?? '', product?.barcode ?? '', line.quantity, warehouse?.name ?? '', location?.code ?? '', line.notes ?? ''];
+      return [
+        product?.name ?? '',
+        product?.sku ?? '',
+        product?.barcode ?? '',
+        line.quantity,
+        warehouse?.name ?? '',
+        location?.code ?? '',
+        line.notes ?? '',
+      ];
     });
     this.csvExport.export('recepcion', headers, rows);
   }

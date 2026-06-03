@@ -140,18 +140,18 @@ Remaining work:
 
 Approved shell menu (in order):
 
-| Label | Icon | Roles |
-|---|---|---|
-| Dashboard | `home-outline` | ALL_ROLES |
-| Productos | `cube-outline` | MANAGERS_UP |
-| Stock | `analytics-outline` | ALL_ROLES |
-| Movimientos | `swap-horizontal-outline` | OPERATOR+ |
-| Inventario | `clipboard-outline` | OPERATOR+ |
-| Recepciones | `download-outline` | OPERATOR+ |
-| Expediciones | `send-outline` | OPERATOR+ |
-| Almacenes | `business-outline` | MANAGERS_UP |
-| Management | `bar-chart-outline` | MANAGERS_UP |
-| Administración | `settings-outline` | ADMINS_UP |
+| Label          | Icon                      | Roles       |
+| -------------- | ------------------------- | ----------- |
+| Dashboard      | `home-outline`            | ALL_ROLES   |
+| Productos      | `cube-outline`            | MANAGERS_UP |
+| Stock          | `analytics-outline`       | ALL_ROLES   |
+| Movimientos    | `swap-horizontal-outline` | OPERATOR+   |
+| Inventario     | `clipboard-outline`       | OPERATOR+   |
+| Recepciones    | `download-outline`        | OPERATOR+   |
+| Expediciones   | `send-outline`            | OPERATOR+   |
+| Almacenes      | `business-outline`        | MANAGERS_UP |
+| Management     | `bar-chart-outline`       | MANAGERS_UP |
+| Administración | `settings-outline`        | ADMINS_UP   |
 
 ## Angular Rules
 

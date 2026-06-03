@@ -26,10 +26,17 @@
   border-radius: 12px;
   color: var(--wh-text-muted);
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 
-  ion-icon { font-size: 28px; }
-  span { font-size: 13px; font-weight: 600; }
+  ion-icon {
+    font-size: 28px;
+  }
+  span {
+    font-size: 13px;
+    font-weight: 600;
+  }
 
   &:hover {
     border-color: var(--wh-accent);
@@ -74,9 +81,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  ion-icon { font-size: 14px; }
+  ion-icon {
+    font-size: 14px;
+  }
 
-  &:hover { background: rgba(239, 68, 68, 0.8); }
+  &:hover {
+    background: rgba(239, 68, 68, 0.8);
+  }
 }
 
 .image-change-btn {
@@ -87,7 +98,11 @@
   font-weight: 600;
   color: var(--wh-accent);
   cursor: pointer;
-  ion-icon { font-size: 14px; }
+  ion-icon {
+    font-size: 14px;
+  }
 
-  &:hover { opacity: 0.8; }
+  &:hover {
+    opacity: 0.8;
+  }
 }

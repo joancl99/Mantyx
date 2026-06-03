@@ -2,7 +2,13 @@ import { Component, input, output } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { alertCircleOutline, closeOutline, cloudUploadOutline, imageOutline, trashOutline } from 'ionicons/icons';
+import {
+  alertCircleOutline,
+  closeOutline,
+  cloudUploadOutline,
+  imageOutline,
+  trashOutline,
+} from 'ionicons/icons';
 import { Brand, Category } from '../../../core/models/product.models';
 
 export type ProductFormMode = 'create' | 'edit';
@@ -31,7 +37,13 @@ export class ProductFormModalComponent {
   previewUrl: string | null = null;
 
   constructor() {
-    addIcons({ alertCircleOutline, closeOutline, cloudUploadOutline, imageOutline, trashOutline });
+    addIcons({
+      alertCircleOutline,
+      closeOutline,
+      cloudUploadOutline,
+      imageOutline,
+      trashOutline,
+    });
   }
 
   onFileSelected(event: Event) {
@@ -40,7 +52,9 @@ export class ProductFormModalComponent {
     if (!file) return;
     this.pendingFile = file;
     const reader = new FileReader();
-    reader.onload = (e) => { this.previewUrl = e.target?.result as string; };
+    reader.onload = (e) => {
+      this.previewUrl = e.target?.result as string;
+    };
     reader.readAsDataURL(file);
   }
 

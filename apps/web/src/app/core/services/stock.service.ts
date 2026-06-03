@@ -36,16 +36,29 @@ export class StockService {
     return this.http.post<StockMovement>(this.base, dto);
   }
 
-  getOverview(query: { search?: string; lowStock?: boolean; page?: number; limit?: number } = {}) {
+  getOverview(
+    query: {
+      search?: string;
+      lowStock?: boolean;
+      page?: number;
+      limit?: number;
+    } = {},
+  ) {
     let params = new HttpParams();
     if (query.search) params = params.set('search', query.search);
-    if (query.lowStock !== undefined) params = params.set('lowStock', String(query.lowStock));
+    if (query.lowStock !== undefined)
+      params = params.set('lowStock', String(query.lowStock));
     if (query.page) params = params.set('page', query.page);
     if (query.limit) params = params.set('limit', query.limit);
-    return this.http.get<StockOverviewResponse>(`${environment.apiUrl}/stock/overview`, { params });
+    return this.http.get<StockOverviewResponse>(
+      `${environment.apiUrl}/stock/overview`,
+      { params },
+    );
   }
 
   getStockByProduct(productId: string) {
-    return this.http.get<StockByProductResponse>(`${this.byProduct}/${productId}`);
+    return this.http.get<StockByProductResponse>(
+      `${this.byProduct}/${productId}`,
+    );
   }
 }
