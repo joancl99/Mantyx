@@ -53,9 +53,11 @@ import {
 } from '../../core/services/warehouses.service';
 import { WarehouseBreadcrumbComponent } from './warehouse-breadcrumb/warehouse-breadcrumb.component';
 import { WarehouseListComponent } from './warehouse-list/warehouse-list.component';
+import {
+  WarehouseBreadcrumbTarget,
+  WarehouseNavigationState,
+} from './warehouse-navigation-state';
 import { WarehouseSublevelListComponent } from './warehouse-sublevel-list/warehouse-sublevel-list.component';
-
-type View = 'warehouses' | 'zones' | 'aisles' | 'locations';
 
 @Component({
   selector: 'app-warehouses',
@@ -93,17 +95,7 @@ export class WarehousesComponent implements OnInit {
     return role === 'SUPERADMIN' || role === 'ADMIN' || role === 'MANAGER';
   });
 
-  // ── Navigation state ──────────────────────────────────────────────────────────
-  readonly selectedWarehouse = signal<Warehouse | null>(null);
-  readonly selectedZone = signal<Zone | null>(null);
-  readonly selectedAisle = signal<Aisle | null>(null);
-
-  readonly currentView = computed<View>(() => {
-    if (this.selectedAisle()) return 'locations';
-    if (this.selectedZone()) return 'aisles';
-    if (this.selectedWarehouse()) return 'zones';
-    return 'warehouses';
-  });
+  readonly navigation = new WarehouseNavigationState();
 
   // ── Warehouses ────────────────────────────────────────────────────────────────
   readonly warehouses = signal<Warehouse[]>([]);
@@ -214,49 +206,31 @@ export class WarehousesComponent implements OnInit {
 
   // ── Navigation ────────────────────────────────────────────────────────────────
   enterZones(wh: Warehouse) {
-    this.selectedWarehouse.set(wh);
-    this.selectedZone.set(null);
-    this.selectedAisle.set(null);
+    this.navigation.enterWarehouse(wh);
     this.loadZones();
   }
 
   enterAisles(zone: Zone) {
-    this.selectedZone.set(zone);
-    this.selectedAisle.set(null);
+    this.navigation.enterZone(zone);
     this.loadAisles();
   }
 
   enterLocations(aisle: Aisle) {
-    this.selectedAisle.set(aisle);
+    this.navigation.enterAisle(aisle);
     this.loadLocations();
   }
 
   goBack() {
-    if (this.selectedAisle()) {
-      this.selectedAisle.set(null);
-    } else if (this.selectedZone()) {
-      this.selectedZone.set(null);
-    } else {
-      this.selectedWarehouse.set(null);
-    }
+    this.navigation.goBack();
   }
 
-  goToLevel(target: 'warehouses' | 'zones' | 'aisles') {
-    if (target === 'warehouses') {
-      this.selectedWarehouse.set(null);
-      this.selectedZone.set(null);
-      this.selectedAisle.set(null);
-    } else if (target === 'zones') {
-      this.selectedZone.set(null);
-      this.selectedAisle.set(null);
-    } else {
-      this.selectedAisle.set(null);
-    }
+  goToLevel(target: WarehouseBreadcrumbTarget) {
+    this.navigation.goToLevel(target);
   }
 
   // ── Sub-level loaders ─────────────────────────────────────────────────────────
   loadZones() {
-    const wId = this.selectedWarehouse()!.id;
+    const wId = this.navigation.selectedWarehouse()!.id;
     this.subLoading.set(true);
     this.whService.getZones(wId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: list => { this.zones.set(list); this.subLoading.set(false); },
@@ -265,8 +239,8 @@ export class WarehousesComponent implements OnInit {
   }
 
   loadAisles() {
-    const wId = this.selectedWarehouse()!.id;
-    const zId = this.selectedZone()!.id;
+    const wId = this.navigation.selectedWarehouse()!.id;
+    const zId = this.navigation.selectedZone()!.id;
     this.subLoading.set(true);
     this.whService.getAisles(wId, zId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: list => { this.aisles.set(list); this.subLoading.set(false); },
@@ -275,9 +249,9 @@ export class WarehousesComponent implements OnInit {
   }
 
   loadLocations() {
-    const wId = this.selectedWarehouse()!.id;
-    const zId = this.selectedZone()!.id;
-    const aId = this.selectedAisle()!.id;
+    const wId = this.navigation.selectedWarehouse()!.id;
+    const zId = this.navigation.selectedZone()!.id;
+    const aId = this.navigation.selectedAisle()!.id;
     this.subLoading.set(true);
     this.whService.getLocations(wId, zId, aId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: list => { this.locations.set(list); this.subLoading.set(false); },
@@ -286,7 +260,7 @@ export class WarehousesComponent implements OnInit {
   }
 
   private reloadCurrentLevel() {
-    const view = this.currentView();
+    const view = this.navigation.currentView();
     if (view === 'zones') this.loadZones();
     else if (view === 'aisles') this.loadAisles();
     else if (view === 'locations') this.loadLocations();
@@ -337,9 +311,9 @@ export class WarehousesComponent implements OnInit {
     const value = this.subForm.value!.trim();
     this.subSaving.set(true);
     this.subError.set('');
-    const wId = this.selectedWarehouse()!.id;
-    const zId = this.selectedZone()?.id ?? '';
-    const aId = this.selectedAisle()?.id ?? '';
+    const wId = this.navigation.selectedWarehouse()!.id;
+    const zId = this.navigation.selectedZone()?.id ?? '';
+    const aId = this.navigation.selectedAisle()?.id ?? '';
     const editId = this.subEditingId();
     const level = this.subLevel();
     const isEdit = this.subModalMode() === 'edit';
@@ -377,9 +351,9 @@ export class WarehousesComponent implements OnInit {
     if (!target) return;
     this.subDeleting.set(true);
     this.deleteError.set('');
-    const wId = this.selectedWarehouse()!.id;
-    const zId = this.selectedZone()?.id ?? '';
-    const aId = this.selectedAisle()?.id ?? '';
+    const wId = this.navigation.selectedWarehouse()!.id;
+    const zId = this.navigation.selectedZone()?.id ?? '';
+    const aId = this.navigation.selectedAisle()?.id ?? '';
 
     let req$: Observable<unknown>;
     if (target.level === 'zone') req$ = this.whService.deleteZone(wId, target.id);

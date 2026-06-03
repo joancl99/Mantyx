@@ -9,16 +9,16 @@
   <div class="warehouses-page">
 
     <app-warehouse-breadcrumb
-      [currentView]="currentView()"
-      [selectedWarehouse]="selectedWarehouse()"
-      [selectedZone]="selectedZone()"
-      [selectedAisle]="selectedAisle()"
+      [currentView]="navigation.currentView()"
+      [selectedWarehouse]="navigation.selectedWarehouse()"
+      [selectedZone]="navigation.selectedZone()"
+      [selectedAisle]="navigation.selectedAisle()"
       (back)="goBack()"
       (levelChange)="goToLevel($event)"
     />
 
     <!-- ── WAREHOUSES VIEW ────────────────────────────────────────────────────── -->
-    @if (currentView() === 'warehouses') {
+    @if (navigation.currentView() === 'warehouses') {
       <app-warehouse-list
         [warehouses]="warehouses()"
         [loading]="whLoading()"
@@ -33,7 +33,7 @@
     }
 
     <!-- ── ZONES VIEW ────────────────────────────────────────────────────────── -->
-    @if (currentView() === 'zones') {
+    @if (navigation.currentView() === 'zones') {
       <app-warehouse-sublevel-list
         view="zones"
         [loading]="subLoading()"
@@ -42,7 +42,7 @@
         [zones]="zones()"
         [aisles]="aisles()"
         [locations]="locations()"
-        [warehouseName]="selectedWarehouse()!.name"
+        [warehouseName]="navigation.selectedWarehouse()!.name"
         (createLevel)="openCreate($event)"
         (editItem)="openEdit($event.id, $event.value, $event.level)"
         (deleteItem)="confirmDelete($event.id, $event.label, $event.level)"
@@ -51,7 +51,7 @@
     }
 
     <!-- ── AISLES VIEW ───────────────────────────────────────────────────────── -->
-    @if (currentView() === 'aisles') {
+    @if (navigation.currentView() === 'aisles') {
       <app-warehouse-sublevel-list
         view="aisles"
         [loading]="subLoading()"
@@ -60,7 +60,7 @@
         [zones]="zones()"
         [aisles]="aisles()"
         [locations]="locations()"
-        [zoneName]="selectedZone()!.name"
+        [zoneName]="navigation.selectedZone()!.name"
         (createLevel)="openCreate($event)"
         (editItem)="openEdit($event.id, $event.value, $event.level)"
         (deleteItem)="confirmDelete($event.id, $event.label, $event.level)"
@@ -69,7 +69,7 @@
     }
 
     <!-- ── LOCATIONS VIEW ───────────────────────────────────────────────────── -->
-    @if (currentView() === 'locations') {
+    @if (navigation.currentView() === 'locations') {
       <app-warehouse-sublevel-list
         view="locations"
         [loading]="subLoading()"
@@ -78,7 +78,7 @@
         [zones]="zones()"
         [aisles]="aisles()"
         [locations]="locations()"
-        [aisleName]="selectedAisle()!.name"
+        [aisleName]="navigation.selectedAisle()!.name"
         (createLevel)="openCreate($event)"
         (editItem)="openEdit($event.id, $event.value, $event.level)"
         (deleteItem)="confirmDelete($event.id, $event.label, $event.level)"

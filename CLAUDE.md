@@ -77,13 +77,14 @@ Frontend areas currently present:
 - Dashboard has shared frontend models in `core/models/dashboard.models.ts`; `DashboardService` should remain HTTP-focused.
 - Admin has shared frontend models in `core/models/user.models.ts` and `core/models/company.models.ts`, plus child components for company list, users panel, and catalog panel.
 - Admin category/brand list, modal, save, and delete orchestration is shared through feature-local `admin-catalog-state.ts`.
+- Warehouses hierarchy selection and breadcrumb navigation state is shared through feature-local `warehouse-navigation-state.ts`.
 - Auth and socket payload types live in `core/models`; `core/services` should not export shared DTO/model interfaces.
 - `core/services` should remain HTTP/service focused; shared model/DTO types should live in `core/models` or feature-local `models`.
 
 Remaining frontend refactor notes:
 
 - First-pass component extraction is done for Inventory, Warehouses, Products, Movements, Stock, Dashboard, and Admin.
-- Second-pass cleanup should focus on slimming feature container `.component.ts` files that still own too much orchestration state, especially Warehouses, Inventory, Products, and Movements. Admin has had its catalog state extracted, but user/company modal orchestration can still be revisited later.
+- Second-pass cleanup should focus on slimming feature container `.component.ts` files that still own too much orchestration state, especially Inventory, Products, and Movements. Admin catalog state and Warehouses navigation state are extracted, but Admin user/company modals and Warehouses sublevel CRUD can still be revisited later.
 - Dashboard still has a large component stylesheet; move repeated card/grid/stat patterns to shared styles only when another feature needs the same pattern.
 - `_shared.scss` owns shared action button variants, including activate/deactivate modifiers used across Admin and Warehouses.
 - Management is a routed placeholder page; Receptions, Expeditions, and Stock Query are placeholder components not currently exposed in the shell routes.
