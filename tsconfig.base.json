@@ -14,7 +14,7 @@
     "target": "es2022",
     "lib": ["es2022", "dom"],
     "paths": {
-      "@warehouse/types": ["./libs/shared/src/index.ts"]
+      "@mantyx/types": ["./libs/shared/src/index.ts"]
     }
   }
 }

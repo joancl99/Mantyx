@@ -23,7 +23,7 @@
       "executor": "@nx/js:prune-lockfile",
       "outputs": [
         "{workspaceRoot}/dist/apps/api/package.json",
-        "{workspaceRoot}/dist/apps/api/package-lock.json"
+        "{workspaceRoot}/dist/apps/api/pnpm-lock.yaml"
       ],
       "options": {
         "buildTarget": "build"
@@ -49,6 +49,7 @@
       "dependsOn": ["build"],
       "options": {
         "buildTarget": "api:build",
+        "inspect": false,
         "runBuildTargetDependencies": false
       },
       "configurations": {
@@ -58,6 +59,14 @@
         "production": {
           "buildTarget": "api:build:production"
         }
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/api/jest.config.ts",
+        "passWithNoTests": true
       }
     },
     "prisma-generate": {

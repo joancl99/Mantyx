@@ -1,17 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-
-export interface Category {
-  id: string;
-  name: string;
-}
+import { Category } from '../models/product.models';
 
 @Injectable({ providedIn: 'root' })
 export class CategoriesService {
+  private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/categories`;
-
-  constructor(private http: HttpClient) {}
 
   getAll() {
     return this.http.get<Category[]>(this.base);
@@ -19,5 +14,13 @@ export class CategoriesService {
 
   create(name: string) {
     return this.http.post<Category>(this.base, { name });
+  }
+
+  rename(id: string, name: string) {
+    return this.http.patch<Category>(`${this.base}/${id}`, { name });
+  }
+
+  delete(id: string) {
+    return this.http.delete<{ id: string }>(`${this.base}/${id}`);
   }
 }

@@ -15,6 +15,7 @@ import {
   IonToolbar,
   IonButtons,
   IonMenuButton,
+  IonTitle,
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -29,11 +30,8 @@ import {
   addCircleOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
-import {
-  DashboardService,
-  DashboardAlert,
-  DashboardMovement,
-} from '../../core/services/dashboard.service';
+import { DashboardAlert, DashboardMovement } from '../../core/models/dashboard.models';
+import { DashboardService } from '../../core/services/dashboard.service';
 
 interface QuickAction {
   label: string;
@@ -67,6 +65,7 @@ const QUICK_ACTIONS: QuickAction[] = [
     IonToolbar,
     IonButtons,
     IonMenuButton,
+    IonTitle,
     IonSpinner,
     RouterLink,
   ],

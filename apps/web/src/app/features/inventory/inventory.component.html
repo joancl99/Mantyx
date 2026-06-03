@@ -6,4 +6,70 @@
     <ion-title>Inventario</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content></ion-content>
+
+<ion-content [scrollY]="true" [fullscreen]="true">
+  <div class="inventory-page">
+    <header class="page-header">
+      <div class="page-header__left">
+        <h1 class="page-title">Conteos de inventario</h1>
+        <span class="page-subtitle">{{ totalLabel() }}</span>
+      </div>
+      <button class="btn-primary" (click)="openCreate()">
+        <ion-icon name="add-outline" />
+        Nuevo conteo
+      </button>
+    </header>
+
+    <app-inventory-filters
+      [statusOptions]="statusOptions"
+      [selectedStatus]="selectedStatus()"
+      [warehouses]="warehouses()"
+      [selectedWarehouse]="selectedWarehouse()"
+      (statusChange)="onStatusChange($event)"
+      (warehouseChange)="onWarehouseFilterChange($event)"
+    />
+
+    <div class="inventory-grid">
+      <app-inventory-count-list
+        [counts]="counts()"
+        [loading]="loading()"
+        [selectedCountId]="selectedCount()?.id ?? null"
+        [currentPage]="currentPage()"
+        [totalPages]="totalPages()"
+        (selectCount)="loadDetail($event)"
+        (pageChange)="goToPage($event)"
+      />
+
+      <app-inventory-count-detail
+        [count]="selectedCount()"
+        [loading]="detailLoading()"
+        [saving]="saving()"
+        [formError]="formError()"
+        [lineSubmitted]="lineSubmitted()"
+        [lineForm]="lineLocation.form"
+        [zones]="lineLocation.zones()"
+        [aisles]="lineLocation.aisles()"
+        [locations]="lineLocation.locations()"
+        (startCount)="startSelected()"
+        (completeCount)="completeSelected()"
+        (zoneChange)="onZoneChange($event)"
+        (aisleChange)="onAisleChange($event)"
+        (addLine)="submitLine()"
+        (updateLine)="updateLine($event)"
+        (removeLine)="removeLine($event)"
+      />
+    </div>
+  </div>
+</ion-content>
+
+@if (showCreate()) {
+  <app-create-inventory-count-modal
+    [form]="createForm"
+    [warehouses]="warehouses()"
+    [submitted]="submitted()"
+    [saving]="saving()"
+    [formError]="formError()"
+    (close)="closeCreate()"
+    (submitForm)="submitCreate()"
+  />
+}

@@ -1,0 +1,51 @@
+<section class="counts-panel">
+  @if (loading()) {
+    <div class="state-center compact">
+      <ion-spinner name="crescent" class="main-spinner" />
+    </div>
+  } @else if (counts().length === 0) {
+    <div class="state-center compact">
+      <div class="empty-icon"><ion-icon name="archive-outline" /></div>
+      <p class="empty-title">Sin conteos</p>
+      <p class="empty-sub">Crea el primer conteo de inventario</p>
+    </div>
+  } @else {
+    <div class="count-list">
+      @for (count of counts(); track count.id) {
+        <button
+          class="count-row"
+          [class.active]="selectedCountId() === count.id"
+          (click)="selectCount.emit(count)"
+        >
+          <span class="count-main">
+            <span class="count-name">{{ count.name }}</span>
+            <span class="count-meta">{{ count.warehouse.name }} · {{ count._count.lines }} líneas</span>
+          </span>
+          <span class="status-badge" [class]="'status--' + count.status.toLowerCase()">
+            {{ statusLabel(count.status) }}
+          </span>
+        </button>
+      }
+    </div>
+
+    @if (totalPages() > 1) {
+      <div class="pagination">
+        <button
+          class="page-btn"
+          [disabled]="currentPage() === 1"
+          (click)="pageChange.emit(currentPage() - 1)"
+        >
+          <ion-icon name="chevron-back-outline" />
+        </button>
+        <span class="page-info">{{ currentPage() }} / {{ totalPages() }}</span>
+        <button
+          class="page-btn"
+          [disabled]="currentPage() === totalPages()"
+          (click)="pageChange.emit(currentPage() + 1)"
+        >
+          <ion-icon name="chevron-forward-outline" />
+        </button>
+      </div>
+    }
+  }
+</section>

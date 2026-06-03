@@ -1,0 +1,30 @@
+<div class="filters-bar">
+  <div class="search-wrap">
+    <ion-icon name="search-outline" class="search-icon" />
+    <input
+      class="search-input"
+      type="text"
+      placeholder="Buscar por nombre, SKU o código de barras..."
+      [value]="searchQuery()"
+      (input)="searchChanged.emit($event)"
+    />
+  </div>
+  <div class="filter-selects">
+    <select class="filter-select" (change)="categoryChanged.emit($event)">
+      <option value="">Todas las categorías</option>
+      @for (cat of categories(); track cat.id) {
+        <option [value]="cat.id" [selected]="selectedCategory() === cat.id">
+          {{ cat.name }}
+        </option>
+      }
+    </select>
+    <select class="filter-select" (change)="brandChanged.emit($event)">
+      <option value="">Todas las marcas</option>
+      @for (brand of brands(); track brand.id) {
+        <option [value]="brand.id" [selected]="selectedBrand() === brand.id">
+          {{ brand.name }}
+        </option>
+      }
+    </select>
+  </div>
+</div>

@@ -6,8 +6,12 @@ import { AuthModule } from '../auth/auth.module';
 import { BrandsModule } from '../brands/brands.module';
 import { CategoriesModule } from '../categories/categories.module';
 import { ProductsModule } from '../products/products.module';
+import { CompaniesModule } from '../companies/companies.module';
 import { DashboardModule } from '../dashboard/dashboard.module';
+import { InventoryModule } from '../inventory/inventory.module';
 import { StockModule } from '../stock/stock.module';
+import { UsersModule } from '../users/users.module';
+import { WarehousesModule } from '../warehouses/warehouses.module';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { envValidationSchema } from '../config/env.validation';
@@ -34,7 +38,11 @@ import { AppService } from './app.service';
     BrandsModule,
     ProductsModule,
     StockModule,
+    UsersModule,
+    WarehousesModule,
+    CompaniesModule,
     DashboardModule,
+    InventoryModule,
   ],
   controllers: [AppController],
   providers: [

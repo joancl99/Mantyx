@@ -5,6 +5,8 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseBoolPipe,
+  ParseIntPipe,
   ParseUUIDPipe,
   Post,
   Query,
@@ -51,6 +53,18 @@ export class StockController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.stock.findOne(id, user.companyId!);
+  }
+
+  @Get('overview')
+  @ApiOperation({ summary: 'Current stock levels for all products' })
+  getOverview(
+    @CurrentUser() user: JwtPayload,
+    @Query('search') search?: string,
+    @Query('lowStock', new ParseBoolPipe({ optional: true })) lowStock?: boolean,
+    @Query('page', new ParseIntPipe({ optional: true })) page?: number,
+    @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
+  ) {
+    return this.stock.getOverview(user.companyId!, { search, lowStock, page, limit });
   }
 
   @Get('by-product/:productId')

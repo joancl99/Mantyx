@@ -4,4 +4,58 @@
     <ion-title>Movimientos</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content></ion-content>
+
+<ion-content [scrollY]="true" [fullscreen]="true">
+  <div class="movements-page">
+
+    <!-- Header -->
+    <header class="page-header">
+      <div class="page-header__left">
+        <h1 class="page-title">Movimientos</h1>
+        <span class="page-subtitle">{{ list.totalLabel() }}</span>
+      </div>
+      @if (canCreate()) {
+        <button class="btn-primary" (click)="openCreate()">
+          <ion-icon name="add-outline" />
+          Nuevo movimiento
+        </button>
+      }
+    </header>
+
+    <app-movement-filters
+      [filterType]="list.filterType()"
+      [filterDateFrom]="list.filterDateFrom()"
+      [filterDateTo]="list.filterDateTo()"
+      [hasActiveFilters]="list.hasActiveFilters()"
+      (typeChanged)="list.onTypeFilter($event)"
+      (dateFromChanged)="list.onDateFromFilter($event)"
+      (dateToChanged)="list.onDateToFilter($event)"
+      (filtersCleared)="list.clearFilters()"
+    />
+
+    <app-movement-list
+      [movements]="list.movements()"
+      [loading]="list.loading()"
+      [hasActiveFilters]="list.hasActiveFilters()"
+      [currentPage]="list.currentPage()"
+      [totalPages]="list.totalPages()"
+      (pageChanged)="list.goToPage($event)"
+    />
+
+  </div>
+</ion-content>
+
+@if (showModal()) {
+  <app-create-movement-modal
+    [form]="form"
+    [products]="products()"
+    [warehouses]="warehouses()"
+    [availableTypes]="availableTypes"
+    [typeConfig]="typeConfig"
+    [submitted]="submitted()"
+    [saving]="saving()"
+    [formError]="formError()"
+    (closeModal)="closeModal()"
+    (submitForm)="submitForm()"
+  />
+}

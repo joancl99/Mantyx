@@ -1,15 +1,14 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { IsString, MinLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtPayload } from '../auth/types/jwt-payload.interface';
 import { CategoriesService } from './categories.service';
 
-class CreateCategoryDto {
-  @ApiProperty({ example: 'Zapatillas' })
+class CategoryNameDto {
+  @ApiProperty({ example: 'Electrónica' })
   @IsString()
   @MinLength(1)
   name: string;
@@ -30,7 +29,25 @@ export class CategoriesController {
   @Post()
   @Roles(Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Create a category (ADMIN, MANAGER)' })
-  create(@CurrentUser() user: JwtPayload, @Body() dto: CreateCategoryDto) {
+  create(@CurrentUser() user: JwtPayload, @Body() dto: CategoryNameDto) {
     return this.categories.create(user.companyId!, dto.name);
+  }
+
+  @Patch(':id')
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({ summary: 'Rename a category (ADMIN, MANAGER)' })
+  rename(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+    @Body() dto: CategoryNameDto,
+  ) {
+    return this.categories.rename(user.companyId!, id, dto.name);
+  }
+
+  @Delete(':id')
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Delete a category (ADMIN only)' })
+  remove(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
+    return this.categories.remove(user.companyId!, id);
   }
 }

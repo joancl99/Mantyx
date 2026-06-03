@@ -4,4 +4,46 @@
     <ion-title>Stock</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content></ion-content>
+
+<ion-content [scrollY]="true" [fullscreen]="true">
+  <div class="stock-page">
+
+    <!-- Header -->
+    <header class="page-header">
+      <div class="page-header__left">
+        <h1 class="page-title">Stock actual</h1>
+        <span class="page-subtitle">{{ totalLabel() }}</span>
+      </div>
+      <button
+        class="btn-filter"
+        [class.active]="filterLowStock()"
+        (click)="onToggleLowStock()"
+      >
+        <ion-icon name="warning-outline" />
+        Stock bajo
+      </button>
+    </header>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <ion-icon name="search-outline" class="search-icon" />
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Buscar por nombre o SKU..."
+        [value]="searchQuery()"
+        (input)="onSearch($event)"
+      />
+    </div>
+
+    <app-stock-list
+      [items]="items()"
+      [loading]="loading()"
+      [filterLowStock]="filterLowStock()"
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      (pageChange)="goToPage($event)"
+    />
+
+  </div>
+</ion-content>

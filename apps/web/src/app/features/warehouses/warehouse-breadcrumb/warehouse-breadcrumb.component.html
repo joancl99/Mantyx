@@ -1,0 +1,30 @@
+@if (currentView() !== 'warehouses') {
+  <nav class="breadcrumb">
+    <button class="back-btn" (click)="back.emit()" title="Atrás">
+      <ion-icon name="arrow-back-outline" />
+    </button>
+    <div class="bc-trail">
+      <button class="bc-link" (click)="levelChange.emit('warehouses')">Almacenes</button>
+      @if (selectedWarehouse()) {
+        <ion-icon name="chevron-forward-outline" class="bc-sep" />
+        @if (currentView() === 'zones') {
+          <span class="bc-current">{{ selectedWarehouse()!.name }}</span>
+        } @else {
+          <button class="bc-link" (click)="levelChange.emit('zones')">{{ selectedWarehouse()!.name }}</button>
+        }
+      }
+      @if (selectedZone()) {
+        <ion-icon name="chevron-forward-outline" class="bc-sep" />
+        @if (currentView() === 'aisles') {
+          <span class="bc-current">{{ selectedZone()!.name }}</span>
+        } @else {
+          <button class="bc-link" (click)="levelChange.emit('aisles')">{{ selectedZone()!.name }}</button>
+        }
+      }
+      @if (selectedAisle()) {
+        <ion-icon name="chevron-forward-outline" class="bc-sep" />
+        <span class="bc-current">{{ selectedAisle()!.name }}</span>
+      }
+    </div>
+  </nav>
+}

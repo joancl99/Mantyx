@@ -1,0 +1,103 @@
+<section class="detail-panel">
+  @if (loading()) {
+    <div class="state-center compact">
+      <ion-spinner name="crescent" class="main-spinner" />
+    </div>
+  } @else if (!count()) {
+    <div class="state-center compact">
+      <div class="empty-icon"><ion-icon name="list-outline" /></div>
+      <p class="empty-title">Selecciona un conteo</p>
+      <p class="empty-sub">Revisa líneas, cantidades y diferencias</p>
+    </div>
+  } @else {
+    <div class="detail-header">
+      <div>
+        <h2>{{ count()!.name }}</h2>
+        <p>{{ count()!.warehouse.name }} · {{ statusLabel(count()!.status) }}</p>
+      </div>
+      <div class="detail-actions">
+        @if (canStart()) {
+          <button class="btn-ghost" [disabled]="saving()" (click)="startCount.emit()">
+            <ion-icon name="play-outline" />
+            Iniciar
+          </button>
+        }
+        @if (canComplete()) {
+          <button class="btn-primary" [disabled]="saving()" (click)="completeCount.emit()">
+            <ion-icon name="checkmark-circle-outline" />
+            Completar
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (formError()) {
+      <div class="form-alert">{{ formError() }}</div>
+    }
+
+    @if (!isReadOnly()) {
+      <form class="line-form" [formGroup]="lineForm()" (ngSubmit)="addLine.emit()">
+        <select class="form-input" formControlName="zoneId" (change)="zoneChange.emit($any($event.target).value)">
+          <option value="">Zona</option>
+          @for (zone of zones(); track zone.id) {
+            <option [value]="zone.id">{{ zone.name }}</option>
+          }
+        </select>
+        <select class="form-input" formControlName="aisleId" (change)="aisleChange.emit($any($event.target).value)">
+          <option value="">Pasillo</option>
+          @for (aisle of aisles(); track aisle.id) {
+            <option [value]="aisle.id">{{ aisle.name }}</option>
+          }
+        </select>
+        <select class="form-input" formControlName="locationId">
+          <option value="">Ubicación</option>
+          @for (location of locations(); track location.id) {
+            <option [value]="location.id">{{ location.code }}</option>
+          }
+        </select>
+        <input class="form-input qty-input" type="number" min="0" formControlName="expectedQty" placeholder="Esperado auto" />
+        <button class="btn-primary" type="submit" [disabled]="saving()">
+          <ion-icon name="add-outline" />
+          Línea
+        </button>
+      </form>
+      @if (lineSubmitted() && lineForm().invalid) {
+        <p class="inline-error">Selecciona zona, pasillo y ubicación válidos.</p>
+      }
+    }
+
+    @if (lines().length === 0) {
+      <div class="empty-lines">Aún no hay líneas para este conteo.</div>
+    } @else {
+      <div class="line-list">
+        <div class="line-header">
+          <span>Ubicación</span>
+          <span>Esperado</span>
+          <span>Contado</span>
+          <span>Dif.</span>
+          <span></span>
+        </div>
+        @for (line of lines(); track line.id) {
+          <div class="line-row">
+            <span class="line-location">{{ lineLocationLabel(line) }}</span>
+            <span class="line-number">{{ line.expectedQty }}</span>
+            <input
+              class="form-input counted-input"
+              type="number"
+              min="0"
+              [value]="line.countedQty ?? ''"
+              [disabled]="isReadOnly()"
+              (change)="onCountedQtyChange(line, $event)"
+            />
+            <span class="line-number" [class.diff-negative]="(line.difference ?? 0) < 0" [class.diff-positive]="(line.difference ?? 0) > 0">
+              {{ line.difference === null ? '-' : line.difference }}
+            </span>
+            <button class="action-btn action-btn--delete" [disabled]="count()!.status !== 'DRAFT'" (click)="removeLine.emit(line)">
+              <ion-icon name="trash-outline" />
+            </button>
+          </div>
+        }
+      </div>
+    }
+  }
+</section>

@@ -1,0 +1,63 @@
+<header class="page-header">
+  <div class="page-header__left">
+    <h1 class="page-title">Almacenes</h1>
+    <span class="page-subtitle">
+      {{ activeCount() }} activo{{ activeCount() === 1 ? '' : 's' }} · {{ totalCount() }} total
+    </span>
+  </div>
+  @if (canEdit()) {
+    <button class="btn-primary" (click)="createWarehouse.emit()">
+      <ion-icon name="add-outline" />
+      Nuevo almacén
+    </button>
+  }
+</header>
+
+@if (loading()) {
+  <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
+} @else if (warehouses().length === 0) {
+  <div class="state-center">
+    <div class="empty-icon"><ion-icon name="business-outline" /></div>
+    <p class="empty-title">Sin almacenes</p>
+    <p class="empty-sub">Crea el primer almacén para empezar</p>
+  </div>
+} @else {
+  <div class="wh-list">
+    @for (wh of warehouses(); track wh.id) {
+      <div class="wh-row" [class.inactive]="!wh.isActive">
+        <div class="wh-icon"><ion-icon name="business-outline" /></div>
+        <div class="wh-info">
+          <div class="wh-name-row">
+            <span class="wh-name">{{ wh.name }}</span>
+            @if (!wh.isActive) { <span class="badge-inactive">Inactivo</span> }
+          </div>
+          @if (wh.address) {
+            <span class="wh-address">
+              <ion-icon name="location-outline" />{{ wh.address }}
+            </span>
+          }
+        </div>
+        <button class="wh-manage-btn" (click)="manageWarehouse.emit(wh)" title="Gestionar ubicaciones">
+          <ion-icon name="layers-outline" />
+          <span>{{ wh._count.zones }} zona{{ wh._count.zones === 1 ? '' : 's' }}</span>
+          <ion-icon name="chevron-forward-outline" class="enter-arrow" />
+        </button>
+        @if (canEdit()) {
+          <div class="wh-actions">
+            <button class="action-btn action-btn--edit" (click)="editWarehouse.emit(wh)" title="Editar">
+              <ion-icon name="create-outline" />
+            </button>
+            <button
+              class="action-btn"
+              [class]="wh.isActive ? 'action-btn--deactivate' : 'action-btn--activate'"
+              (click)="toggleWarehouse.emit(wh)"
+              [title]="wh.isActive ? 'Desactivar' : 'Activar'"
+            >
+              <ion-icon name="power-outline" />
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

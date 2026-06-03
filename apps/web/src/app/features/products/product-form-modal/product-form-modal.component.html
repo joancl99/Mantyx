@@ -1,0 +1,139 @@
+<div
+  class="modal-backdrop"
+  tabindex="0"
+  (click)="closeModal.emit()"
+  (keydown.escape)="closeModal.emit()"
+>
+  <div class="modal" role="presentation" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">
+        {{ mode() === 'create' ? 'Nuevo producto' : 'Editar producto' }}
+      </h2>
+      <button class="modal-close" (click)="closeModal.emit()">
+        <ion-icon name="close-outline" />
+      </button>
+    </div>
+
+    <form [formGroup]="form()" (ngSubmit)="submitForm.emit()" class="modal-body">
+      <div class="form-row">
+        <div
+          class="form-field"
+          [class.has-error]="submitted() && form().get('name')?.invalid"
+        >
+          <label class="form-label" for="prod-name">Nombre *</label>
+          <input
+            id="prod-name"
+            class="form-input"
+            formControlName="name"
+            placeholder="Nike Air Basic"
+          />
+          @if (submitted() && form().get('name')?.hasError('required')) {
+            <span class="form-error">Campo obligatorio</span>
+          }
+        </div>
+        <div
+          class="form-field"
+          [class.has-error]="submitted() && form().get('sku')?.invalid"
+        >
+          <label class="form-label" for="prod-sku">SKU *</label>
+          <input
+            id="prod-sku"
+            class="form-input"
+            formControlName="sku"
+            placeholder="ZAP-NIK-AIR-42"
+          />
+          @if (submitted() && form().get('sku')?.hasError('required')) {
+            <span class="form-error">Campo obligatorio</span>
+          }
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label" for="prod-barcode">Código de barras</label>
+          <input
+            id="prod-barcode"
+            class="form-input"
+            formControlName="barcode"
+            placeholder="8412345678901"
+          />
+        </div>
+        <div
+          class="form-field"
+          [class.has-error]="submitted() && form().get('minStock')?.invalid"
+        >
+          <label class="form-label" for="prod-minstock">Stock mínimo *</label>
+          <input
+            id="prod-minstock"
+            class="form-input"
+            type="number"
+            formControlName="minStock"
+            placeholder="5"
+            min="0"
+          />
+          @if (submitted() && form().get('minStock')?.invalid) {
+            <span class="form-error">Número >= 0</span>
+          }
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div
+          class="form-field"
+          [class.has-error]="submitted() && form().get('categoryId')?.invalid"
+        >
+          <label class="form-label" for="prod-category">Categoría *</label>
+          <select id="prod-category" class="form-input" formControlName="categoryId">
+            <option value="">Seleccionar categoría</option>
+            @for (cat of categories(); track cat.id) {
+              <option [value]="cat.id">{{ cat.name }}</option>
+            }
+          </select>
+          @if (submitted() && form().get('categoryId')?.hasError('required')) {
+            <span class="form-error">Selecciona una categoría</span>
+          }
+        </div>
+        <div class="form-field">
+          <label class="form-label" for="prod-brand">Marca</label>
+          <select id="prod-brand" class="form-input" formControlName="brandId">
+            <option value="">Sin marca</option>
+            @for (brand of brands(); track brand.id) {
+              <option [value]="brand.id">{{ brand.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="prod-description">Descripción</label>
+        <textarea
+          id="prod-description"
+          class="form-input form-textarea"
+          formControlName="description"
+          rows="3"
+          placeholder="Descripción opcional..."
+        ></textarea>
+      </div>
+
+      @if (formError()) {
+        <div class="form-alert">
+          <ion-icon name="alert-circle-outline" />
+          {{ formError() }}
+        </div>
+      }
+
+      <div class="modal-footer">
+        <button type="button" class="btn-ghost" (click)="closeModal.emit()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="saving()">
+          @if (saving()) {
+            <ion-spinner name="crescent" />
+          } @else {
+            {{ mode() === 'create' ? 'Crear producto' : 'Guardar cambios' }}
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
