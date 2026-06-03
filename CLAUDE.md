@@ -76,6 +76,7 @@ Frontend areas currently present:
 - Products has shared frontend models in `core/models/product.models.ts` and child components for filters, list, form modal, and delete modal.
 - Products list, filters, pagination, and debounced search state lives in feature-local `products-list-state.ts`.
 - Stock and movements use shared stock models in `core/models/stock.models.ts`; stock has a list/pagination child component, and movements has filter, list, and create modal components.
+- Movements list, filters, pagination, and total label state lives in feature-local `movements-list-state.ts`.
 - Dashboard has shared frontend models in `core/models/dashboard.models.ts`; `DashboardService` should remain HTTP-focused.
 - Admin has shared frontend models in `core/models/user.models.ts` and `core/models/company.models.ts`, plus child components for company list, users panel, and catalog panel.
 - Admin category/brand list, modal, save, and delete orchestration is shared through feature-local `admin-catalog-state.ts`.
@@ -86,7 +87,7 @@ Frontend areas currently present:
 Remaining frontend refactor notes:
 
 - First-pass component extraction is done for Inventory, Warehouses, Products, Movements, Stock, Dashboard, and Admin.
-- Second-pass cleanup should focus on slimming feature container `.component.ts` files that still own too much orchestration state, especially Movements. Admin catalog state, Warehouses navigation state, Inventory line location state, and Products list state are extracted, but Admin user/company modals, Warehouses sublevel CRUD, Inventory detail actions, and Products form/delete orchestration can still be revisited later.
+- The main second-pass frontend container cleanup is complete for Admin, Warehouses, Inventory, Products, and Movements. Optional follow-ups remain for Admin user/company modals, Warehouses sublevel CRUD, Inventory detail actions, Products form/delete orchestration, and Movements create modal orchestration.
 - Dashboard still has a large component stylesheet; move repeated card/grid/stat patterns to shared styles only when another feature needs the same pattern.
 - `_shared.scss` owns shared action button variants, including activate/deactivate modifiers used across Admin and Warehouses.
 - Management is a routed placeholder page; Receptions, Expeditions, and Stock Query are placeholder components not currently exposed in the shell routes.

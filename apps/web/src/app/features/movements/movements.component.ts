@@ -23,7 +23,6 @@ import {
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import {
-  StockMovement,
   MovementType,
   CreateMovementDto,
 } from '../../core/models/stock.models';
@@ -35,6 +34,7 @@ import { WarehousesService } from '../../core/services/warehouses.service';
 import { CreateMovementModalComponent } from './create-movement-modal/create-movement-modal.component';
 import { MovementFiltersComponent } from './movement-filters/movement-filters.component';
 import { MovementListComponent } from './movement-list/movement-list.component';
+import { MovementsListState } from './movements-list-state';
 import { MOVEMENT_FORM_TYPES, MOVEMENT_TYPE_CONFIG } from './movement-types';
 
 @Component({
@@ -66,26 +66,10 @@ export class MovementsComponent implements OnInit {
   readonly availableTypes = MOVEMENT_FORM_TYPES;
 
   // ── State ──────────────────────────────────────────────────────────────────
-  readonly movements = signal<StockMovement[]>([]);
   readonly products = signal<Product[]>([]);
   readonly warehouses = signal<Warehouse[]>([]);
-  readonly loading = signal(true);
   readonly saving = signal(false);
-
-  readonly filterType = signal<MovementType | ''>('');
-  readonly filterDateFrom = signal('');
-  readonly filterDateTo = signal('');
-  readonly currentPage = signal(1);
-  readonly total = signal(0);
-  readonly pageSize = 20;
-
-  readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.total() / this.pageSize)),
-  );
-  readonly totalLabel = computed(() => {
-    const t = this.total();
-    return t === 0 ? 'Sin resultados' : `${t} movimiento${t === 1 ? '' : 's'}`;
-  });
+  readonly list = new MovementsListState(this.stockService, this.destroyRef);
 
   // ── Permissions ──────────────────────────────────────────────────────────
   readonly canCreate = computed(() => {
@@ -113,7 +97,7 @@ export class MovementsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.loadMovements();
+    this.list.load();
     this.loadFormData();
   }
 
@@ -127,62 +111,6 @@ export class MovementsComponent implements OnInit {
       .getAll()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((wh) => this.warehouses.set(wh));
-  }
-
-  loadMovements() {
-    this.loading.set(true);
-    this.stockService
-      .getAll({
-        page: this.currentPage(),
-        limit: this.pageSize,
-        type: this.filterType() || undefined,
-        dateFrom: this.filterDateFrom() || undefined,
-        dateTo: this.filterDateTo() || undefined,
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (res) => {
-          this.movements.set(res.data);
-          this.total.set(res.total);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
-  }
-
-  onTypeFilter(event: Event) {
-    this.filterType.set((event.target as HTMLSelectElement).value as MovementType | '');
-    this.currentPage.set(1);
-    this.loadMovements();
-  }
-
-  onDateFromFilter(event: Event) {
-    this.filterDateFrom.set((event.target as HTMLInputElement).value);
-    this.currentPage.set(1);
-    this.loadMovements();
-  }
-
-  onDateToFilter(event: Event) {
-    this.filterDateTo.set((event.target as HTMLInputElement).value);
-    this.currentPage.set(1);
-    this.loadMovements();
-  }
-
-  clearFilters() {
-    this.filterType.set('');
-    this.filterDateFrom.set('');
-    this.filterDateTo.set('');
-    this.currentPage.set(1);
-    this.loadMovements();
-  }
-
-  readonly hasActiveFilters = computed(
-    () => !!this.filterType() || !!this.filterDateFrom() || !!this.filterDateTo(),
-  );
-
-  goToPage(page: number) {
-    this.currentPage.set(page);
-    this.loadMovements();
   }
 
   // ── Modal ────────────────────────────────────────────────────────────────
@@ -220,8 +148,8 @@ export class MovementsComponent implements OnInit {
         next: () => {
           this.saving.set(false);
           this.showModal.set(false);
-          this.currentPage.set(1);
-          this.loadMovements();
+          this.list.currentPage.set(1);
+          this.list.load();
         },
         error: (err) => {
           this.saving.set(false);
