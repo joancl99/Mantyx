@@ -13,23 +13,18 @@ import {
 import { addIcons } from 'ionicons';
 import { addOutline } from 'ionicons/icons';
 import {
-  AddInventoryLineDto,
   InventoryCount,
   InventoryCountLine,
   InventoryCountStatus,
 } from './models/inventory.models';
 import { InventoryService } from './data-access/inventory.service';
-import {
-  Aisle,
-  Location,
-  Warehouse,
-  Zone,
-} from '../../core/models/warehouse.models';
+import { Warehouse } from '../../core/models/warehouse.models';
 import { WarehousesService } from '../../core/services/warehouses.service';
 import { CreateInventoryCountModalComponent } from './create-inventory-count-modal/create-inventory-count-modal.component';
 import { InventoryCountDetailComponent } from './inventory-count-detail/inventory-count-detail.component';
 import { InventoryCountListComponent } from './inventory-count-list/inventory-count-list.component';
 import { InventoryFiltersComponent } from './inventory-filters/inventory-filters.component';
+import { InventoryLineLocationState } from './inventory-line-location-state';
 import { INVENTORY_STATUS_OPTIONS } from './inventory-status';
 
 @Component({
@@ -59,9 +54,10 @@ export class InventoryComponent implements OnInit {
   readonly counts = signal<InventoryCount[]>([]);
   readonly selectedCount = signal<InventoryCount | null>(null);
   readonly warehouses = signal<Warehouse[]>([]);
-  readonly zones = signal<Zone[]>([]);
-  readonly aisles = signal<Aisle[]>([]);
-  readonly locations = signal<Location[]>([]);
+  readonly lineLocation = new InventoryLineLocationState(
+    this.warehousesService,
+    this.destroyRef,
+  );
 
   readonly loading = signal(true);
   readonly detailLoading = signal(false);
@@ -87,13 +83,6 @@ export class InventoryComponent implements OnInit {
   readonly createForm = new FormGroup({
     name: new FormControl('', [Validators.required, Validators.minLength(2)]),
     warehouseId: new FormControl('', Validators.required),
-  });
-
-  readonly lineForm = new FormGroup({
-    zoneId: new FormControl('', Validators.required),
-    aisleId: new FormControl('', Validators.required),
-    locationId: new FormControl('', Validators.required),
-    expectedQty: new FormControl<number | null>(null, Validators.min(0)),
   });
 
   constructor() {
@@ -139,8 +128,8 @@ export class InventoryComponent implements OnInit {
         next: (detail) => {
           this.selectedCount.set(detail);
           this.detailLoading.set(false);
-          this.resetLineForm();
-          this.loadZones(detail.warehouseId);
+          this.lineSubmitted.set(false);
+          this.lineLocation.resetForWarehouse(detail.warehouseId);
         },
         error: () => this.detailLoading.set(false),
       });
@@ -218,36 +207,22 @@ export class InventoryComponent implements OnInit {
   }
 
   onZoneChange(zoneId: string) {
-    this.lineForm.patchValue({ zoneId, aisleId: '', locationId: '' });
-    this.aisles.set([]);
-    this.locations.set([]);
-    const count = this.selectedCount();
-    if (count && zoneId) this.loadAisles(count.warehouseId, zoneId);
+    this.lineLocation.onZoneChange(zoneId);
   }
 
   onAisleChange(aisleId: string) {
-    this.lineForm.patchValue({ aisleId, locationId: '' });
-    this.locations.set([]);
-    const count = this.selectedCount();
-    const zoneId = this.lineForm.controls.zoneId.value;
-    if (count && zoneId && aisleId) this.loadLocations(count.warehouseId, zoneId, aisleId);
+    this.lineLocation.onAisleChange(aisleId);
   }
 
   submitLine() {
     const count = this.selectedCount();
     if (!count) return;
     this.lineSubmitted.set(true);
-    if (this.lineForm.invalid) return;
-
-    const raw = this.lineForm.getRawValue();
-    const dto: AddInventoryLineDto = {
-      locationId: raw.locationId!,
-      expectedQty: raw.expectedQty === null ? undefined : Number(raw.expectedQty),
-    };
+    if (this.lineLocation.form.invalid) return;
 
     this.saving.set(true);
     this.formError.set('');
-    this.inventoryService.addLine(count.id, dto).subscribe({
+    this.inventoryService.addLine(count.id, this.lineLocation.toDto()).subscribe({
       next: () => {
         this.saving.set(false);
         this.loadDetail(count);
@@ -284,34 +259,6 @@ export class InventoryComponent implements OnInit {
       .getAll()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((warehouses) => this.warehouses.set(warehouses));
-  }
-
-  private loadZones(warehouseId: string) {
-    this.warehousesService
-      .getZones(warehouseId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((zones) => this.zones.set(zones));
-  }
-
-  private loadAisles(warehouseId: string, zoneId: string) {
-    this.warehousesService
-      .getAisles(warehouseId, zoneId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((aisles) => this.aisles.set(aisles));
-  }
-
-  private loadLocations(warehouseId: string, zoneId: string, aisleId: string) {
-    this.warehousesService
-      .getLocations(warehouseId, zoneId, aisleId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((locations) => this.locations.set(locations));
-  }
-
-  private resetLineForm() {
-    this.lineSubmitted.set(false);
-    this.lineForm.reset({ zoneId: '', aisleId: '', locationId: '', expectedQty: null });
-    this.aisles.set([]);
-    this.locations.set([]);
   }
 
   private afterDetailAction(updated: InventoryCount) {

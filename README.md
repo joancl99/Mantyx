@@ -101,6 +101,7 @@ Implemented inventory API endpoints:
 Frontend refactor status:
 
 - Inventory uses feature-local `data-access`, `models`, filters, list, create modal, and detail components.
+- Inventory line location selector state lives in `inventory-line-location-state.ts`.
 - Warehouses uses shared `core/models/warehouse.models.ts` and child components for breadcrumb, warehouse list, and sublevel list.
 - Products uses shared `core/models/product.models.ts` and child components for filters, list, form modal, and delete modal.
 - Stock and movements use shared `core/models/stock.models.ts`; stock has a list/pagination child component, and movements has filter, list, and create modal components.
@@ -113,7 +114,7 @@ Frontend refactor status:
 Remaining frontend refactor work:
 
 - First-pass extraction is complete for the main implemented feature pages.
-- Second-pass cleanup should slim large feature containers that still own orchestration state: Inventory, Products, and Movements. Admin catalog orchestration and Warehouses navigation state have been extracted; remaining Admin/Warehouses modal orchestration can still be revisited later.
+- Second-pass cleanup should slim large feature containers that still own orchestration state: Products and Movements. Admin catalog orchestration, Warehouses navigation state, and Inventory line location state have been extracted; remaining Admin/Warehouses/Inventory modal and detail orchestration can still be revisited later.
 - Dashboard still has a large component stylesheet; extract only reusable patterns to `_shared.scss` when another feature needs them.
 - Shared activate/deactivate action button variants are centralized in `_shared.scss`.
 - Management is a routed placeholder page.

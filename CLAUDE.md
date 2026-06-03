@@ -71,6 +71,7 @@ Frontend areas currently present:
 
 - Feature containers are being kept lean by extracting list/filter/modal/detail components where practical.
 - Inventory has feature-local `data-access`, `models`, status helpers, list, filters, create modal, and detail components.
+- Inventory line location selector state (`zone -> aisle -> location`) lives in feature-local `inventory-line-location-state.ts`.
 - Warehouses has shared frontend models in `core/models/warehouse.models.ts` and child components for breadcrumb, warehouse list, and sublevel list.
 - Products has shared frontend models in `core/models/product.models.ts` and child components for filters, list, form modal, and delete modal.
 - Stock and movements use shared stock models in `core/models/stock.models.ts`; stock has a list/pagination child component, and movements has filter, list, and create modal components.
@@ -84,7 +85,7 @@ Frontend areas currently present:
 Remaining frontend refactor notes:
 
 - First-pass component extraction is done for Inventory, Warehouses, Products, Movements, Stock, Dashboard, and Admin.
-- Second-pass cleanup should focus on slimming feature container `.component.ts` files that still own too much orchestration state, especially Inventory, Products, and Movements. Admin catalog state and Warehouses navigation state are extracted, but Admin user/company modals and Warehouses sublevel CRUD can still be revisited later.
+- Second-pass cleanup should focus on slimming feature container `.component.ts` files that still own too much orchestration state, especially Products and Movements. Admin catalog state, Warehouses navigation state, and Inventory line location state are extracted, but Admin user/company modals, Warehouses sublevel CRUD, and Inventory detail action orchestration can still be revisited later.
 - Dashboard still has a large component stylesheet; move repeated card/grid/stat patterns to shared styles only when another feature needs the same pattern.
 - `_shared.scss` owns shared action button variants, including activate/deactivate modifiers used across Admin and Warehouses.
 - Management is a routed placeholder page; Receptions, Expeditions, and Stock Query are placeholder components not currently exposed in the shell routes.
