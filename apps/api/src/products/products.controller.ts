@@ -24,6 +24,7 @@ import {
 } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { diskStorage } from 'multer';
+import { mkdirSync } from 'fs';
 import { extname, join } from 'path';
 import { randomUUID } from 'crypto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -38,7 +39,11 @@ const ALLOWED_TYPES = /\.(jpg|jpeg|png|webp)$/i;
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 
 const imageStorage = diskStorage({
-  destination: join(process.cwd(), 'uploads', 'products'),
+  destination: (_req, _file, cb) => {
+    const uploadDir = join(process.cwd(), 'uploads', 'products');
+    mkdirSync(uploadDir, { recursive: true });
+    cb(null, uploadDir);
+  },
   filename: (_req, file, cb) => cb(null, `${randomUUID()}${extname(file.originalname)}`),
 });
 

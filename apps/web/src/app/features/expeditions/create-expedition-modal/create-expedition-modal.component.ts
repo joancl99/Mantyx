@@ -128,7 +128,7 @@ export class CreateExpeditionModalComponent implements OnInit {
   }
 
   isFormValid(): boolean {
-    return !!this.selectedWarehouseId && this.lines.length > 0 && this.lines.every((l) => this.isLineValid(l));
+    return !!this.selectedWarehouseId && !!this.selectedLocationId && this.lines.length > 0 && this.lines.every((l) => this.isLineValid(l));
   }
 
   exportCsv() {

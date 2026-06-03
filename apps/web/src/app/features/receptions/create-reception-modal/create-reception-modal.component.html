@@ -91,14 +91,17 @@
             }
 
             @if (locations().length > 0) {
-              <div class="form-field">
-                <label class="form-label">Ubicación</label>
+              <div class="form-field" [class.has-error]="submitted && !selectedLocationId">
+                <label class="form-label">Ubicación *</label>
                 <select class="form-input" [(ngModel)]="selectedLocationId">
-                  <option value="">Sin ubicación específica</option>
+                  <option value="">Seleccionar ubicación</option>
                   @for (loc of locations(); track loc.id) {
                     <option [value]="loc.id">{{ loc.code }}</option>
                   }
                 </select>
+                @if (submitted && !selectedLocationId) {
+                  <span class="form-error">Selecciona una ubicación</span>
+                }
               </div>
             }
           </div>
@@ -183,6 +186,11 @@
         <div class="form-alert">
           <ion-icon name="alert-circle-outline" />
           {{ formError() }}
+        </div>
+      } @else if (submitted && selectedWarehouseId && !selectedLocationId) {
+        <div class="form-alert">
+          <ion-icon name="alert-circle-outline" />
+          Selecciona una ubicación de destino
         </div>
       }
 

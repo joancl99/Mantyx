@@ -54,48 +54,50 @@ export class StockService {
       let newStock = previousStock;
 
       if (type === MovementType.INBOUND) {
-        newStock = previousStock + quantity;
-        if (toLocationId) {
-          await tx.stockEntry.upsert({
-            where: {
-              productId_variantId_locationId: {
-                productId,
-                variantId: null as unknown as string,
-                locationId: toLocationId,
-              },
-            },
-            create: { productId, locationId: toLocationId, quantity },
-            update: { quantity: { increment: quantity } },
-          });
+        if (!toLocationId) {
+          throw new BadRequestException('INBOUND requires toLocationId');
         }
+        newStock = previousStock + quantity;
+        await tx.stockEntry.upsert({
+          where: {
+            productId_variantId_locationId: {
+              productId,
+              variantId: null as unknown as string,
+              locationId: toLocationId,
+            },
+          },
+          create: { productId, locationId: toLocationId, quantity },
+          update: { quantity: { increment: quantity } },
+        });
       } else if (type === MovementType.OUTBOUND) {
+        if (!fromLocationId) {
+          throw new BadRequestException('OUTBOUND requires fromLocationId');
+        }
         if (previousStock < quantity) {
           throw new BadRequestException(
             `Insufficient stock: available ${previousStock}, requested ${quantity}`,
           );
         }
         newStock = previousStock - quantity;
-        if (fromLocationId) {
-          const sourceEntry = await tx.stockEntry.findFirst({
-            where: { productId, locationId: fromLocationId },
-          });
-          const sourceStock = sourceEntry?.quantity ?? 0;
-          if (sourceStock < quantity) {
-            throw new BadRequestException(
-              `Insufficient stock at source location: available ${sourceStock}, requested ${quantity}`,
-            );
-          }
-          await tx.stockEntry.update({
-            where: {
-              productId_variantId_locationId: {
-                productId,
-                variantId: null as unknown as string,
-                locationId: fromLocationId,
-              },
-            },
-            data: { quantity: { decrement: quantity } },
-          });
+        const sourceEntry = await tx.stockEntry.findFirst({
+          where: { productId, locationId: fromLocationId },
+        });
+        const sourceStock = sourceEntry?.quantity ?? 0;
+        if (sourceStock < quantity) {
+          throw new BadRequestException(
+            `Insufficient stock at source location: available ${sourceStock}, requested ${quantity}`,
+          );
         }
+        await tx.stockEntry.update({
+          where: {
+            productId_variantId_locationId: {
+              productId,
+              variantId: null as unknown as string,
+              locationId: fromLocationId,
+            },
+          },
+          data: { quantity: { decrement: quantity } },
+        });
       } else if (type === MovementType.TRANSFER) {
         if (!fromLocationId || !toLocationId) {
           throw new BadRequestException(

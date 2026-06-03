@@ -51,6 +51,7 @@ Thumbs.db
 .agents/
 
 # environment files — never commit secrets
+.env
 apps/api/.env
 *.env.local
 
