@@ -11,10 +11,11 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { addOutline } from 'ionicons/icons';
+import { addOutline, downloadOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
+import { CsvExportService } from '../../core/services/csv-export.service';
 import { StockService } from '../../core/services/stock.service';
-import { CreateMovementDto } from '../../core/models/stock.models';
+import { CreateMovementDto, StockMovement } from '../../core/models/stock.models';
 import { ReceptionsListState } from './receptions-list-state';
 import { ReceptionFiltersComponent } from './reception-filters/reception-filters.component';
 import { ReceptionListComponent } from './reception-list/reception-list.component';
@@ -44,11 +45,13 @@ import {
 export class ReceptionsComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly stockService = inject(StockService);
+  private readonly csvExport = inject(CsvExportService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly saving = signal(false);
   readonly formError = signal('');
   readonly showModal = signal(false);
+  readonly submitSucceeded = signal(false);
   readonly list = new ReceptionsListState(this.stockService, this.destroyRef);
 
   readonly canCreate = computed(() => {
@@ -62,11 +65,26 @@ export class ReceptionsComponent implements OnInit {
   });
 
   constructor() {
-    addIcons({ addOutline });
+    addIcons({ addOutline, downloadOutline });
   }
 
   ngOnInit() {
     this.list.load();
+  }
+
+  exportCsv() {
+    this.stockService
+      .getAll({ type: 'INBOUND', limit: 9999, dateFrom: this.list.filterDateFrom() || undefined, dateTo: this.list.filterDateTo() || undefined })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res) => {
+        const headers = ['Fecha', 'Producto', 'SKU', 'Cantidad', 'Stock anterior', 'Stock nuevo', 'Almacén', 'Notas'];
+        const rows = res.data.map((m: StockMovement) => [
+          new Date(m.createdAt).toLocaleDateString('es-ES'),
+          m.product.name, m.product.sku, m.quantity,
+          m.previousStock, m.newStock, m.warehouse.name, m.notes ?? '',
+        ]);
+        this.csvExport.export('recepciones', headers, rows);
+      });
   }
 
   openModal() {
@@ -76,6 +94,7 @@ export class ReceptionsComponent implements OnInit {
 
   closeModal() {
     this.showModal.set(false);
+    this.submitSucceeded.set(false);
   }
 
   onSubmit(data: ReceptionSubmitData) {
@@ -99,7 +118,7 @@ export class ReceptionsComponent implements OnInit {
       .subscribe({
         next: () => {
           this.saving.set(false);
-          this.showModal.set(false);
+          this.submitSucceeded.set(true);
           this.list.currentPage.set(1);
           this.list.load();
         },

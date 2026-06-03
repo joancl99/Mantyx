@@ -6,6 +6,23 @@
 >
   <div class="modal modal--reception" role="presentation" (click)="$event.stopPropagation()">
 
+    @if (submitSucceeded()) {
+      <div class="modal-success">
+        <div class="success-icon">
+          <ion-icon name="checkmark-circle-outline" />
+        </div>
+        <h2 class="success-title">Recepción registrada</h2>
+        <p class="success-sub">{{ lastSubmittedData?.lines?.length }} línea{{ lastSubmittedData?.lines?.length === 1 ? '' : 's' }} registradas correctamente.</p>
+        <div class="success-actions">
+          <button class="btn-export" (click)="exportCsv()">
+            <ion-icon name="download-outline" />
+            Exportar albarán CSV
+          </button>
+          <button class="btn-ghost" (click)="closeModal.emit()">Cerrar</button>
+        </div>
+      </div>
+    } @else {
+
     <div class="modal-header">
       <div class="modal-header-left">
         <div class="modal-icon">
@@ -181,6 +198,8 @@
         }
       </button>
     </div>
+
+    } <!-- end @else (form state) -->
 
   </div>
 </div>

@@ -13,12 +13,18 @@
         <h1 class="page-title">Expediciones</h1>
         <span class="page-subtitle">{{ list.totalLabel() }}</span>
       </div>
-      @if (canCreate()) {
-        <button class="btn-primary" (click)="openModal()">
-          <ion-icon name="add-outline" />
-          Nueva expedición
+      <div class="page-header__actions">
+        <button class="btn-export" (click)="exportCsv()">
+          <ion-icon name="download-outline" />
+          Exportar CSV
         </button>
-      }
+        @if (canCreate()) {
+          <button class="btn-primary" (click)="openModal()">
+            <ion-icon name="add-outline" />
+            Nueva expedición
+          </button>
+        }
+      </div>
     </header>
 
     <app-expedition-filters
@@ -46,6 +52,7 @@
   <app-create-expedition-modal
     [saving]="saving()"
     [formError]="formError()"
+    [submitSucceeded]="submitSucceeded()"
     (closeModal)="closeModal()"
     (submitForm)="onSubmit($event)"
   />

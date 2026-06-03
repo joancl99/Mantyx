@@ -19,12 +19,14 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
+  downloadOutline,
   searchOutline,
   warningOutline,
 } from 'ionicons/icons';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { StockOverviewItem } from '../../core/models/stock.models';
 import { StockService } from '../../core/services/stock.service';
+import { CsvExportService } from '../../core/services/csv-export.service';
 import { StockListComponent } from './stock-list/stock-list.component';
 
 @Component({
@@ -46,6 +48,7 @@ import { StockListComponent } from './stock-list/stock-list.component';
 })
 export class StockComponent implements OnInit {
   private readonly stockService = inject(StockService);
+  private readonly csvExport = inject(CsvExportService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly searchSubject = new Subject<string>();
 
@@ -73,6 +76,7 @@ export class StockComponent implements OnInit {
 
   constructor() {
     addIcons({
+      downloadOutline,
       searchOutline,
       warningOutline,
     });
@@ -120,6 +124,23 @@ export class StockComponent implements OnInit {
   goToPage(page: number) {
     this.currentPage.set(page);
     this.load();
+  }
+
+  exportCsv() {
+    this.stockService
+      .getOverview({
+        search: this.searchQuery() || undefined,
+        lowStock: this.filterLowStock() || undefined,
+        limit: 9999,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res) => {
+        const headers = ['Producto', 'SKU', 'Stock Total', 'Stock Mínimo'];
+        const rows = res.data.map((i: StockOverviewItem) => [
+          i.name, i.sku, i.totalStock, i.minStock,
+        ]);
+        this.csvExport.export('stock', headers, rows);
+      });
   }
 
 }

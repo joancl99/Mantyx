@@ -18,13 +18,13 @@ import {
   IonTitle,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import {
-  addOutline,
-} from 'ionicons/icons';
+import { addOutline, downloadOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
+import { CsvExportService } from '../../core/services/csv-export.service';
 import {
   MovementType,
   CreateMovementDto,
+  StockMovement,
 } from '../../core/models/stock.models';
 import { StockService } from '../../core/services/stock.service';
 import { Product } from '../../core/models/product.models';
@@ -58,6 +58,7 @@ import { MOVEMENT_FORM_TYPES, MOVEMENT_TYPE_CONFIG } from './movement-types';
 export class MovementsComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly stockService = inject(StockService);
+  private readonly csvExport = inject(CsvExportService);
   private readonly productsService = inject(ProductsService);
   private readonly warehousesService = inject(WarehousesService);
   private readonly destroyRef = inject(DestroyRef);
@@ -93,6 +94,7 @@ export class MovementsComponent implements OnInit {
   constructor() {
     addIcons({
       addOutline,
+      downloadOutline,
     });
   }
 
@@ -114,6 +116,21 @@ export class MovementsComponent implements OnInit {
   }
 
   // ── Modal ────────────────────────────────────────────────────────────────
+  exportCsv() {
+    this.stockService
+      .getAll({ limit: 9999, type: this.list.filterType() || undefined, dateFrom: this.list.filterDateFrom() || undefined, dateTo: this.list.filterDateTo() || undefined })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res) => {
+        const headers = ['Fecha', 'Tipo', 'Producto', 'SKU', 'Cantidad', 'Stock anterior', 'Stock nuevo', 'Almacén', 'Notas'];
+        const rows = res.data.map((m: StockMovement) => [
+          new Date(m.createdAt).toLocaleDateString('es-ES'),
+          m.type, m.product.name, m.product.sku, m.quantity,
+          m.previousStock, m.newStock, m.warehouse.name, m.notes ?? '',
+        ]);
+        this.csvExport.export('movimientos', headers, rows);
+      });
+  }
+
   openCreate() {
     this.form.reset({ type: 'INBOUND', quantity: 1 });
     this.submitted.set(false);
