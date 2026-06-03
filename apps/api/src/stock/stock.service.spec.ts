@@ -82,6 +82,62 @@ describe('StockService', () => {
     expect(prisma.stockMovement.create).not.toHaveBeenCalled();
   });
 
+  it('rejects inbound movement without a destination location', async () => {
+    prisma.product.findFirst.mockResolvedValue({
+      id: 'product-1',
+      name: 'Widget',
+      sku: 'W-1',
+      minStock: 2,
+    });
+    prisma.warehouse.findFirst.mockResolvedValue({ id: 'warehouse-1' });
+    prisma.stockEntry.aggregate.mockResolvedValue({ _sum: { quantity: 10 } });
+
+    await expect(
+      service.createMovement(
+        {
+          productId: 'product-1',
+          warehouseId: 'warehouse-1',
+          type: MovementType.INBOUND,
+          quantity: 5,
+        },
+        'user-1',
+        'company-1',
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
+
+    expect(prisma.location.findFirst).not.toHaveBeenCalled();
+    expect(prisma.stockEntry.upsert).not.toHaveBeenCalled();
+    expect(prisma.stockMovement.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects outbound movement without a source location', async () => {
+    prisma.product.findFirst.mockResolvedValue({
+      id: 'product-1',
+      name: 'Widget',
+      sku: 'W-1',
+      minStock: 2,
+    });
+    prisma.warehouse.findFirst.mockResolvedValue({ id: 'warehouse-1' });
+    prisma.stockEntry.aggregate.mockResolvedValue({ _sum: { quantity: 10 } });
+
+    await expect(
+      service.createMovement(
+        {
+          productId: 'product-1',
+          warehouseId: 'warehouse-1',
+          type: MovementType.OUTBOUND,
+          quantity: 5,
+        },
+        'user-1',
+        'company-1',
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
+
+    expect(prisma.location.findFirst).not.toHaveBeenCalled();
+    expect(prisma.stockEntry.update).not.toHaveBeenCalled();
+    expect(prisma.stockMovement.create).not.toHaveBeenCalled();
+  });
+
   it('rejects movement when location is outside the warehouse scope', async () => {
     prisma.product.findFirst.mockResolvedValue({
       id: 'product-1',
@@ -143,6 +199,46 @@ describe('StockService', () => {
 
     expect(prisma.stockEntry.update).not.toHaveBeenCalled();
     expect(prisma.stockEntry.upsert).not.toHaveBeenCalled();
+    expect(prisma.stockMovement.create).not.toHaveBeenCalled();
+  });
+
+  it('validates both transfer locations against the warehouse scope', async () => {
+    prisma.product.findFirst.mockResolvedValue({
+      id: 'product-1',
+      name: 'Widget',
+      sku: 'W-1',
+      minStock: 2,
+    });
+    prisma.warehouse.findFirst.mockResolvedValue({ id: 'warehouse-1' });
+    prisma.location.findFirst.mockResolvedValueOnce({ id: 'location-1' }).mockResolvedValueOnce(null);
+
+    await expect(
+      service.createMovement(
+        {
+          productId: 'product-1',
+          warehouseId: 'warehouse-1',
+          type: MovementType.TRANSFER,
+          quantity: 2,
+          fromLocationId: 'location-1',
+          toLocationId: 'foreign-location',
+        },
+        'user-1',
+        'company-1',
+      ),
+    ).rejects.toBeInstanceOf(NotFoundException);
+
+    expect(prisma.location.findFirst).toHaveBeenNthCalledWith(1, {
+      where: {
+        id: 'location-1',
+        aisle: { zone: { warehouse: { id: 'warehouse-1', companyId: 'company-1' } } },
+      },
+    });
+    expect(prisma.location.findFirst).toHaveBeenNthCalledWith(2, {
+      where: {
+        id: 'foreign-location',
+        aisle: { zone: { warehouse: { id: 'warehouse-1', companyId: 'company-1' } } },
+      },
+    });
     expect(prisma.stockMovement.create).not.toHaveBeenCalled();
   });
 
