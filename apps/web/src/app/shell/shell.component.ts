@@ -29,6 +29,8 @@ import {
   sendOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../core/services/auth.service';
+import { ScannerService } from '../core/services/scanner.service';
+import { ScannerOverlayComponent } from '../core/scanner/scanner-overlay.component';
 import { UserRole } from '../core/models/user.models';
 
 interface NavItem {
@@ -131,12 +133,14 @@ const NAV_ITEMS: NavItem[] = [
     IonMenuToggle,
     IonFab,
     IonFabButton,
+    ScannerOverlayComponent,
   ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
 })
 export class ShellComponent {
   private authService = inject(AuthService);
+  readonly scannerService = inject(ScannerService);
   readonly currentUser = this.authService.currentUser;
 
   readonly navItems = computed(() => {
@@ -170,6 +174,6 @@ export class ShellComponent {
   }
 
   openScanner() {
-    // Scanner global — se implementará cuando integremos Capacitor BarcodeScanner
+    this.scannerService.scan().subscribe();
   }
 }

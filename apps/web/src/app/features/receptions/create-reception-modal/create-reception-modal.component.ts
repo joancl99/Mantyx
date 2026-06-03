@@ -3,10 +3,11 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { addOutline, alertCircleOutline, archiveOutline, closeOutline, trashOutline } from 'ionicons/icons';
+import { addOutline, alertCircleOutline, archiveOutline, barcodeOutline, closeOutline, trashOutline } from 'ionicons/icons';
 import { Product } from '../../../core/models/product.models';
 import { Aisle, Location, Warehouse, Zone } from '../../../core/models/warehouse.models';
 import { ProductsService } from '../../../core/services/products.service';
+import { ScannerService } from '../../../core/services/scanner.service';
 import { WarehousesService } from '../../../core/services/warehouses.service';
 
 export interface ReceptionLine {
@@ -31,6 +32,7 @@ export interface ReceptionSubmitData {
 export class CreateReceptionModalComponent implements OnInit {
   private readonly warehousesService = inject(WarehousesService);
   private readonly productsService = inject(ProductsService);
+  private readonly scannerService = inject(ScannerService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly saving = input.required<boolean>();
@@ -57,7 +59,7 @@ export class CreateReceptionModalComponent implements OnInit {
   submitted = false;
 
   constructor() {
-    addIcons({ addOutline, alertCircleOutline, archiveOutline, closeOutline, trashOutline });
+    addIcons({ addOutline, alertCircleOutline, archiveOutline, barcodeOutline, closeOutline, trashOutline });
   }
 
   ngOnInit() {
@@ -122,6 +124,21 @@ export class CreateReceptionModalComponent implements OnInit {
 
   isFormValid(): boolean {
     return !!this.selectedWarehouseId && this.lines.length > 0 && this.lines.every((l) => this.isLineValid(l));
+  }
+
+  scanLine(line: ReceptionLine) {
+    this.scannerService
+      .scan()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((result) => {
+        if (!result) return;
+        const match = this.products().find(
+          (p) => p.barcode === result.value || p.sku === result.value,
+        );
+        if (match) {
+          line.productId = match.id;
+        }
+      });
   }
 
   submit() {

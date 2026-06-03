@@ -1,0 +1,52 @@
+<div class="scanner-overlay">
+  <div class="scanner-overlay__backdrop" (click)="cancel()"></div>
+
+  <div class="scanner-overlay__panel">
+
+    <div class="scanner-overlay__header">
+      <div class="scanner-overlay__title">
+        <ion-icon name="scan-outline" />
+        <span>Escanear código</span>
+      </div>
+      <button class="scanner-overlay__close" (click)="cancel()">
+        <ion-icon name="close-outline" />
+      </button>
+    </div>
+
+    <div class="scanner-overlay__viewport">
+      <video #videoEl class="scanner-overlay__video" autoplay playsinline></video>
+
+      @if (loading) {
+        <div class="scanner-overlay__status">
+          <ion-spinner name="crescent" />
+          <span>Iniciando cámara...</span>
+        </div>
+      }
+
+      @if (error) {
+        <div class="scanner-overlay__status scanner-overlay__status--error">
+          <span>{{ error }}</span>
+        </div>
+      }
+
+      @if (!loading && !error) {
+        <div class="scanner-overlay__crosshair">
+          <div class="crosshair-corner crosshair-corner--tl"></div>
+          <div class="crosshair-corner crosshair-corner--tr"></div>
+          <div class="crosshair-corner crosshair-corner--bl"></div>
+          <div class="crosshair-corner crosshair-corner--br"></div>
+          <div class="crosshair-line"></div>
+        </div>
+      }
+    </div>
+
+    <div class="scanner-overlay__hint">
+      Apunta la cámara al código de barras o QR
+    </div>
+
+    <button class="scanner-overlay__cancel-btn" (click)="cancel()">
+      Cancelar
+    </button>
+
+  </div>
+</div>

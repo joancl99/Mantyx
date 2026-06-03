@@ -106,12 +106,17 @@
               <div class="line-fields">
                 <div class="form-field" [class.has-error]="submitted && !line.productId">
                   <label class="form-label">Producto *</label>
-                  <select class="form-input" [(ngModel)]="line.productId">
-                    <option value="">Seleccionar producto</option>
-                    @for (product of products(); track product.id) {
-                      <option [value]="product.id">{{ product.name }} — {{ product.sku }}</option>
-                    }
-                  </select>
+                  <div class="input-with-scan">
+                    <select class="form-input" [(ngModel)]="line.productId">
+                      <option value="">Seleccionar producto</option>
+                      @for (product of products(); track product.id) {
+                        <option [value]="product.id">{{ product.name }} — {{ product.sku }}</option>
+                      }
+                    </select>
+                    <button type="button" class="btn-scan" (click)="scanLine(line)" title="Escanear código">
+                      <ion-icon name="barcode-outline" />
+                    </button>
+                  </div>
                   @if (submitted && !line.productId) {
                     <span class="form-error">Requerido</span>
                   }
