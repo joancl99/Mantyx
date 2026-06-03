@@ -50,6 +50,7 @@ import { BrandsService } from '../../core/services/brands.service';
 import { CompanyInfo, CreateCompanyDto } from '../../core/models/company.models';
 import { CompaniesService } from '../../core/services/companies.service';
 import { AdminCatalogPanelComponent } from './admin-catalog-panel/admin-catalog-panel.component';
+import { AdminCatalogState } from './admin-catalog-state';
 import { AdminCompanyListComponent } from './admin-company-list/admin-company-list.component';
 import { AdminUsersPanelComponent } from './admin-users-panel/admin-users-panel.component';
 
@@ -90,6 +91,24 @@ export class AdminComponent implements OnInit {
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? '');
   readonly isSuperAdmin = computed(() => this.auth.currentUser()?.role === 'SUPERADMIN');
 
+  readonly categoryCatalog = new AdminCatalogState<Category>(
+    this.categoriesService,
+    this.destroyRef,
+    {
+      saveError: 'Error al guardar la categoría',
+      deleteError: 'Error al eliminar',
+    },
+  );
+
+  readonly brandCatalog = new AdminCatalogState<Brand>(
+    this.brandsService,
+    this.destroyRef,
+    {
+      saveError: 'Error al guardar la marca',
+      deleteError: 'Error al eliminar',
+    },
+  );
+
   // ── Users ─────────────────────────────────────────────────────────────────────
   readonly users = signal<CompanyUser[]>([]);
   readonly usersLoading = signal(true);
@@ -127,48 +146,6 @@ export class AdminComponent implements OnInit {
   });
 
   readonly assignableRoles: UserRole[] = ['ADMIN', 'MANAGER', 'OPERATOR', 'VIEWER'];
-
-  // ── Categories ────────────────────────────────────────────────────────────────
-  readonly categories = signal<Category[]>([]);
-  readonly catLoading = signal(false);
-  readonly catSaving = signal(false);
-  readonly catDeleting = signal(false);
-
-  readonly catSearch = signal('');
-  readonly filteredCategories = computed(() => {
-    const q = this.catSearch().toLowerCase();
-    return this.categories().filter(c => !q || c.name.toLowerCase().includes(q));
-  });
-
-  readonly showCatModal = signal(false);
-  readonly catModalMode = signal<'create' | 'edit'>('create');
-  readonly catEditingId = signal<string | null>(null);
-  readonly catSubmitted = signal(false);
-  readonly catFormError = signal('');
-  readonly catDeleteTarget = signal<Category | null>(null);
-
-  readonly catForm = new FormControl('', [Validators.required, Validators.minLength(1)]);
-
-  // ── Brands ────────────────────────────────────────────────────────────────────
-  readonly brands = signal<Brand[]>([]);
-  readonly brandLoading = signal(false);
-  readonly brandSaving = signal(false);
-  readonly brandDeleting = signal(false);
-
-  readonly brandSearch = signal('');
-  readonly filteredBrands = computed(() => {
-    const q = this.brandSearch().toLowerCase();
-    return this.brands().filter(b => !q || b.name.toLowerCase().includes(q));
-  });
-
-  readonly showBrandModal = signal(false);
-  readonly brandModalMode = signal<'create' | 'edit'>('create');
-  readonly brandEditingId = signal<string | null>(null);
-  readonly brandSubmitted = signal(false);
-  readonly brandFormError = signal('');
-  readonly brandDeleteTarget = signal<Brand | null>(null);
-
-  readonly brandForm = new FormControl('', [Validators.required, Validators.minLength(1)]);
 
   // ── Companies (SUPERADMIN) ────────────────────────────────────────────────────
   readonly companies = signal<CompanyInfo[]>([]);
@@ -212,12 +189,8 @@ export class AdminComponent implements OnInit {
 
   setTab(tab: AdminTab) {
     this.activeTab.set(tab);
-    if (tab === 'categorias' && this.categories().length === 0 && !this.catLoading()) {
-      this.loadCategories();
-    }
-    if (tab === 'marcas' && this.brands().length === 0 && !this.brandLoading()) {
-      this.loadBrands();
-    }
+    if (tab === 'categorias') this.categoryCatalog.loadIfEmpty();
+    if (tab === 'marcas') this.brandCatalog.loadIfEmpty();
   }
 
   // ── Users methods ─────────────────────────────────────────────────────────────
@@ -289,138 +262,6 @@ export class AdminComponent implements OnInit {
     this.usersService.toggleActive(user.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => { this.userSaving.set(false); this.toggleTarget.set(null); this.loadUsers(); },
       error: () => { this.userSaving.set(false); this.toggleTarget.set(null); },
-    });
-  }
-
-  // ── Categories methods ────────────────────────────────────────────────────────
-  loadCategories() {
-    this.catLoading.set(true);
-    this.categoriesService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: list => { this.categories.set(list); this.catLoading.set(false); },
-      error: () => this.catLoading.set(false),
-    });
-  }
-
-  openCreateCat() {
-    this.catForm.reset('');
-    this.catSubmitted.set(false);
-    this.catFormError.set('');
-    this.catEditingId.set(null);
-    this.catModalMode.set('create');
-    this.showCatModal.set(true);
-  }
-
-  openEditCat(cat: Category) {
-    this.catForm.setValue(cat.name);
-    this.catSubmitted.set(false);
-    this.catFormError.set('');
-    this.catEditingId.set(cat.id);
-    this.catModalMode.set('edit');
-    this.showCatModal.set(true);
-  }
-
-  closeCatModal() { this.showCatModal.set(false); }
-
-  submitCatForm() {
-    this.catSubmitted.set(true);
-    if (this.catForm.invalid) return;
-    this.catSaving.set(true);
-    this.catFormError.set('');
-    const name = this.catForm.value!.trim();
-
-    const req$ = this.catModalMode() === 'create'
-      ? this.categoriesService.create(name)
-      : this.categoriesService.rename(this.catEditingId()!, name);
-
-    req$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => { this.catSaving.set(false); this.showCatModal.set(false); this.loadCategories(); },
-      error: err => {
-        this.catSaving.set(false);
-        this.catFormError.set(err?.error?.message ?? 'Error al guardar la categoría');
-      },
-    });
-  }
-
-  confirmDeleteCat(cat: Category) { this.catDeleteTarget.set(cat); }
-  cancelDeleteCat() { this.catDeleteTarget.set(null); }
-
-  executeDeleteCat() {
-    const cat = this.catDeleteTarget();
-    if (!cat) return;
-    this.catDeleting.set(true);
-    this.categoriesService.delete(cat.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => { this.catDeleting.set(false); this.catDeleteTarget.set(null); this.loadCategories(); },
-      error: err => {
-        this.catDeleting.set(false);
-        this.catDeleteTarget.set(null);
-        this.catFormError.set(err?.error?.message ?? 'Error al eliminar');
-      },
-    });
-  }
-
-  // ── Brands methods ────────────────────────────────────────────────────────────
-  loadBrands() {
-    this.brandLoading.set(true);
-    this.brandsService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: list => { this.brands.set(list); this.brandLoading.set(false); },
-      error: () => this.brandLoading.set(false),
-    });
-  }
-
-  openCreateBrand() {
-    this.brandForm.reset('');
-    this.brandSubmitted.set(false);
-    this.brandFormError.set('');
-    this.brandEditingId.set(null);
-    this.brandModalMode.set('create');
-    this.showBrandModal.set(true);
-  }
-
-  openEditBrand(brand: Brand) {
-    this.brandForm.setValue(brand.name);
-    this.brandSubmitted.set(false);
-    this.brandFormError.set('');
-    this.brandEditingId.set(brand.id);
-    this.brandModalMode.set('edit');
-    this.showBrandModal.set(true);
-  }
-
-  closeBrandModal() { this.showBrandModal.set(false); }
-
-  submitBrandForm() {
-    this.brandSubmitted.set(true);
-    if (this.brandForm.invalid) return;
-    this.brandSaving.set(true);
-    this.brandFormError.set('');
-    const name = this.brandForm.value!.trim();
-
-    const req$ = this.brandModalMode() === 'create'
-      ? this.brandsService.create(name)
-      : this.brandsService.rename(this.brandEditingId()!, name);
-
-    req$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => { this.brandSaving.set(false); this.showBrandModal.set(false); this.loadBrands(); },
-      error: err => {
-        this.brandSaving.set(false);
-        this.brandFormError.set(err?.error?.message ?? 'Error al guardar la marca');
-      },
-    });
-  }
-
-  confirmDeleteBrand(brand: Brand) { this.brandDeleteTarget.set(brand); }
-  cancelDeleteBrand() { this.brandDeleteTarget.set(null); }
-
-  executeDeleteBrand() {
-    const brand = this.brandDeleteTarget();
-    if (!brand) return;
-    this.brandDeleting.set(true);
-    this.brandsService.delete(brand.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => { this.brandDeleting.set(false); this.brandDeleteTarget.set(null); this.loadBrands(); },
-      error: err => {
-        this.brandDeleting.set(false);
-        this.brandDeleteTarget.set(null);
-        this.brandFormError.set(err?.error?.message ?? 'Error al eliminar');
-      },
     });
   }
 

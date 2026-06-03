@@ -113,7 +113,7 @@ Frontend refactor status:
 Remaining frontend refactor work:
 
 - First-pass extraction is complete for the main implemented feature pages.
-- Second-pass cleanup should slim large feature containers that still own orchestration state: Admin, Warehouses, Inventory, Products, and Movements.
+- Second-pass cleanup should slim large feature containers that still own orchestration state: Warehouses, Inventory, Products, and Movements. Admin catalog orchestration has been extracted; user/company modal orchestration can still be revisited later.
 - Dashboard still has a large component stylesheet; extract only reusable patterns to `_shared.scss` when another feature needs them.
 - Shared activate/deactivate action button variants are centralized in `_shared.scss`.
 - Management is a routed placeholder page.

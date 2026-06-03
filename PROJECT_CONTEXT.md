@@ -99,6 +99,7 @@ Remaining frontend refactor work:
 
 - First-pass component extraction is complete for the main implemented feature pages.
 - A second pass is still useful for large feature containers that keep too much orchestration state: Admin, Warehouses, Inventory, Products, and Movements.
+- Admin category/brand catalog orchestration has been extracted to feature-local `admin-catalog-state.ts`; remaining Admin cleanup is mostly user/company modal orchestration.
 - Dashboard has a large component SCSS file; only promote repeated patterns to `_shared.scss` when reused by another feature.
 - Shared activate/deactivate action button variants are centralized in `_shared.scss`.
 - Management is currently a routed placeholder page.

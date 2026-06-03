@@ -76,13 +76,14 @@ Frontend areas currently present:
 - Stock and movements use shared stock models in `core/models/stock.models.ts`; stock has a list/pagination child component, and movements has filter, list, and create modal components.
 - Dashboard has shared frontend models in `core/models/dashboard.models.ts`; `DashboardService` should remain HTTP-focused.
 - Admin has shared frontend models in `core/models/user.models.ts` and `core/models/company.models.ts`, plus child components for company list, users panel, and catalog panel.
+- Admin category/brand list, modal, save, and delete orchestration is shared through feature-local `admin-catalog-state.ts`.
 - Auth and socket payload types live in `core/models`; `core/services` should not export shared DTO/model interfaces.
 - `core/services` should remain HTTP/service focused; shared model/DTO types should live in `core/models` or feature-local `models`.
 
 Remaining frontend refactor notes:
 
 - First-pass component extraction is done for Inventory, Warehouses, Products, Movements, Stock, Dashboard, and Admin.
-- Second-pass cleanup should focus on slimming feature container `.component.ts` files that still own too much orchestration state, especially Admin, Warehouses, Inventory, Products, and Movements.
+- Second-pass cleanup should focus on slimming feature container `.component.ts` files that still own too much orchestration state, especially Warehouses, Inventory, Products, and Movements. Admin has had its catalog state extracted, but user/company modal orchestration can still be revisited later.
 - Dashboard still has a large component stylesheet; move repeated card/grid/stat patterns to shared styles only when another feature needs the same pattern.
 - `_shared.scss` owns shared action button variants, including activate/deactivate modifiers used across Admin and Warehouses.
 - Management is a routed placeholder page; Receptions, Expeditions, and Stock Query are placeholder components not currently exposed in the shell routes.

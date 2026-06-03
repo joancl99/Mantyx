@@ -74,15 +74,15 @@
           emptyTitle="Sin categorías"
           emptyMessage="Crea la primera categoría para empezar"
           noResultsMessage="Ninguna coincide con la búsqueda"
-          [items]="filteredCategories()"
-          [loading]="catLoading()"
-          [search]="catSearch()"
-          [formError]="catFormError()"
-          [modalOpen]="showCatModal()"
-          (searchChange)="catSearch.set($event)"
-          (createItem)="openCreateCat()"
-          (editItem)="openEditCat($event)"
-          (deleteItem)="confirmDeleteCat($event)"
+          [items]="categoryCatalog.filteredItems()"
+          [loading]="categoryCatalog.loading()"
+          [search]="categoryCatalog.search()"
+          [formError]="categoryCatalog.formError()"
+          [modalOpen]="categoryCatalog.showModal()"
+          (searchChange)="categoryCatalog.search.set($event)"
+          (createItem)="categoryCatalog.openCreate()"
+          (editItem)="categoryCatalog.openEdit($event)"
+          (deleteItem)="categoryCatalog.confirmDelete($event)"
         />
 
       }
@@ -100,15 +100,15 @@
           emptyTitle="Sin marcas"
           emptyMessage="Crea la primera marca para empezar"
           noResultsMessage="Ninguna coincide con la búsqueda"
-          [items]="filteredBrands()"
-          [loading]="brandLoading()"
-          [search]="brandSearch()"
-          [formError]="brandFormError()"
-          [modalOpen]="showBrandModal()"
-          (searchChange)="brandSearch.set($event)"
-          (createItem)="openCreateBrand()"
-          (editItem)="openEditBrand($event)"
-          (deleteItem)="confirmDeleteBrand($event)"
+          [items]="brandCatalog.filteredItems()"
+          [loading]="brandCatalog.loading()"
+          [search]="brandCatalog.search()"
+          [formError]="brandCatalog.formError()"
+          [modalOpen]="brandCatalog.showModal()"
+          (searchChange)="brandCatalog.search.set($event)"
+          (createItem)="brandCatalog.openCreate()"
+          (editItem)="brandCatalog.openEdit($event)"
+          (deleteItem)="brandCatalog.confirmDelete($event)"
         />
 
       }
@@ -210,29 +210,29 @@
 }
 
 <!-- ── CATEGORY modal ─────────────────────────────────────────────────────────── -->
-@if (showCatModal()) {
-  <div class="modal-backdrop" tabindex="0" (click)="closeCatModal()" (keydown.escape)="closeCatModal()">
+@if (categoryCatalog.showModal()) {
+  <div class="modal-backdrop" tabindex="0" (click)="categoryCatalog.closeModal()" (keydown.escape)="categoryCatalog.closeModal()">
     <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2 class="modal-title">{{ catModalMode() === 'create' ? 'Nueva categoría' : 'Renombrar categoría' }}</h2>
-        <button class="modal-close" (click)="closeCatModal()"><ion-icon name="close-outline" /></button>
+        <h2 class="modal-title">{{ categoryCatalog.modalMode() === 'create' ? 'Nueva categoría' : 'Renombrar categoría' }}</h2>
+        <button class="modal-close" (click)="categoryCatalog.closeModal()"><ion-icon name="close-outline" /></button>
       </div>
       <div class="modal-body">
-        <div class="form-field" [class.has-error]="catSubmitted() && catForm.invalid">
+        <div class="form-field" [class.has-error]="categoryCatalog.submitted() && categoryCatalog.form.invalid">
           <label class="form-label" for="cat-name">Nombre *</label>
-          <input id="cat-name" class="form-input" [formControl]="catForm" placeholder="Ej: Electrónica" />
-          @if (catSubmitted() && catForm.hasError('required')) {
+          <input id="cat-name" class="form-input" [formControl]="categoryCatalog.form" placeholder="Ej: Electrónica" />
+          @if (categoryCatalog.submitted() && categoryCatalog.form.hasError('required')) {
             <span class="form-error">Campo obligatorio</span>
           }
         </div>
-        @if (catFormError()) {
-          <div class="form-alert"><ion-icon name="alert-circle-outline" />{{ catFormError() }}</div>
+        @if (categoryCatalog.formError()) {
+          <div class="form-alert"><ion-icon name="alert-circle-outline" />{{ categoryCatalog.formError() }}</div>
         }
         <div class="modal-footer">
-          <button type="button" class="btn-ghost" (click)="closeCatModal()">Cancelar</button>
-          <button class="btn-primary" [disabled]="catSaving()" (click)="submitCatForm()">
-            @if (catSaving()) { <ion-spinner name="crescent" /> }
-            @else { {{ catModalMode() === 'create' ? 'Crear' : 'Guardar' }} }
+          <button type="button" class="btn-ghost" (click)="categoryCatalog.closeModal()">Cancelar</button>
+          <button class="btn-primary" [disabled]="categoryCatalog.saving()" (click)="categoryCatalog.submitForm()">
+            @if (categoryCatalog.saving()) { <ion-spinner name="crescent" /> }
+            @else { {{ categoryCatalog.modalMode() === 'create' ? 'Crear' : 'Guardar' }} }
           </button>
         </div>
       </div>
@@ -241,21 +241,21 @@
 }
 
 <!-- ── CATEGORY delete confirm ────────────────────────────────────────────────── -->
-@if (catDeleteTarget()) {
-  <div class="modal-backdrop" tabindex="0" (click)="cancelDeleteCat()" (keydown.escape)="cancelDeleteCat()">
+@if (categoryCatalog.deleteTarget()) {
+  <div class="modal-backdrop" tabindex="0" (click)="categoryCatalog.cancelDelete()" (keydown.escape)="categoryCatalog.cancelDelete()">
     <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2 class="modal-title">Eliminar categoría</h2>
       </div>
       <div class="modal-body">
         <p class="delete-text">
-          ¿Eliminar <strong>{{ catDeleteTarget()!.name }}</strong>?
+          ¿Eliminar <strong>{{ categoryCatalog.deleteTarget()!.name }}</strong>?
           Si hay productos con esta categoría, no se podrá eliminar.
         </p>
         <div class="modal-footer">
-          <button class="btn-ghost" (click)="cancelDeleteCat()">Cancelar</button>
-          <button class="btn-danger" [disabled]="catDeleting()" (click)="executeDeleteCat()">
-            @if (catDeleting()) { <ion-spinner name="crescent" /> } @else { Eliminar }
+          <button class="btn-ghost" (click)="categoryCatalog.cancelDelete()">Cancelar</button>
+          <button class="btn-danger" [disabled]="categoryCatalog.deleting()" (click)="categoryCatalog.executeDelete()">
+            @if (categoryCatalog.deleting()) { <ion-spinner name="crescent" /> } @else { Eliminar }
           </button>
         </div>
       </div>
@@ -264,29 +264,29 @@
 }
 
 <!-- ── BRAND modal ────────────────────────────────────────────────────────────── -->
-@if (showBrandModal()) {
-  <div class="modal-backdrop" tabindex="0" (click)="closeBrandModal()" (keydown.escape)="closeBrandModal()">
+@if (brandCatalog.showModal()) {
+  <div class="modal-backdrop" tabindex="0" (click)="brandCatalog.closeModal()" (keydown.escape)="brandCatalog.closeModal()">
     <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2 class="modal-title">{{ brandModalMode() === 'create' ? 'Nueva marca' : 'Renombrar marca' }}</h2>
-        <button class="modal-close" (click)="closeBrandModal()"><ion-icon name="close-outline" /></button>
+        <h2 class="modal-title">{{ brandCatalog.modalMode() === 'create' ? 'Nueva marca' : 'Renombrar marca' }}</h2>
+        <button class="modal-close" (click)="brandCatalog.closeModal()"><ion-icon name="close-outline" /></button>
       </div>
       <div class="modal-body">
-        <div class="form-field" [class.has-error]="brandSubmitted() && brandForm.invalid">
+        <div class="form-field" [class.has-error]="brandCatalog.submitted() && brandCatalog.form.invalid">
           <label class="form-label" for="brand-name">Nombre *</label>
-          <input id="brand-name" class="form-input" [formControl]="brandForm" placeholder="Ej: Samsung" />
-          @if (brandSubmitted() && brandForm.hasError('required')) {
+          <input id="brand-name" class="form-input" [formControl]="brandCatalog.form" placeholder="Ej: Samsung" />
+          @if (brandCatalog.submitted() && brandCatalog.form.hasError('required')) {
             <span class="form-error">Campo obligatorio</span>
           }
         </div>
-        @if (brandFormError()) {
-          <div class="form-alert"><ion-icon name="alert-circle-outline" />{{ brandFormError() }}</div>
+        @if (brandCatalog.formError()) {
+          <div class="form-alert"><ion-icon name="alert-circle-outline" />{{ brandCatalog.formError() }}</div>
         }
         <div class="modal-footer">
-          <button type="button" class="btn-ghost" (click)="closeBrandModal()">Cancelar</button>
-          <button class="btn-primary" [disabled]="brandSaving()" (click)="submitBrandForm()">
-            @if (brandSaving()) { <ion-spinner name="crescent" /> }
-            @else { {{ brandModalMode() === 'create' ? 'Crear' : 'Guardar' }} }
+          <button type="button" class="btn-ghost" (click)="brandCatalog.closeModal()">Cancelar</button>
+          <button class="btn-primary" [disabled]="brandCatalog.saving()" (click)="brandCatalog.submitForm()">
+            @if (brandCatalog.saving()) { <ion-spinner name="crescent" /> }
+            @else { {{ brandCatalog.modalMode() === 'create' ? 'Crear' : 'Guardar' }} }
           </button>
         </div>
       </div>
@@ -295,21 +295,21 @@
 }
 
 <!-- ── BRAND delete confirm ───────────────────────────────────────────────────── -->
-@if (brandDeleteTarget()) {
-  <div class="modal-backdrop" tabindex="0" (click)="cancelDeleteBrand()" (keydown.escape)="cancelDeleteBrand()">
+@if (brandCatalog.deleteTarget()) {
+  <div class="modal-backdrop" tabindex="0" (click)="brandCatalog.cancelDelete()" (keydown.escape)="brandCatalog.cancelDelete()">
     <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2 class="modal-title">Eliminar marca</h2>
       </div>
       <div class="modal-body">
         <p class="delete-text">
-          ¿Eliminar <strong>{{ brandDeleteTarget()!.name }}</strong>?
+          ¿Eliminar <strong>{{ brandCatalog.deleteTarget()!.name }}</strong>?
           Si hay productos con esta marca, no se podrá eliminar.
         </p>
         <div class="modal-footer">
-          <button class="btn-ghost" (click)="cancelDeleteBrand()">Cancelar</button>
-          <button class="btn-danger" [disabled]="brandDeleting()" (click)="executeDeleteBrand()">
-            @if (brandDeleting()) { <ion-spinner name="crescent" /> } @else { Eliminar }
+          <button class="btn-ghost" (click)="brandCatalog.cancelDelete()">Cancelar</button>
+          <button class="btn-danger" [disabled]="brandCatalog.deleting()" (click)="brandCatalog.executeDelete()">
+            @if (brandCatalog.deleting()) { <ion-spinner name="crescent" /> } @else { Eliminar }
           </button>
         </div>
       </div>
