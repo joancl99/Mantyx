@@ -26,6 +26,7 @@ import {
   shieldCheckmarkOutline,
   downloadOutline,
   analyticsOutline,
+  sendOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../core/services/auth.service';
 import { UserRole } from '../core/models/user.models';
@@ -88,6 +89,12 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Recepciones',
     icon: 'download-outline',
     route: '/app/receptions',
+    roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'],
+  },
+  {
+    label: 'Expediciones',
+    icon: 'send-outline',
+    route: '/app/expeditions',
     roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'],
   },
   {
@@ -154,6 +161,7 @@ export class ShellComponent {
       shieldCheckmarkOutline,
       downloadOutline,
       analyticsOutline,
+      sendOutline,
     });
   }
 

@@ -1,0 +1,104 @@
+.expedition-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.expedition-row {
+  display: grid;
+  grid-template-columns: 88px 1fr 80px 180px 120px;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  background: var(--wh-surface);
+  border: 1px solid var(--wh-border);
+  border-radius: 12px;
+  transition: border-color 0.15s;
+
+  &:hover { border-color: rgba(239, 68, 68, 0.4); }
+}
+
+.expedition-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--wh-danger);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  ion-icon { font-size: 14px; }
+}
+
+.expedition-product {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.product-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--wh-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-sku {
+  font-size: 11px;
+  color: var(--wh-text-muted);
+}
+
+.expedition-qty {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: right;
+}
+
+.qty-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--wh-danger);
+}
+
+.qty-delta {
+  font-size: 11px;
+  color: var(--wh-text-muted);
+}
+
+.expedition-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.meta-warehouse {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--wh-text);
+}
+
+.meta-user {
+  font-size: 11px;
+  color: var(--wh-text-muted);
+}
+
+.expedition-date {
+  font-size: 12px;
+  color: var(--wh-text-muted);
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .expedition-row {
+    grid-template-columns: 80px 1fr 70px;
+  }
+  .expedition-meta,
+  .expedition-date { display: none; }
+}

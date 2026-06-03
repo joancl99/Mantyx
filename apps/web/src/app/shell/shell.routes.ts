@@ -56,6 +56,13 @@ export const shellRoutes: Route[] = [
       ),
   },
   {
+    path: 'expeditions',
+    loadComponent: () =>
+      import('../features/expeditions/expeditions.component').then(
+        (m) => m.ExpeditionsComponent,
+      ),
+  },
+  {
     path: 'management',
     loadComponent: () =>
       import('../features/management/management.component').then(
