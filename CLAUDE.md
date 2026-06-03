@@ -71,6 +71,10 @@ Frontend areas currently present:
 - Receptions: full INBOUND flow — warehouse + cascading location selector (zone→aisle→location), multi-line form, scan-to-fill product, `forkJoin` submit.
 - Expeditions: full OUTBOUND flow — same pattern as Receptions but OUTBOUND, with source location and backend stock guard.
 - Barcode/QR scanner: `ScannerService` with platform detection; ML Kit on native, ZXing overlay on web. Integrated in FAB, Reception modal, and Expedition modal.
+- CSV export: `CsvExportService` (BOM + RFC-4180, timestamped filename). Export button in Stock, Movements, Receptions, Expeditions pages. Reception/Expedition modals transition to success state with "Exportar albarán CSV" button.
+- Product images: `PATCH /products/:id/image` (Multer, diskStorage, jpg/png/webp ≤5 MB). Files saved to `uploads/products/`, served as static assets under `/uploads`. Image picker with live preview in product form modal.
+- Realtime alerts: `SocketService` connects on shell init, subscribes to `low-stock` Socket.io events, shows Ionic warning toast. `LowStockAlert` model aligned with backend payload fields.
+- Production Docker: `Dockerfile.api` (multi-stage, Node 22 Alpine) + `Dockerfile.web` (Angular build → Nginx 1.27). `docker-compose.prod.yml` orchestrates postgres + redis + api + web. Nginx proxies `/api`, `/uploads`, `/ws` to the API container. Entrypoint runs `prisma migrate deploy` before starting. MinIO removed — not used anywhere.
 
 ## Current Frontend Architecture
 
@@ -98,8 +102,6 @@ Frontend areas currently present:
 
 Remaining frontend work:
 
-- `_shared.scss` owns shared action button variants, `.input-with-scan`, and `.btn-scan` (amber scan button pattern used in Reception/Expedition).
-- Management is implemented as an operational command center.
 - Inventory scanner integration (scan location QR to auto-fill location selector) is deferred — requires a backend location-search-by-code endpoint.
 - Optional: cancel support for `CANCELLED` inventory counts.
 
@@ -110,7 +112,7 @@ Remaining frontend work:
 - Stock service now has focused unit tests for movement scoping, source-location stock guards, inbound audit/alerts, and overview filtering.
 - Products service now validates category/brand tenant ownership for create/update/list filters and has unit tests for product scoping, catalog ownership, duplicate SKU handling, and soft delete.
 - Warehouses service now has unit tests for company scoping, hierarchy ownership, duplicate handling, and protected deletes.
-- Next roadmap items: product image upload/storage, CSV/export flows, Cypress e2e coverage, production Docker image.
+- Next roadmap items: Cypress e2e coverage, frontend unit tests.
 - To build natively for Android: `pnpm nx build web` → `npx cap add android` → `npx cap sync` → open in Android Studio.
 - `npx cap add ios` requires macOS/Xcode.
 

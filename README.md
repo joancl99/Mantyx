@@ -69,6 +69,8 @@ Mantyx helps companies manage products, stock, movements, warehouses, locations,
 - **Expeditions**: full OUTBOUND flow — same pattern, source location, backend stock guard. Same modal success state with albarán CSV export.
 - **Barcode/QR scanner**: platform-aware `ScannerService` — ML Kit on native, ZXing overlay on browser. Integrated in FAB, Reception, and Expedition modals.
 - **CSV export**: `CsvExportService` with BOM prefix (Excel-compatible), RFC-4180 escaping, and timestamped filename. Export button in every list page (Stock, Movements, Receptions, Expeditions) using active filters.
+- **Product images**: upload via `PATCH /products/:id/image` (Multer, jpg/png/webp ≤5 MB). Stored on disk, served as static assets. Image picker with live preview in the product form modal.
+- **Realtime low-stock alerts**: `SocketService` connects on login, listens to Socket.io `low-stock` events, and shows a dismissible Ionic warning toast in the shell.
 
 ## Multi-Tenancy And Roles
 
@@ -248,6 +250,25 @@ URLs:
 pnpm exec prisma studio --schema=apps/api/prisma/schema.prisma
 ```
 
+## Production Deploy (Docker)
+
+The full stack can be run in production with a single command:
+
+```bash
+cp docker/.env.prod.example .env
+# edit .env with real secrets (DB password, JWT secrets, CORS origin)
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+This builds and starts:
+
+- **postgres** — PostgreSQL 16, data persisted in a named volume.
+- **redis** — Redis 7, protected with the password in `.env`.
+- **api** — NestJS API (Node 22 Alpine). Runs `prisma migrate deploy` automatically on startup, then serves on port 3000.
+- **web** — Angular app served by Nginx 1.27 on port 80. Nginx proxies `/api`, `/uploads` (product images), and `/ws` (Socket.io WebSocket) to the API container.
+
+Uploaded product images are stored in a named Docker volume (`uploads_data`) so they persist across container restarts.
+
 ## Native Mobile Build (Capacitor)
 
 Capacitor is configured and packages are installed. Build for Android:
@@ -348,10 +369,12 @@ Representative endpoints:
 - [x] Receptions — full INBOUND WMS flow with location cascade and scan support.
 - [x] Expeditions — full OUTBOUND WMS flow with source location and stock guard.
 - [x] Barcode/QR scanner — Capacitor ML Kit (native) + ZXing (web fallback).
-- [ ] Product image upload and storage.
+- [x] Product image upload — Multer diskStorage, image picker with live preview.
 - [x] CSV export flows (Stock, Movements, Receptions, Expeditions + albarán modal).
+- [x] Realtime low-stock alerts — Socket.io gateway connected to shell with Ionic toast.
+- [x] Production Docker image — multi-stage Dockerfile.api + Dockerfile.web + docker-compose.prod.yml.
 - [ ] Cypress e2e coverage.
-- [ ] Production Docker image.
+- [ ] Frontend unit tests.
 
 ## License
 

@@ -94,6 +94,9 @@ Fresh database bootstrap:
 - Expeditions: full OUTBOUND flow (mirror of Receptions), with source location and backend stock guard on submit error. Same modal success state with albarán CSV export.
 - Barcode/QR scanner: `ScannerService` with platform detection. ML Kit on native Android/iOS via Capacitor. ZXing camera overlay on browser/web. Integrated in the global FAB, Reception modal, and Expedition modal.
 - CSV export: `CsvExportService` (BOM prefix, RFC-4180 escaping, timestamped filename). Export button in every list page (Stock, Movements, Receptions, Expeditions) that exports with the currently active filters at `limit: 9999`.
+- Product images: `PATCH /products/:id/image` (Multer diskStorage, jpg/png/webp ≤5 MB, UUID filename). Stored in `uploads/products/`, served as static assets. Image picker with live FileReader preview in the product form modal.
+- Realtime low-stock alerts: `SocketService` connects on shell init with the current access token, subscribes to `low-stock` Socket.io events, and shows an Ionic warning toast (5 s, dismissible). `LowStockAlert` model aligned with backend `LowStockPayload` field names.
+- Production Docker: multi-stage `Dockerfile.api` (Node 22 Alpine builder → slim runner) and `Dockerfile.web` (Angular build → Nginx 1.27 Alpine). `docker-compose.prod.yml` orchestrates postgres + redis + api + web with a named volume for uploaded images. Nginx proxies `/api`, `/uploads`, and `/ws` (WebSocket upgrade) to the API container. The API entrypoint runs `prisma migrate deploy` before starting the process. MinIO removed — no longer referenced anywhere.
 
 ## Current Architecture Notes
 
@@ -118,16 +121,12 @@ Remaining work:
 - Main second-pass frontend container cleanup is complete for Admin, Warehouses, Inventory, Products, and Movements.
 - Inventory scanner integration (scan location QR to auto-fill location selector) is deferred — requires a backend location-search-by-code endpoint.
 - Optional: cancel support for `CANCELLED` inventory counts.
-- Next roadmap items: product image upload/storage, Cypress e2e coverage, production Docker image.
+- Next roadmap items: Cypress e2e coverage, frontend unit tests.
 
 ## Current Priority
 
-- Inventory counts are implemented, have service unit tests, and enforce unique count lines per location with migration `20260602142000_inventory_line_location_unique`.
-- Stock service has focused unit tests for movement scoping, source-location stock guards, inbound audit/alerts, and overview filtering.
-- Products service validates category/brand tenant ownership and has unit tests for product scoping, catalog ownership, duplicate SKU, and soft delete.
-- Warehouses service has unit tests for company scoping, hierarchy ownership, duplicate handling, and protected deletes.
-- Receptions, Expeditions, barcode/QR scanner, and CSV export are fully implemented.
-- Next: product image upload.
+- All main product areas are implemented: inventory counts, receptions, expeditions, barcode scanner, CSV export, product images, realtime alerts, and production Docker.
+- Next: Cypress e2e coverage and/or polishing individual pages.
 
 ## Visual Direction
 
