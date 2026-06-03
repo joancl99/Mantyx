@@ -5,6 +5,8 @@
   "dependencies": {
     "prisma": "^6.19.3",
     "tslib": "^2.3.0",
+    "rxjs": "~7.8.0",
+    "reflect-metadata": "^0.1.13",
     "@nestjs/common": "^11.0.0",
     "@nestjs/swagger": "^11.4.2",
     "@nestjs/config": "^4.0.4",

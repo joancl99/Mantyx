@@ -10,8 +10,9 @@ export default [
     rules: {
       // Keep apps/api/package.json in sync with what the API actually imports,
       // so the pruned production install (Docker) is correct and reproducible.
-      // prisma (CLI, run by the entrypoint) and tslib (tsc importHelpers) are
-      // runtime deps that are not statically imported, so they are ignored here.
+      // ignoredDependencies are runtime deps that aren't statically imported but
+      // must ship: prisma (CLI run by the entrypoint), tslib (tsc importHelpers),
+      // and rxjs/reflect-metadata (required by NestJS internals at runtime).
       '@nx/dependency-checks': [
         'error',
         {
@@ -20,7 +21,7 @@ export default [
             '{projectRoot}/webpack.config.{js,cjs,mjs}',
             '{projectRoot}/jest.config.{js,cjs,mjs,ts}',
           ],
-          ignoredDependencies: ['prisma', 'tslib'],
+          ignoredDependencies: ['prisma', 'tslib', 'rxjs', 'reflect-metadata'],
         },
       ],
     },
