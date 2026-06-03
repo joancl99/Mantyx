@@ -90,9 +90,10 @@ Fresh database bootstrap:
   - `SUPERADMIN`: global company management.
   - `ADMIN`: tenant users, categories, and brands.
 - Inventory counts: connected to the backend API with list, status filter, creation, detail, line editing, completion, and completed read-only handling.
-- Receptions: full INBOUND flow with warehouse + cascading location (zone → aisle → location), multi-line form, scan-to-fill product by barcode/SKU, `forkJoin` parallel submit.
-- Expeditions: full OUTBOUND flow (mirror of Receptions), with source location and backend stock guard on submit error.
+- Receptions: full INBOUND flow with warehouse + cascading location (zone → aisle → location), multi-line form, scan-to-fill product by barcode/SKU, `forkJoin` parallel submit. Modal transitions to a success state after submit with an "Exportar albarán CSV" button.
+- Expeditions: full OUTBOUND flow (mirror of Receptions), with source location and backend stock guard on submit error. Same modal success state with albarán CSV export.
 - Barcode/QR scanner: `ScannerService` with platform detection. ML Kit on native Android/iOS via Capacitor. ZXing camera overlay on browser/web. Integrated in the global FAB, Reception modal, and Expedition modal.
+- CSV export: `CsvExportService` (BOM prefix, RFC-4180 escaping, timestamped filename). Export button in every list page (Stock, Movements, Receptions, Expeditions) that exports with the currently active filters at `limit: 9999`.
 
 ## Current Architecture Notes
 
@@ -105,7 +106,7 @@ Fresh database bootstrap:
 - Movements list/filter/pagination state has been extracted to feature-local `movements-list-state.ts`.
 - Receptions list/filter/pagination state lives in feature-local `receptions-list-state.ts` (always sends `type: 'INBOUND'`).
 - Expeditions list/filter/pagination state lives in feature-local `expeditions-list-state.ts` (always sends `type: 'OUTBOUND'`).
-- `apps/web/src/styles/_shared.scss` contains shared page headers, buttons, filters, modals, forms, empty states, pagination, common action styles, `.input-with-scan`, and `.btn-scan`.
+- `apps/web/src/styles/_shared.scss` contains shared page headers, buttons (`.btn-primary`, `.btn-ghost`, `.btn-danger`, `.btn-clear`, `.btn-export`), `.page-header__actions`, filters, modals, modal success state (`.modal-success`, `.success-icon`, `.success-title`, `.success-sub`, `.success-actions`), forms, empty states, pagination, `.input-with-scan`, and `.btn-scan`.
 - `ScannerService` (`core/services/scanner.service.ts`) — `scan()` returns `Observable<ScanResult | null>`, uses `Capacitor.isNativePlatform()` to route to ML Kit or ZXing.
 - `ScannerOverlayComponent` (`core/scanner/`) — ZXing camera overlay with animated crosshair, hosted by the shell.
 - Reception and Expedition modals are smart: they inject `WarehousesService`, `ProductsService`, and `ScannerService` directly. Scan-to-fill matches the barcode/SKU against the already-loaded products signal with no extra API call.
@@ -117,7 +118,7 @@ Remaining work:
 - Main second-pass frontend container cleanup is complete for Admin, Warehouses, Inventory, Products, and Movements.
 - Inventory scanner integration (scan location QR to auto-fill location selector) is deferred — requires a backend location-search-by-code endpoint.
 - Optional: cancel support for `CANCELLED` inventory counts.
-- Next roadmap items: product image upload/storage, CSV/export flows, Cypress e2e coverage, production Docker image.
+- Next roadmap items: product image upload/storage, Cypress e2e coverage, production Docker image.
 
 ## Current Priority
 
@@ -125,7 +126,7 @@ Remaining work:
 - Stock service has focused unit tests for movement scoping, source-location stock guards, inbound audit/alerts, and overview filtering.
 - Products service validates category/brand tenant ownership and has unit tests for product scoping, catalog ownership, duplicate SKU, and soft delete.
 - Warehouses service has unit tests for company scoping, hierarchy ownership, duplicate handling, and protected deletes.
-- Receptions, Expeditions, and barcode/QR scanner are fully implemented.
+- Receptions, Expeditions, barcode/QR scanner, and CSV export are fully implemented.
 - Next: product image upload.
 
 ## Visual Direction

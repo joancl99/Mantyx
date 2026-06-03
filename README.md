@@ -65,9 +65,10 @@ Mantyx helps companies manage products, stock, movements, warehouses, locations,
   - `SUPERADMIN`: global company management.
   - `ADMIN`: tenant users, categories, and brands.
 - Inventory counts: list, filters, creation modal, detail, line editing, start/complete actions, and completed read-only state.
-- **Receptions**: full INBOUND flow — warehouse + cascading location (zone → aisle → location), multi-line form, scan-to-fill product.
-- **Expeditions**: full OUTBOUND flow — same pattern, source location, backend stock guard.
+- **Receptions**: full INBOUND flow — warehouse + cascading location (zone → aisle → location), multi-line form, scan-to-fill product. Modal transitions to success state with albarán CSV export.
+- **Expeditions**: full OUTBOUND flow — same pattern, source location, backend stock guard. Same modal success state with albarán CSV export.
 - **Barcode/QR scanner**: platform-aware `ScannerService` — ML Kit on native, ZXing overlay on browser. Integrated in FAB, Reception, and Expedition modals.
+- **CSV export**: `CsvExportService` with BOM prefix (Excel-compatible), RFC-4180 escaping, and timestamped filename. Export button in every list page (Stock, Movements, Receptions, Expeditions) using active filters.
 
 ## Multi-Tenancy And Roles
 
@@ -348,7 +349,7 @@ Representative endpoints:
 - [x] Expeditions — full OUTBOUND WMS flow with source location and stock guard.
 - [x] Barcode/QR scanner — Capacitor ML Kit (native) + ZXing (web fallback).
 - [ ] Product image upload and storage.
-- [ ] CSV/export flows.
+- [x] CSV export flows (Stock, Movements, Receptions, Expeditions + albarán modal).
 - [ ] Cypress e2e coverage.
 - [ ] Production Docker image.
 
