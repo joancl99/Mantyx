@@ -2,13 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 import { environment } from '../../../environments/environment';
-
-export interface LowStockAlert {
-  productId: string;
-  productName: string;
-  currentStock: number;
-  minStock: number;
-}
+import { LowStockAlert } from '../models/alert.models';
 
 @Injectable({ providedIn: 'root' })
 export class SocketService implements OnDestroy {

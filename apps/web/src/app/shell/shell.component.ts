@@ -25,25 +25,25 @@ import {
   barcodeOutline,
   shieldCheckmarkOutline,
 } from 'ionicons/icons';
-import { Role } from '../core/services/auth.service';
 import { AuthService } from '../core/services/auth.service';
+import { UserRole } from '../core/models/user.models';
 
 interface NavItem {
   label: string;
   icon: string;
   route: string;
-  roles: Role[];
+  roles: UserRole[];
 }
 
-const ALL_ROLES: Role[] = [
+const ALL_ROLES: UserRole[] = [
   'SUPERADMIN',
   'ADMIN',
   'MANAGER',
   'OPERATOR',
   'VIEWER',
 ];
-const MANAGERS_UP: Role[] = ['SUPERADMIN', 'ADMIN', 'MANAGER'];
-const ADMINS_UP: Role[] = ['SUPERADMIN', 'ADMIN'];
+const MANAGERS_UP: UserRole[] = ['SUPERADMIN', 'ADMIN', 'MANAGER'];
+const ADMINS_UP: UserRole[] = ['SUPERADMIN', 'ADMIN'];
 
 const NAV_ITEMS: NavItem[] = [
   {

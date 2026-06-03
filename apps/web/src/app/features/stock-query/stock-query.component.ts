@@ -1,10 +1,18 @@
 import { Component } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton } from '@ionic/angular/standalone';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonButtons,
+  IonMenuButton,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-stock-query',
   standalone: true,
   imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonMenuButton],
   templateUrl: './stock-query.component.html',
+  styleUrl: './stock-query.component.scss',
 })
 export class StockQueryComponent {}

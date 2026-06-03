@@ -57,11 +57,11 @@ Mantyx helps companies manage products, stock, movements, warehouses, locations,
 - Stock.
 - Movements.
 - Warehouses drill-down.
-- Management.
 - Administration:
   - `SUPERADMIN`: global company management.
   - `ADMIN`: tenant users, categories, and brands.
 - Inventory counts: list, filters, creation modal, detail, line editing, start/complete actions, and completed read-only state.
+- Placeholder frontend pages/components currently present but not implemented: Management, Receptions, Expeditions, and Stock Query.
 
 ## Multi-Tenancy And Roles
 
@@ -106,7 +106,18 @@ Frontend refactor status:
 - Stock and movements use shared `core/models/stock.models.ts`; stock has a list/pagination child component, and movements has filter, list, and create modal components.
 - Dashboard uses shared `core/models/dashboard.models.ts`.
 - Admin uses shared `core/models/user.models.ts` and `core/models/company.models.ts`, with child components for companies, users, and catalog sections.
+- Auth and socket payload models live in `core/models`, keeping `core/services` HTTP/service focused.
 - Shared SCSS patterns live in `apps/web/src/styles/_shared.scss`.
+- Management, Receptions, Expeditions, and Stock Query remain placeholder pages.
+
+Remaining frontend refactor work:
+
+- First-pass extraction is complete for the main implemented feature pages.
+- Second-pass cleanup should slim large feature containers that still own orchestration state: Admin, Warehouses, Inventory, Products, and Movements.
+- Dashboard still has a large component stylesheet; extract only reusable patterns to `_shared.scss` when another feature needs them.
+- Shared activate/deactivate action button variants are centralized in `_shared.scss`.
+- Management is a routed placeholder page.
+- Receptions, Expeditions, and Stock Query are placeholder components not currently exposed in shell routes.
 
 ## Monorepo Structure
 
@@ -347,6 +358,7 @@ Representative endpoints:
 - [x] Stock service unit tests and source-location stock guards.
 - [x] Products service unit tests and tenant-scoped catalog ownership guards.
 - [x] Warehouses service unit tests for scoping, hierarchy, duplicates, and protected deletes.
+- [ ] Second-pass frontend refactor for large feature containers and placeholder pages.
 - [ ] Barcode/QR scanner with Capacitor.
 - [ ] Product image upload storage.
 - [ ] CSV/export flows.

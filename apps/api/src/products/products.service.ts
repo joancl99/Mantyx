@@ -43,6 +43,8 @@ export class ProductsService {
     const { page = 1, limit = 20, search, categoryId, brandId } = query;
     const skip = (page - 1) * limit;
 
+    await this.ensureCatalogOwnership(companyId, { categoryId, brandId });
+
     const where: Prisma.ProductWhereInput = {
       companyId,
       isActive: true,

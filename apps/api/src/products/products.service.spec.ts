@@ -55,6 +55,21 @@ describe('ProductsService', () => {
     expect(prisma.product.create).not.toHaveBeenCalled();
   });
 
+  it('rejects listing products with a category outside the company', async () => {
+    prisma.category.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.findAll('company-1', { categoryId: 'category-1' }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+
+    expect(prisma.category.findFirst).toHaveBeenCalledWith({
+      where: { id: 'category-1', companyId: 'company-1' },
+      select: { id: true },
+    });
+    expect(prisma.product.findMany).not.toHaveBeenCalled();
+    expect(prisma.product.count).not.toHaveBeenCalled();
+  });
+
   it('rejects updating a product with a brand outside the company', async () => {
     prisma.product.findFirst.mockResolvedValue({ id: 'product-1' });
     prisma.brand.findFirst.mockResolvedValue(null);

@@ -63,9 +63,9 @@ Frontend areas currently present:
 - Stock.
 - Movements.
 - Warehouses drill-down.
-- Management.
 - Admin: different views for `SUPERADMIN` and `ADMIN`.
 - Inventory counts: list, filters, creation modal, detail, line editing, start/complete actions, completed read-only state.
+- Placeholder frontend pages/components currently present but not implemented: Management, Receptions, Expeditions, and Stock Query.
 
 ## Current Frontend Architecture
 
@@ -76,17 +76,27 @@ Frontend areas currently present:
 - Stock and movements use shared stock models in `core/models/stock.models.ts`; stock has a list/pagination child component, and movements has filter, list, and create modal components.
 - Dashboard has shared frontend models in `core/models/dashboard.models.ts`; `DashboardService` should remain HTTP-focused.
 - Admin has shared frontend models in `core/models/user.models.ts` and `core/models/company.models.ts`, plus child components for company list, users panel, and catalog panel.
+- Auth and socket payload types live in `core/models`; `core/services` should not export shared DTO/model interfaces.
 - `core/services` should remain HTTP/service focused; shared model/DTO types should live in `core/models` or feature-local `models`.
+
+Remaining frontend refactor notes:
+
+- First-pass component extraction is done for Inventory, Warehouses, Products, Movements, Stock, Dashboard, and Admin.
+- Second-pass cleanup should focus on slimming feature container `.component.ts` files that still own too much orchestration state, especially Admin, Warehouses, Inventory, Products, and Movements.
+- Dashboard still has a large component stylesheet; move repeated card/grid/stat patterns to shared styles only when another feature needs the same pattern.
+- `_shared.scss` owns shared action button variants, including activate/deactivate modifiers used across Admin and Warehouses.
+- Management is a routed placeholder page; Receptions, Expeditions, and Stock Query are placeholder components not currently exposed in the shell routes.
+- Keep placeholder pages minimal until their backend/product flows are implemented.
 
 ## Remaining Product Focus
 
 - Inventory counts are implemented and hardened with service unit tests under `apps/api/src/inventory`.
 - Inventory lines are unique per `(inventoryCountId, locationId)` via Prisma schema and migration `20260602142000_inventory_line_location_unique`.
 - Stock service now has focused unit tests for movement scoping, source-location stock guards, inbound audit/alerts, and overview filtering.
-- Products service now validates category/brand tenant ownership and has unit tests for product scoping, catalog ownership, duplicate SKU handling, and soft delete.
+- Products service now validates category/brand tenant ownership for create/update/list filters and has unit tests for product scoping, catalog ownership, duplicate SKU handling, and soft delete.
 - Warehouses service now has unit tests for company scoping, hierarchy ownership, duplicate handling, and protected deletes.
 - Optional Inventory follow-up is cancel support for `CANCELLED` counts.
-- Continue frontend cleanup where useful, especially remaining large pages and shared SCSS growth.
+- Continue second-pass frontend cleanup where useful, especially container orchestration, placeholder pages, and shared SCSS growth.
 
 ## Visual Direction
 
@@ -150,6 +160,14 @@ Before applying migrations that add unique constraints, check whether existing d
 - Main branch: `main`.
 - Before merging to `main`, run formatting and affected lint from the development branch.
 - If the workspace is not connected to Nx Cloud, do not leave `nxCloudId` in `nx.json`; it can break CI authorization.
+
+## Commit Message Style
+
+- Use English commit messages.
+- Use a concise Conventional Commit subject, for example `refactor: organize frontend models and shared styles`.
+- For non-trivial commits, include an explanatory body like the recent project commits: a short summary paragraph followed by bullet points grouped by area/file/module.
+- Mention the meaningful behavior, hardening, refactor, documentation, and verification details instead of only listing files.
+- Keep commit bodies factual and step-by-step so the project history can be read as implementation documentation.
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->

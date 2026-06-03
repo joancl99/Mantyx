@@ -81,11 +81,11 @@ Fresh database bootstrap:
 - Stock.
 - Movements.
 - Warehouses drill-down.
-- Management page.
 - Admin page with role-specific views:
   - `SUPERADMIN`: global company management.
   - `ADMIN`: tenant users, categories, and brands.
 - Inventory counts are connected to the backend API with list, status filter, creation, detail, line editing, completion, and completed read-only handling.
+- Placeholder frontend pages/components currently present but not implemented: Management, Receptions, Expeditions, and Stock Query.
 
 ## Current Architecture Notes
 
@@ -93,15 +93,24 @@ Fresh database bootstrap:
 - Shared frontend model/DTO types currently live in `apps/web/src/app/core/models` for products, stock/movements, warehouses, users, companies, and dashboard data.
 - Inventory keeps feature-specific data access and models under `apps/web/src/app/features/inventory/data-access` and `apps/web/src/app/features/inventory/models`.
 - `apps/web/src/styles/_shared.scss` contains shared page headers, buttons, filters, modals, forms, empty states, pagination, and common action styles.
-- Keep `core/services` focused on HTTP/service behavior rather than owning reusable model interfaces.
+- Keep `core/services` focused on HTTP/service behavior rather than owning reusable model interfaces; auth and socket payload types now live under `core/models`.
+
+Remaining frontend refactor work:
+
+- First-pass component extraction is complete for the main implemented feature pages.
+- A second pass is still useful for large feature containers that keep too much orchestration state: Admin, Warehouses, Inventory, Products, and Movements.
+- Dashboard has a large component SCSS file; only promote repeated patterns to `_shared.scss` when reused by another feature.
+- Shared activate/deactivate action button variants are centralized in `_shared.scss`.
+- Management is currently a routed placeholder page.
+- Receptions, Expeditions, and Stock Query are placeholder components and are not currently exposed in shell navigation/routes.
 
 ## Current Priority
 
 - Inventory counts are implemented, have service unit tests, and enforce unique count lines per location with migration `20260602142000_inventory_line_location_unique`.
 - Stock service has focused unit tests for movement scoping, source-location stock guards, inbound audit/alerts, and overview filtering.
-- Products service validates category/brand tenant ownership and has unit tests for product scoping, catalog ownership, duplicate SKU handling, and soft delete.
+- Products service validates category/brand tenant ownership for create/update/list filters and has unit tests for product scoping, catalog ownership, duplicate SKU handling, and soft delete.
 - Warehouses service has unit tests for company scoping, hierarchy ownership, duplicate handling, and protected deletes.
-- Current priorities are hardening remaining backend edge cases and continuing frontend cleanup where large pages remain.
+- Current priorities are hardening remaining backend edge cases and continuing second-pass frontend cleanup where placeholder or large container pages remain.
 
 ## Visual Direction
 

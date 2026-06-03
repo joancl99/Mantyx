@@ -3,27 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { map, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-
-export type Role = 'SUPERADMIN' | 'ADMIN' | 'MANAGER' | 'OPERATOR' | 'VIEWER';
-
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: Role;
-  companyId: string | null;
-}
-
-interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: User;
-}
-
-interface RefreshResponse {
-  accessToken: string;
-  refreshToken: string;
-}
+import { AuthResponse, AuthUser, RefreshResponse } from '../models/auth.models';
 
 const ACCESS_TOKEN_KEY = 'wh_access_token';
 const REFRESH_TOKEN_KEY = 'wh_refresh_token';
@@ -33,7 +13,7 @@ export class AuthService {
   private readonly _accessToken = signal<string | null>(
     localStorage.getItem(ACCESS_TOKEN_KEY),
   );
-  private readonly _user = signal<User | null>(
+  private readonly _user = signal<AuthUser | null>(
     this._parseTokenUser(localStorage.getItem(ACCESS_TOKEN_KEY)),
   );
 
@@ -103,7 +83,7 @@ export class AuthService {
     localStorage.setItem(REFRESH_TOKEN_KEY, res.refreshToken);
   }
 
-  private _parseTokenUser(token: string | null): User | null {
+  private _parseTokenUser(token: string | null): AuthUser | null {
     if (!token) return null;
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));

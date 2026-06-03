@@ -131,6 +131,16 @@
   &:hover { background: rgba(239, 68, 68, 0.12); }
 }
 
+.action-btn--deactivate {
+  color: var(--wh-text-muted);
+  &:hover { background: rgba(239, 68, 68, 0.1); color: var(--wh-danger); }
+}
+
+.action-btn--activate {
+  color: #22c55e;
+  &:hover { background: rgba(34, 197, 94, 0.1); }
+}
+
 // ── Search & Filters ──────────────────────────────────────────────────────────
 .filters-bar {
   display: flex;

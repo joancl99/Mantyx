@@ -130,16 +130,6 @@
   flex-shrink: 0;
 }
 
-.action-btn--deactivate {
-  color: var(--wh-danger);
-  &:hover { background: rgba(239, 68, 68, 0.12); }
-}
-
-.action-btn--activate {
-  color: #10b981;
-  &:hover { background: rgba(16, 185, 129, 0.12); }
-}
-
 @media (max-width: 720px) {
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .status-chip { display: none; }
