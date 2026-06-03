@@ -9,28 +9,27 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 RUN pnpm exec prisma generate --schema=apps/api/prisma/schema.prisma
-# Webpack (generatePackageJson: true) emits dist/apps/api/package.json containing
-# ONLY the dependencies the API bundle actually imports — no Angular/Capacitor/etc.
-RUN pnpm nx build api --configuration=production
+# `nx prune` builds the API and emits a pruned + frozen production manifest pair
+# (dist/apps/api/package.json + pnpm-lock.yaml) derived from the root lockfile,
+# so the runtime install pins the exact same transitive versions (reproducible)
+# and carries only the API's real deps (apps/api/package.json — no Angular/etc.).
+RUN pnpm nx prune api
 
 # ── Stage 2: Production dependencies ──────────────────────────────────────────
-# Install from the PRUNED package.json so the runtime image carries only the API's
-# real runtime deps (not the whole monorepo). node-linker=hoisted flattens
-# node_modules so the bundle can require transitive deps (e.g. tslib via rxjs).
+# Install ONLY the API's runtime deps from the pruned, frozen lockfile.
 FROM node:24-alpine AS prod-deps
 WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@11.5.0 --activate
 
 COPY --from=builder /app/dist/apps/api/package.json ./package.json
-# node-linker=hoisted flattens node_modules; the workspace file approves the
-# native/postinstall build scripts (bcrypt, prisma engines) for pnpm 11.
+COPY --from=builder /app/dist/apps/api/pnpm-lock.yaml ./pnpm-lock.yaml
+# node-linker=hoisted flattens node_modules so the bundle can require transitive
+# deps (rxjs, reflect-metadata); the workspace file approves native build scripts
+# (bcrypt, prisma engines) for pnpm 11.
 COPY docker/prod-deps.npmrc ./.npmrc
 COPY docker/prod-deps.pnpm-workspace.yaml ./pnpm-workspace.yaml
-# Webpack's generatePackageJson omits tslib even though the tsc-compiled bundle
-# requires it at runtime — add it explicitly before installing.
-RUN node -e "const p=require('./package.json'); p.dependencies.tslib=p.dependencies.tslib||'^2.8.1'; require('fs').writeFileSync('package.json', JSON.stringify(p,null,2))" \
-  && pnpm install --prod
+RUN pnpm install --frozen-lockfile --prod
 
 COPY apps/api/prisma ./apps/api/prisma
 RUN pnpm exec prisma generate --schema=apps/api/prisma/schema.prisma

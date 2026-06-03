@@ -1,0 +1,30 @@
+{
+  "name": "api",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "prisma": "^6.19.3",
+    "tslib": "^2.3.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/swagger": "^11.4.2",
+    "@nestjs/config": "^4.0.4",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/throttler": "^6.5.0",
+    "@nestjs/jwt": "^11.0.2",
+    "@prisma/client": "^6.19.3",
+    "bcrypt": "^6.0.0",
+    "class-validator": "^0.15.1",
+    "@nestjs/passport": "^11.0.5",
+    "express": "^5.2.1",
+    "passport-jwt": "^4.0.1",
+    "joi": "^18.2.1",
+    "class-transformer": "^0.5.1",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/platform-socket.io": "^11.1.19",
+    "helmet": "^8.1.0",
+    "multer": "^2.1.1",
+    "ioredis": "^5.10.1",
+    "@nestjs/websockets": "^11.1.19",
+    "socket.io": "^4.8.3"
+  }
+}
