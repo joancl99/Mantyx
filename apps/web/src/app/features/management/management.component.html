@@ -4,4 +4,141 @@
     <ion-title>Management</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content></ion-content>
+
+<ion-content [scrollY]="true" [fullscreen]="true">
+  <div class="management-page">
+    <header class="management-hero">
+      <div>
+        <span class="eyebrow">Centro de mando</span>
+        <h1>Precisión operativa para hoy</h1>
+        <p>
+          Una lectura ejecutiva del riesgo de stock, actividad reciente y
+          acciones que mantienen el almacén bajo control.
+        </p>
+      </div>
+      <button class="refresh-btn" type="button" (click)="loadManagementData()">
+        <ion-icon name="refresh-outline" />
+        Actualizar
+      </button>
+    </header>
+
+    @if (loading()) {
+      <div class="state-center">
+        <ion-spinner class="main-spinner" />
+      </div>
+    } @else {
+      <section class="command-grid">
+        <article class="health-card health-card--{{ healthTone() }}">
+          <div class="health-card__topline">
+            <span>Salud del almacén</span>
+            <ion-icon name="analytics-outline" />
+          </div>
+          <strong>{{ healthLabel() }}</strong>
+          <div class="risk-meter" aria-label="Riesgo operativo">
+            <span [style.width.%]="riskScore()"></span>
+          </div>
+          <small>{{ riskScore() }}% de presión por stock bajo o sin stock</small>
+        </article>
+
+        <div class="metric-stack">
+          <article class="metric-card">
+            <ion-icon name="cube-outline" />
+            <span>Productos</span>
+            <strong>{{ dashboard()?.kpis?.totalProducts ?? 0 }}</strong>
+          </article>
+          <article class="metric-card metric-card--warning">
+            <ion-icon name="warning-outline" />
+            <span>Stock bajo</span>
+            <strong>{{ dashboard()?.kpis?.lowStock ?? 0 }}</strong>
+          </article>
+          <article class="metric-card metric-card--danger">
+            <ion-icon name="alert-circle-outline" />
+            <span>Sin stock</span>
+            <strong>{{ dashboard()?.kpis?.noStock ?? 0 }}</strong>
+          </article>
+          <article class="metric-card">
+            <ion-icon name="swap-horizontal-outline" />
+            <span>Movimientos hoy</span>
+            <strong>{{ dashboard()?.kpis?.movementsToday ?? 0 }}</strong>
+          </article>
+        </div>
+      </section>
+
+      <section class="workbench-grid">
+        <article class="panel panel--priority">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Reposición</span>
+              <h2>Riesgos prioritarios</h2>
+            </div>
+            <strong>{{ replenishmentUnits() }} uds</strong>
+          </div>
+
+          @if (topRisks().length === 0) {
+            <div class="empty-panel">
+              <ion-icon name="checkbox-outline" />
+              <span>Sin productos críticos ahora mismo.</span>
+            </div>
+          } @else {
+            <div class="risk-list">
+              @for (item of topRisks(); track item.productId) {
+                <div class="risk-row">
+                  <div>
+                    <strong>{{ item.name }}</strong>
+                    <span>{{ item.sku }}</span>
+                  </div>
+                  <div class="risk-row__stock">
+                    <span>{{ item.totalStock }} / {{ item.minStock }}</span>
+                    <strong>+{{ shortageUnits(item) }}</strong>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <span class="eyebrow">Actividad</span>
+              <h2>Últimos movimientos</h2>
+            </div>
+          </div>
+
+          @if ((dashboard()?.recentMovements?.length ?? 0) === 0) {
+            <div class="empty-panel">
+              <ion-icon name="layers-outline" />
+              <span>Sin movimientos recientes.</span>
+            </div>
+          } @else {
+            <div class="movement-feed">
+              @for (movement of dashboard()!.recentMovements; track movement.id) {
+                <div class="movement-feed__item">
+                  <span class="movement-feed__type">{{ movementTypeLabel(movement.type) }}</span>
+                  <div>
+                    <strong>{{ movement.productName }}</strong>
+                    <small>{{ movement.warehouseName }} · {{ movement.createdAt | date: 'short' }}</small>
+                  </div>
+                  <b>{{ movement.quantity }}</b>
+                </div>
+              }
+            </div>
+          }
+        </article>
+      </section>
+
+      <section class="action-rail" aria-label="Acciones de gestión">
+        @for (action of actions; track action.route) {
+          <a class="action-card action-card--{{ action.tone }}" [routerLink]="action.route">
+            <ion-icon [name]="action.icon" />
+            <div>
+              <strong>{{ action.label }}</strong>
+              <span>{{ action.description }}</span>
+            </div>
+            <ion-icon name="arrow-forward-outline" />
+          </a>
+        }
+      </section>
+    }
+  </div>
+</ion-content>
