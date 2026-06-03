@@ -1,9 +1,52 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
+    <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
     <ion-title>Recepciones</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content></ion-content>
+
+<ion-content [scrollY]="true" [fullscreen]="true">
+  <div class="receptions-page">
+
+    <header class="page-header">
+      <div class="page-header__left">
+        <h1 class="page-title">Recepciones</h1>
+        <span class="page-subtitle">{{ list.totalLabel() }}</span>
+      </div>
+      @if (canCreate()) {
+        <button class="btn-primary" (click)="openModal()">
+          <ion-icon name="add-outline" />
+          Nueva recepción
+        </button>
+      }
+    </header>
+
+    <app-reception-filters
+      [filterDateFrom]="list.filterDateFrom()"
+      [filterDateTo]="list.filterDateTo()"
+      [hasActiveFilters]="list.hasActiveFilters()"
+      (dateFromChanged)="list.onDateFromFilter($event)"
+      (dateToChanged)="list.onDateToFilter($event)"
+      (filtersCleared)="list.clearFilters()"
+    />
+
+    <app-reception-list
+      [receptions]="list.receptions()"
+      [loading]="list.loading()"
+      [hasActiveFilters]="list.hasActiveFilters()"
+      [currentPage]="list.currentPage()"
+      [totalPages]="list.totalPages()"
+      (pageChanged)="list.goToPage($event)"
+    />
+
+  </div>
+</ion-content>
+
+@if (showModal()) {
+  <app-create-reception-modal
+    [saving]="saving()"
+    [formError]="formError()"
+    (closeModal)="closeModal()"
+    (submitForm)="onSubmit($event)"
+  />
+}

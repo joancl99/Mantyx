@@ -1,0 +1,63 @@
+@if (loading()) {
+  <div class="state-center">
+    <ion-spinner name="crescent" class="main-spinner" />
+  </div>
+} @else if (receptions().length === 0) {
+  <div class="state-center">
+    <div class="empty-icon">
+      <ion-icon name="archive-outline" />
+    </div>
+    <p class="empty-title">Sin recepciones</p>
+    <p class="empty-sub">{{ emptyMessage() }}</p>
+  </div>
+} @else {
+  <div class="reception-list">
+    @for (r of receptions(); track r.id) {
+      <div class="reception-row">
+        <div class="reception-badge">
+          <ion-icon name="arrow-down-outline" />
+          <span>Entrada</span>
+        </div>
+
+        <div class="reception-product">
+          <span class="product-name">{{ r.product.name }}</span>
+          <span class="product-sku">{{ r.product.sku }}</span>
+        </div>
+
+        <div class="reception-qty">
+          <span class="qty-value">+{{ r.quantity }}</span>
+          <span class="qty-delta">{{ stockDelta(r) }}</span>
+        </div>
+
+        <div class="reception-meta">
+          <span class="meta-warehouse">{{ r.warehouse.name }}</span>
+          <span class="meta-user">{{ r.user.name }}</span>
+        </div>
+
+        <div class="reception-date">
+          {{ r.createdAt | date: 'dd/MM/yy HH:mm' }}
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (totalPages() > 1) {
+    <div class="pagination">
+      <button
+        class="page-btn"
+        [disabled]="currentPage() === 1"
+        (click)="pageChanged.emit(currentPage() - 1)"
+      >
+        <ion-icon name="chevron-back-outline" />
+      </button>
+      <span class="page-info">{{ currentPage() }} / {{ totalPages() }}</span>
+      <button
+        class="page-btn"
+        [disabled]="currentPage() === totalPages()"
+        (click)="pageChanged.emit(currentPage() + 1)"
+      >
+        <ion-icon name="chevron-forward-outline" />
+      </button>
+    </div>
+  }
+}

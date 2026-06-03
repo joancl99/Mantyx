@@ -24,6 +24,8 @@ import {
   cubeSharp,
   barcodeOutline,
   shieldCheckmarkOutline,
+  downloadOutline,
+  analyticsOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../core/services/auth.service';
 import { UserRole } from '../core/models/user.models';
@@ -65,6 +67,12 @@ const NAV_ITEMS: NavItem[] = [
     roles: ALL_ROLES,
   },
   {
+    label: 'Consulta Stock',
+    icon: 'analytics-outline',
+    route: '/app/stock-query',
+    roles: ALL_ROLES,
+  },
+  {
     label: 'Movimientos',
     icon: 'swap-horizontal-outline',
     route: '/app/movements',
@@ -74,6 +82,12 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Inventario',
     icon: 'clipboard-outline',
     route: '/app/inventory',
+    roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'],
+  },
+  {
+    label: 'Recepciones',
+    icon: 'download-outline',
+    route: '/app/receptions',
     roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'],
   },
   {
@@ -138,6 +152,8 @@ export class ShellComponent {
       cubeSharp,
       barcodeOutline,
       shieldCheckmarkOutline,
+      downloadOutline,
+      analyticsOutline,
     });
   }
 

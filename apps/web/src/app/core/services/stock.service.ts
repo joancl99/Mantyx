@@ -5,6 +5,7 @@ import {
   CreateMovementDto,
   MovementQuery,
   MovementsResponse,
+  StockByProductResponse,
   StockMovement,
   StockOverviewResponse,
 } from '../models/stock.models';
@@ -45,10 +46,6 @@ export class StockService {
   }
 
   getStockByProduct(productId: string) {
-    return this.http.get<{
-      product: { id: string; name: string; sku: string; minStock: number };
-      total: number;
-      entries: unknown[];
-    }>(`${this.byProduct}/${productId}`);
+    return this.http.get<StockByProductResponse>(`${this.byProduct}/${productId}`);
   }
 }

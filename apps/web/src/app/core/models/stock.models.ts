@@ -26,6 +26,8 @@ export interface CreateMovementDto {
   warehouseId: string;
   type: MovementType;
   quantity: number;
+  fromLocationId?: string;
+  toLocationId?: string;
   notes?: string;
 }
 
@@ -58,4 +60,28 @@ export interface StockOverviewResponse {
   total: number;
   page: number;
   limit: number;
+}
+
+export interface StockLocationEntry {
+  id: string;
+  quantity: number;
+  location: {
+    id: string;
+    code: string;
+    aisle: {
+      id: string;
+      name: string;
+      zone: {
+        id: string;
+        name: string;
+        warehouse: { id: string; name: string };
+      };
+    };
+  };
+}
+
+export interface StockByProductResponse {
+  product: { id: string; name: string; sku: string; minStock: number };
+  total: number;
+  entries: StockLocationEntry[];
 }
