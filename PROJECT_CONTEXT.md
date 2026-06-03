@@ -18,6 +18,8 @@ Core product areas:
 - Warehouse structure: warehouses, zones, aisles, and locations.
 - Dashboard KPIs and operational alerts.
 - Inventory counts by location.
+- Inbound receptions and outbound expeditions.
+- Barcode/QR scanning for warehouse operations.
 
 ## Branding
 
@@ -30,6 +32,8 @@ Core product areas:
 
 - Monorepo: Nx 22.7.x.
 - Frontend: Angular 21 standalone components, Ionic 8.8.7, SCSS, socket.io-client.
+- Mobile runtime: Capacitor 8.3.4 (`capacitor.config.ts` at workspace root, `webDir = dist/apps/web/browser`).
+- Barcode scanning: `@capacitor-mlkit/barcode-scanning` 8.1.0 (ML Kit native), `@zxing/browser` 0.2.0 (web fallback).
 - Backend: NestJS 11, TypeScript.
 - Database: PostgreSQL 16.
 - ORM: Prisma 6.19.3.
@@ -64,8 +68,8 @@ Fresh database bootstrap:
 - Users: tenant user management.
 - Categories: tenant-scoped catalog setup.
 - Brands: tenant-scoped catalog setup.
-- Products: CRUD, search, filters, pagination, soft delete.
-- Stock and movements: inbound, outbound, transfer, adjustment, movement history.
+- Products: CRUD, search, filters, pagination, soft delete. Search includes name, SKU, and barcode fields.
+- Stock and movements: inbound, outbound, transfer, adjustment, movement history. Source-location stock guards on outbound.
 - Low-stock realtime base: Socket.io gateway in the stock area.
 - Warehouses: warehouses, zones, aisles, locations.
 - Inventory counts: tenant-scoped list/detail, creation, start, completion, and line add/update/delete flows.
@@ -75,51 +79,54 @@ Fresh database bootstrap:
 ## Implemented Frontend Areas
 
 - Auth pages: login and register.
-- Authenticated shell with Ionic side menu.
+- Authenticated shell with Ionic side menu and global scanner FAB (functional).
 - Dashboard.
 - Products.
-- Stock.
+- Stock (overview with debounced search and paginated list).
 - Movements.
 - Warehouses drill-down.
-- Management operational command center with stock health, replenishment risks, recent movements, and quick actions.
+- Management: operational command center with stock health, replenishment risks, recent movements, and quick actions.
 - Admin page with role-specific views:
   - `SUPERADMIN`: global company management.
   - `ADMIN`: tenant users, categories, and brands.
-- Inventory counts are connected to the backend API with list, status filter, creation, detail, line editing, completion, and completed read-only handling.
-- Placeholder frontend pages/components currently present but not implemented: Receptions, Expeditions, and Stock Query.
+- Inventory counts: connected to the backend API with list, status filter, creation, detail, line editing, completion, and completed read-only handling.
+- Receptions: full INBOUND flow with warehouse + cascading location (zone → aisle → location), multi-line form, scan-to-fill product by barcode/SKU, `forkJoin` parallel submit.
+- Expeditions: full OUTBOUND flow (mirror of Receptions), with source location and backend stock guard on submit error.
+- Barcode/QR scanner: `ScannerService` with platform detection. ML Kit on native Android/iOS via Capacitor. ZXing camera overlay on browser/web. Integrated in the global FAB, Reception modal, and Expedition modal.
 
 ## Current Architecture Notes
 
-- Frontend refactor commits have split large Inventory, Warehouses, Products, Movements, and Admin pages into smaller standalone child components.
-- Shared frontend model/DTO types currently live in `apps/web/src/app/core/models` for products, stock/movements, warehouses, users, companies, and dashboard data.
+- Frontend refactor commits have split large Inventory, Warehouses, Products, Movements, Admin, Receptions, and Expeditions pages into smaller standalone child components.
+- Shared frontend model/DTO types live in `apps/web/src/app/core/models` for products, stock/movements, warehouses, users, companies, and dashboard data.
+- `StockLocationEntry` and `StockByProductResponse` are typed interfaces in `core/models/stock.models.ts`.
 - Inventory keeps feature-specific data access and models under `apps/web/src/app/features/inventory/data-access` and `apps/web/src/app/features/inventory/models`.
 - Inventory line location selector state has been extracted to feature-local `inventory-line-location-state.ts`.
 - Products list/filter/pagination/search state has been extracted to feature-local `products-list-state.ts`.
 - Movements list/filter/pagination state has been extracted to feature-local `movements-list-state.ts`.
-- `apps/web/src/styles/_shared.scss` contains shared page headers, buttons, filters, modals, forms, empty states, pagination, and common action styles.
-- Keep `core/services` focused on HTTP/service behavior rather than owning reusable model interfaces; auth and socket payload types now live under `core/models`.
+- Receptions list/filter/pagination state lives in feature-local `receptions-list-state.ts` (always sends `type: 'INBOUND'`).
+- Expeditions list/filter/pagination state lives in feature-local `expeditions-list-state.ts` (always sends `type: 'OUTBOUND'`).
+- `apps/web/src/styles/_shared.scss` contains shared page headers, buttons, filters, modals, forms, empty states, pagination, common action styles, `.input-with-scan`, and `.btn-scan`.
+- `ScannerService` (`core/services/scanner.service.ts`) — `scan()` returns `Observable<ScanResult | null>`, uses `Capacitor.isNativePlatform()` to route to ML Kit or ZXing.
+- `ScannerOverlayComponent` (`core/scanner/`) — ZXing camera overlay with animated crosshair, hosted by the shell.
+- Reception and Expedition modals are smart: they inject `WarehousesService`, `ProductsService`, and `ScannerService` directly. Scan-to-fill matches the barcode/SKU against the already-loaded products signal with no extra API call.
+- Keep `core/services` focused on HTTP/service behavior; shared model/DTO types live under `core/models`.
+- Management is a routed operational command center (not a placeholder).
 
-Remaining frontend refactor work:
+Remaining work:
 
-- First-pass component extraction is complete for the main implemented feature pages.
-- A second pass is still useful for large feature containers that keep too much orchestration state: Admin, Warehouses, Inventory, Products, and Movements.
-- Admin category/brand catalog orchestration has been extracted to feature-local `admin-catalog-state.ts`; remaining Admin cleanup is mostly user/company modal orchestration.
-- Warehouses hierarchy navigation has been extracted to feature-local `warehouse-navigation-state.ts`; remaining Warehouses cleanup is mostly warehouse/sublevel modal and CRUD orchestration.
-- Inventory line location selection has been extracted; remaining Inventory cleanup is mostly detail actions and create/detail orchestration.
-- Products list state has been extracted; remaining Products cleanup is mostly form and delete orchestration.
-- Main second-pass frontend container cleanup is complete for Admin, Warehouses, Inventory, Products, and Movements; remaining cleanup is optional modal/detail orchestration work.
-- Dashboard has a large component SCSS file; only promote repeated patterns to `_shared.scss` when reused by another feature.
-- Shared activate/deactivate action button variants are centralized in `_shared.scss`.
-- Management is currently a routed placeholder page.
-- Receptions, Expeditions, and Stock Query are placeholder components and are not currently exposed in shell navigation/routes.
+- Main second-pass frontend container cleanup is complete for Admin, Warehouses, Inventory, Products, and Movements.
+- Inventory scanner integration (scan location QR to auto-fill location selector) is deferred — requires a backend location-search-by-code endpoint.
+- Optional: cancel support for `CANCELLED` inventory counts.
+- Next roadmap items: product image upload/storage, CSV/export flows, Cypress e2e coverage, production Docker image.
 
 ## Current Priority
 
 - Inventory counts are implemented, have service unit tests, and enforce unique count lines per location with migration `20260602142000_inventory_line_location_unique`.
 - Stock service has focused unit tests for movement scoping, source-location stock guards, inbound audit/alerts, and overview filtering.
-- Products service validates category/brand tenant ownership for create/update/list filters and has unit tests for product scoping, catalog ownership, duplicate SKU handling, and soft delete.
+- Products service validates category/brand tenant ownership and has unit tests for product scoping, catalog ownership, duplicate SKU, and soft delete.
 - Warehouses service has unit tests for company scoping, hierarchy ownership, duplicate handling, and protected deletes.
-- Current priorities are hardening remaining backend edge cases and continuing second-pass frontend cleanup where placeholder or large container pages remain.
+- Receptions, Expeditions, and barcode/QR scanner are fully implemented.
+- Next: product image upload.
 
 ## Visual Direction
 
@@ -127,20 +134,24 @@ Remaining frontend refactor work:
 - Warm amber accent: `#f59e0b`.
 - Primary font: Plus Jakarta Sans.
 - Ionic `IonMenu` for authenticated navigation.
-- Scanner should be a global action/FAB, not a normal menu section.
+- Scanner is a global FAB (bottom-right, barcode icon), not a menu section.
 - Avoid futuristic, neon, holographic, or 3D effects.
 - Do not use Inter, Roboto, or Arial as the primary brand font.
 
-Approved main menu:
+Approved shell menu (in order):
 
-- Dashboard.
-- Products.
-- Stock.
-- Movements.
-- Inventory.
-- Warehouses.
-- Management.
-- Administration.
+| Label | Icon | Roles |
+|---|---|---|
+| Dashboard | `home-outline` | ALL_ROLES |
+| Productos | `cube-outline` | MANAGERS_UP |
+| Stock | `analytics-outline` | ALL_ROLES |
+| Movimientos | `swap-horizontal-outline` | OPERATOR+ |
+| Inventario | `clipboard-outline` | OPERATOR+ |
+| Recepciones | `download-outline` | OPERATOR+ |
+| Expediciones | `send-outline` | OPERATOR+ |
+| Almacenes | `business-outline` | MANAGERS_UP |
+| Management | `bar-chart-outline` | MANAGERS_UP |
+| Administración | `settings-outline` | ADMINS_UP |
 
 ## Angular Rules
 
@@ -179,6 +190,24 @@ Apply committed migrations to an existing database with:
 ```bash
 npx dotenv -e apps/api/.env -- prisma migrate deploy --schema=apps/api/prisma/schema.prisma
 ```
+
+## Native Mobile Build
+
+Capacitor is configured and packages are installed. To build for Android:
+
+```bash
+pnpm nx build web --configuration=production
+npx cap add android        # first time only — creates android/ directory
+npx cap sync               # copies built web assets + plugins to native dirs
+# then open android/ in Android Studio
+```
+
+For iOS, run `npx cap add ios` and `npx cap sync` on macOS with Xcode installed.
+
+Required native permissions (add after `cap add`):
+
+- Android `AndroidManifest.xml`: `<uses-permission android:name="android.permission.CAMERA" />`
+- iOS `Info.plist`: `NSCameraUsageDescription` key with camera usage description.
 
 ## Repository
 

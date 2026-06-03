@@ -14,6 +14,8 @@ Use Mantyx in user-facing text, titles, documentation headings, and product refe
 ## Current Stack
 
 - Frontend: Angular 21 standalone components, Ionic 8.8.7, SCSS, socket.io-client.
+- Mobile runtime: Capacitor 8.3.4 — `capacitor.config.ts` at workspace root, webDir = `dist/apps/web/browser`.
+- Barcode scanning: `@capacitor-mlkit/barcode-scanning` 8.1.0 (native ML Kit on Android/iOS), `@zxing/browser` 0.2.0 (web/development fallback).
 - Backend: NestJS 11, TypeScript.
 - Database: PostgreSQL 16 with Prisma ORM 6.19.3.
 - Cache/Auth: Redis 7 for refresh tokens and JWT invalidation/blacklist behavior.
@@ -57,16 +59,18 @@ Backend modules currently present:
 Frontend areas currently present:
 
 - Auth pages: login/register.
-- Shell with Ionic side menu.
+- Shell with Ionic side menu and global scanner FAB (functional).
 - Dashboard.
 - Products.
-- Stock.
+- Stock (overview with search and paginated list).
 - Movements.
 - Warehouses drill-down.
 - Management: operational command center using dashboard stats, low-stock risk, recent movements, and quick actions.
 - Admin: different views for `SUPERADMIN` and `ADMIN`.
 - Inventory counts: list, filters, creation modal, detail, line editing, start/complete actions, completed read-only state.
-- Placeholder frontend pages/components currently present but not implemented: Receptions, Expeditions, and Stock Query.
+- Receptions: full INBOUND flow — warehouse + cascading location selector (zone→aisle→location), multi-line form, scan-to-fill product, `forkJoin` submit.
+- Expeditions: full OUTBOUND flow — same pattern as Receptions but OUTBOUND, with source location and backend stock guard.
+- Barcode/QR scanner: `ScannerService` with platform detection; ML Kit on native, ZXing overlay on web. Integrated in FAB, Reception modal, and Expedition modal.
 
 ## Current Frontend Architecture
 
@@ -78,21 +82,26 @@ Frontend areas currently present:
 - Products list, filters, pagination, and debounced search state lives in feature-local `products-list-state.ts`.
 - Stock and movements use shared stock models in `core/models/stock.models.ts`; stock has a list/pagination child component, and movements has filter, list, and create modal components.
 - Movements list, filters, pagination, and total label state lives in feature-local `movements-list-state.ts`.
+- Receptions list, filters, and pagination state lives in feature-local `receptions-list-state.ts` (always filters `type: 'INBOUND'`).
+- Expeditions list, filters, and pagination state lives in feature-local `expeditions-list-state.ts` (always filters `type: 'OUTBOUND'`).
 - Dashboard has shared frontend models in `core/models/dashboard.models.ts`; `DashboardService` should remain HTTP-focused.
 - Admin has shared frontend models in `core/models/user.models.ts` and `core/models/company.models.ts`, plus child components for company list, users panel, and catalog panel.
 - Admin category/brand list, modal, save, and delete orchestration is shared through feature-local `admin-catalog-state.ts`.
 - Warehouses hierarchy selection and breadcrumb navigation state is shared through feature-local `warehouse-navigation-state.ts`.
 - Auth and socket payload types live in `core/models`; `core/services` should not export shared DTO/model interfaces.
 - `core/services` should remain HTTP/service focused; shared model/DTO types should live in `core/models` or feature-local `models`.
+- `ScannerService` (`core/services/scanner.service.ts`) exposes `scan(): Observable<ScanResult | null>` and `showOverlay = signal(false)`.
+- `ScannerOverlayComponent` (`core/scanner/`) renders a ZXing camera overlay on web; the shell hosts it with `@if (scannerService.showOverlay())`.
+- Reception and Expedition modals are smart (inject `WarehousesService` + `ProductsService` + `ScannerService`).
+- Scan-to-fill matches scanned `rawValue` against the already-loaded `products()` signal by `barcode` or `sku` — no extra API call needed.
+- `StockLocationEntry` and `StockByProductResponse` are typed interfaces in `core/models/stock.models.ts`.
 
-Remaining frontend refactor notes:
+Remaining frontend work:
 
-- First-pass component extraction is done for Inventory, Warehouses, Products, Movements, Stock, Dashboard, and Admin.
-- The main second-pass frontend container cleanup is complete for Admin, Warehouses, Inventory, Products, and Movements. Optional follow-ups remain for Admin user/company modals, Warehouses sublevel CRUD, Inventory detail actions, Products form/delete orchestration, and Movements create modal orchestration.
-- Dashboard still has a large component stylesheet; move repeated card/grid/stat patterns to shared styles only when another feature needs the same pattern.
-- `_shared.scss` owns shared action button variants, including activate/deactivate modifiers used across Admin and Warehouses.
-- Management is implemented as an operational command center. Receptions, Expeditions, and Stock Query are placeholder components not currently exposed in the shell routes.
-- Keep placeholder pages minimal until their backend/product flows are implemented.
+- `_shared.scss` owns shared action button variants, `.input-with-scan`, and `.btn-scan` (amber scan button pattern used in Reception/Expedition).
+- Management is implemented as an operational command center.
+- Inventory scanner integration (scan location QR to auto-fill location selector) is deferred — requires a backend location-search-by-code endpoint.
+- Optional: cancel support for `CANCELLED` inventory counts.
 
 ## Remaining Product Focus
 
@@ -101,8 +110,9 @@ Remaining frontend refactor notes:
 - Stock service now has focused unit tests for movement scoping, source-location stock guards, inbound audit/alerts, and overview filtering.
 - Products service now validates category/brand tenant ownership for create/update/list filters and has unit tests for product scoping, catalog ownership, duplicate SKU handling, and soft delete.
 - Warehouses service now has unit tests for company scoping, hierarchy ownership, duplicate handling, and protected deletes.
-- Optional Inventory follow-up is cancel support for `CANCELLED` counts.
-- Continue second-pass frontend cleanup where useful, especially container orchestration, placeholder pages, and shared SCSS growth.
+- Next roadmap items: product image upload/storage, CSV/export flows, Cypress e2e coverage, production Docker image.
+- To build natively for Android: `pnpm nx build web` → `npx cap add android` → `npx cap sync` → open in Android Studio.
+- `npx cap add ios` requires macOS/Xcode.
 
 ## Visual Direction
 
@@ -111,10 +121,25 @@ Remaining frontend refactor notes:
 - Typography: Plus Jakarta Sans.
 - Navigation: Ionic `IonMenu` side drawer for authenticated routes.
 - Auth pages are full-screen and do not show the app menu.
-- Scanner should be a global action button/FAB, not a regular menu section.
+- Scanner is a global FAB (barcode icon, bottom-right corner), not a regular menu section.
 - Avoid futuristic, neon, holographic, or 3D visual effects.
 - Do not use Inter, Roboto, or Arial as the primary brand font.
 - Before building a new visual page from scratch, ask for a design reference if the direction is unclear.
+
+Approved shell menu (in order):
+
+| Label | Icon | Roles |
+|---|---|---|
+| Dashboard | `home-outline` | ALL_ROLES |
+| Productos | `cube-outline` | MANAGERS_UP |
+| Stock | `analytics-outline` | ALL_ROLES |
+| Movimientos | `swap-horizontal-outline` | OPERATOR+ |
+| Inventario | `clipboard-outline` | OPERATOR+ |
+| Recepciones | `download-outline` | OPERATOR+ |
+| Expediciones | `send-outline` | OPERATOR+ |
+| Almacenes | `business-outline` | MANAGERS_UP |
+| Management | `bar-chart-outline` | MANAGERS_UP |
+| Administración | `settings-outline` | ADMINS_UP |
 
 ## Angular Rules
 
@@ -175,9 +200,6 @@ Before applying migrations that add unique constraints, check whether existing d
 - Mention the meaningful behavior, hardening, refactor, documentation, and verification details instead of only listing files.
 - Keep commit bodies factual and step-by-step so the project history can be read as implementation documentation.
 
-<!-- nx configuration start-->
-<!-- Leave the start & end comments to automatically receive updates. -->
-
 # General Guidelines for working with Nx
 
 - For navigating/exploring the workspace, invoke the `nx-workspace` skill first - it has patterns for querying projects, targets, and dependencies
@@ -196,5 +218,3 @@ Before applying migrations that add unique constraints, check whether existing d
 - USE for: advanced config options, unfamiliar flags, migration guides, plugin configuration, edge cases
 - DON'T USE for: basic generator syntax (`nx g @nx/react:app`), standard commands, things you already know
 - The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
-
-<!-- nx configuration end-->

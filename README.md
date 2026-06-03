@@ -2,7 +2,7 @@
 
 **Precisión para tu almacén**
 
-Mantyx is a full-stack inventory and WMS SaaS application built as an enterprise-style portfolio project. It demonstrates multi-tenancy, RBAC, stock control, warehouse locations, movement tracking, auditability, realtime alerts, and a clean Angular/Ionic frontend.
+Mantyx is a full-stack inventory and WMS SaaS application built as an enterprise-style portfolio project. It demonstrates multi-tenancy, RBAC, stock control, warehouse locations, movement tracking, inbound/outbound flows, barcode scanning, auditability, realtime alerts, and a clean Angular/Ionic frontend.
 
 ## Overview
 
@@ -14,6 +14,9 @@ Mantyx helps companies manage products, stock, movements, warehouses, locations,
 
 - **Angular 21** — standalone components, routing, forms, SCSS.
 - **Ionic 8.8.7** — app shell, side menu, mobile-friendly UI components.
+- **Capacitor 8.3.4** — native mobile runtime for Android and iOS.
+- **@capacitor-mlkit/barcode-scanning** — ML Kit barcode/QR scanning on native devices.
+- **@zxing/browser** — browser/development barcode scanning fallback.
 - **socket.io-client** — realtime low-stock alert integration.
 
 ### Backend
@@ -40,89 +43,49 @@ Mantyx helps companies manage products, stock, movements, warehouses, locations,
 - Companies: platform-level company management for `SUPERADMIN`.
 - Users: tenant user management.
 - Categories and brands: tenant-scoped catalog setup.
-- Products: CRUD, search, filters, pagination, soft delete.
-- Stock and movements: inbound, outbound, transfer, adjustment, movement history.
+- Products: CRUD, search (name/SKU/barcode), filters, pagination, soft delete.
+- Stock and movements: inbound, outbound, transfer, adjustment, movement history, source-location stock guards.
 - Warehouses: warehouses, zones, aisles, and locations.
 - Inventory counts: list/detail, creation, start, completion, and line add/update/delete.
 - Dashboard: KPIs, alerts, and latest movements.
-- Realtime alerts: stock alerts gateway.
+- Realtime alerts: low-stock Socket.io gateway.
 - Infrastructure: Prisma module, Redis module, global exception filter, Swagger bootstrap.
 
 ### Implemented Frontend Areas
 
 - Auth pages: login and register.
-- Authenticated Ionic shell with side menu.
+- Authenticated Ionic shell with side menu and global scanner FAB.
 - Dashboard.
 - Products.
-- Stock.
+- Stock (overview with search and paginated list).
 - Movements.
-- Warehouses drill-down.
-- Management operational command center.
+- Warehouses drill-down (warehouses → zones → aisles → locations).
+- Management — operational command center with stock health, replenishment risk, recent movements, and quick actions.
 - Administration:
   - `SUPERADMIN`: global company management.
   - `ADMIN`: tenant users, categories, and brands.
 - Inventory counts: list, filters, creation modal, detail, line editing, start/complete actions, and completed read-only state.
-- Placeholder frontend pages/components currently present but not implemented: Receptions, Expeditions, and Stock Query.
+- **Receptions**: full INBOUND flow — warehouse + cascading location (zone → aisle → location), multi-line form, scan-to-fill product.
+- **Expeditions**: full OUTBOUND flow — same pattern, source location, backend stock guard.
+- **Barcode/QR scanner**: platform-aware `ScannerService` — ML Kit on native, ZXing overlay on browser. Integrated in FAB, Reception, and Expedition modals.
 
 ## Multi-Tenancy And Roles
 
 Mantyx is a multi-tenant SaaS. Most business records are scoped by `companyId`.
 
-Roles:
-
-- `SUPERADMIN`: platform owner. Can manage companies globally.
-- `ADMIN`: tenant owner. Manages users, categories, and brands for their own company.
-- `MANAGER`: operational supervisor.
-- `OPERATOR`: warehouse operations user.
-- `VIEWER`: read-only user.
+| Role | Scope |
+|---|---|
+| `SUPERADMIN` | Platform owner. Manages companies globally. |
+| `ADMIN` | Tenant owner. Manages users, categories, and brands for their company. |
+| `MANAGER` | Operational supervisor. |
+| `OPERATOR` | Warehouse operations. |
+| `VIEWER` | Read-only. |
 
 Fresh database bootstrap requirement:
 
 1. Create a `Company` in Prisma Studio or with a seed/script.
 2. Assign the initial non-SUPERADMIN `User.companyId`.
 3. Log in again so the JWT contains the new `companyId`.
-
-## Current Product Focus
-
-Inventory counts are implemented and connected end to end. Current follow-up work is focused on tests, edge-case hardening, and selected operational enhancements.
-
-Implemented inventory API endpoints:
-
-| Method   | Endpoint                           | Description                                                |
-| -------- | ---------------------------------- | ---------------------------------------------------------- |
-| `GET`    | `/api/inventory`                   | List tenant inventory counts with pagination/status filter |
-| `POST`   | `/api/inventory`                   | Create a count for a warehouse                             |
-| `GET`    | `/api/inventory/:id`               | Count detail with lines                                    |
-| `PATCH`  | `/api/inventory/:id/start`         | Move `DRAFT` to `IN_PROGRESS`                              |
-| `PATCH`  | `/api/inventory/:id/complete`      | Calculate differences and mark completed                   |
-| `POST`   | `/api/inventory/:id/lines`         | Add a count line                                           |
-| `PATCH`  | `/api/inventory/:id/lines/:lineId` | Register counted quantity                                  |
-| `DELETE` | `/api/inventory/:id/lines/:lineId` | Remove a line only while `DRAFT`                           |
-
-Frontend refactor status:
-
-- Inventory uses feature-local `data-access`, `models`, filters, list, create modal, and detail components.
-- Inventory line location selector state lives in `inventory-line-location-state.ts`.
-- Warehouses uses shared `core/models/warehouse.models.ts` and child components for breadcrumb, warehouse list, and sublevel list.
-- Products uses shared `core/models/product.models.ts` and child components for filters, list, form modal, and delete modal.
-- Products list/filter/pagination/search state lives in `products-list-state.ts`.
-- Stock and movements use shared `core/models/stock.models.ts`; stock has a list/pagination child component, and movements has filter, list, and create modal components.
-- Movements list/filter/pagination state lives in `movements-list-state.ts`.
-- Dashboard uses shared `core/models/dashboard.models.ts`.
-- Admin uses shared `core/models/user.models.ts` and `core/models/company.models.ts`, with child components for companies, users, and catalog sections.
-- Auth and socket payload models live in `core/models`, keeping `core/services` HTTP/service focused.
-- Shared SCSS patterns live in `apps/web/src/styles/_shared.scss`.
-- Management is implemented with operational stock health, replenishment risk, recent movement, and quick-action panels.
-- Receptions, Expeditions, and Stock Query remain placeholder pages.
-
-Remaining frontend refactor work:
-
-- First-pass extraction is complete for the main implemented feature pages.
-- Main second-pass frontend container cleanup is complete for Admin, Warehouses, Inventory, Products, and Movements. Remaining modal/detail orchestration cleanup can still be revisited later.
-- Dashboard still has a large component stylesheet; extract only reusable patterns to `_shared.scss` when another feature needs them.
-- Shared activate/deactivate action button variants are centralized in `_shared.scss`.
-- Management is a routed operational command center.
-- Receptions, Expeditions, and Stock Query are placeholder components not currently exposed in shell routes.
 
 ## Monorepo Structure
 
@@ -152,13 +115,27 @@ Mantyx/
 │   └── web/                         # Angular + Ionic frontend
 │       └── src/app/
 │           ├── auth/                # Login/register
-│           ├── core/                # Guards, interceptors, services, shared frontend models
-│           ├── features/            # Dashboard, products, stock, movements, etc.
+│           ├── core/
+│           │   ├── models/          # Shared frontend model/DTO interfaces
+│           │   ├── scanner/         # ScannerOverlayComponent (ZXing web overlay)
+│           │   └── services/        # HTTP services + ScannerService
+│           ├── features/
+│           │   ├── dashboard/
+│           │   ├── expeditions/     # OUTBOUND flow
+│           │   ├── inventory/
+│           │   ├── management/
+│           │   ├── movements/
+│           │   ├── products/
+│           │   ├── receptions/      # INBOUND flow
+│           │   ├── stock/
+│           │   └── warehouses/
 │           └── shell/               # Authenticated Ionic shell/menu
 ├── libs/
 │   └── shared/                      # Shared TypeScript types
 ├── docker/
 │   └── docker-compose.yml           # Local infrastructure
+├── capacitor.config.ts              # Capacitor native config
+├── AGENTS.md                        # Agent entrypoint
 ├── CLAUDE.md                        # Agent operational memory
 ├── PROJECT_CONTEXT.md               # Human-readable project context
 ├── nx.json
@@ -191,12 +168,6 @@ pnpm install
 pnpm prisma generate --schema=apps/api/prisma/schema.prisma
 pnpm nx build api --configuration=development
 pnpm nx build web --configuration=production
-```
-
-Equivalent Corepack command if `pnpm` is not in `PATH`:
-
-```bash
-corepack pnpm install
 ```
 
 Do not use `npm install` in this project.
@@ -239,14 +210,6 @@ Apply committed migrations to an existing database without creating a new migrat
 npx dotenv -e apps/api/.env -- prisma migrate deploy --schema=apps/api/prisma/schema.prisma
 ```
 
-The inventory line uniqueness migration requires no duplicate `(inventoryCountId, locationId)` rows in `inventory_count_lines` before it is applied.
-
-Fresh database bootstrap requirement:
-
-1. Create a `Company` in Prisma Studio or with a seed/script.
-2. Assign the initial non-SUPERADMIN `User.companyId`.
-3. Log in again so the JWT contains the new `companyId`.
-
 ### Day-To-Day Startup
 
 Use this flow when the project is already installed and the database already exists.
@@ -284,20 +247,38 @@ URLs:
 pnpm exec prisma studio --schema=apps/api/prisma/schema.prisma
 ```
 
+## Native Mobile Build (Capacitor)
+
+Capacitor is configured and packages are installed. Build for Android:
+
+```bash
+pnpm nx build web --configuration=production
+npx cap add android        # first time only — creates android/ directory
+npx cap sync               # copies built assets + plugins to native dirs
+# open android/ in Android Studio
+```
+
+For iOS, run `npx cap add ios` and `npx cap sync` on macOS with Xcode.
+
+Required native permissions after `cap add`:
+
+- **Android** `AndroidManifest.xml`: `<uses-permission android:name="android.permission.CAMERA" />`
+- **iOS** `Info.plist`: `NSCameraUsageDescription` key.
+
 ## Common Commands
 
-| Command                                                   | Description                            |
-| --------------------------------------------------------- | -------------------------------------- |
-| `pnpm run start:api`                                      | Start the NestJS API in dev/watch mode |
-| `pnpm run start:web`                                      | Start the Angular web app              |
-| `pnpm run build:api`                                      | Build the API for production           |
-| `pnpm run build:web`                                      | Build the web app for production       |
-| `pnpm run test`                                           | Run tests across configured projects   |
-| `pnpm nx test api`                                        | Run API unit tests                     |
-| `pnpm run lint`                                           | Run lint across configured projects    |
-| `pnpm run docker:up`                                      | Start local infrastructure             |
-| `pnpm run docker:down`                                    | Stop local infrastructure              |
-| `pnpm nx affected -t lint --base=origin/main --head=HEAD` | Run affected lint before merging       |
+| Command | Description |
+|---|---|
+| `pnpm run start:api` | Start the NestJS API in dev/watch mode |
+| `pnpm run start:web` | Start the Angular web app |
+| `pnpm run build:api` | Build the API for production |
+| `pnpm run build:web` | Build the web app for production |
+| `pnpm run test` | Run tests across configured projects |
+| `pnpm nx test api` | Run API unit tests |
+| `pnpm run lint` | Run lint across configured projects |
+| `pnpm run docker:up` | Start local infrastructure |
+| `pnpm run docker:down` | Stop local infrastructure |
+| `pnpm nx affected -t lint --base=origin/main --head=HEAD` | Run affected lint before merging |
 
 ## Quality Checks
 
@@ -328,18 +309,18 @@ Swagger is available at `http://localhost:3000/api/docs` when the API is running
 
 Representative endpoints:
 
-| Area       | Endpoint Examples                                                                                                 |
-| ---------- | ----------------------------------------------------------------------------------------------------------------- |
-| Auth       | `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout`              |
-| Companies  | `GET /api/companies`, `POST /api/companies`, `PATCH /api/companies/:id`, `PATCH /api/companies/:id/toggle-status` |
-| Users      | Tenant user management endpoints under `/api/users`                                                               |
-| Products   | CRUD and search/filter endpoints under `/api/products`                                                            |
-| Categories | Tenant category endpoints under `/api/categories`                                                                 |
-| Brands     | Tenant brand endpoints under `/api/brands`                                                                        |
-| Stock      | Movement endpoints under `/api/stock`                                                                             |
-| Warehouses | Warehouse, zone, aisle, and location endpoints under `/api/warehouses`                                            |
-| Inventory  | Inventory count endpoints under `/api/inventory`                                                                  |
-| Dashboard  | KPI and alert endpoints under `/api/dashboard`                                                                    |
+| Area | Endpoint Examples |
+|---|---|
+| Auth | `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout` |
+| Companies | `GET /api/companies`, `POST /api/companies`, `PATCH /api/companies/:id/toggle-status` |
+| Users | Tenant user management under `/api/users` |
+| Products | CRUD and search/filter under `/api/products` |
+| Categories | Tenant category endpoints under `/api/categories` |
+| Brands | Tenant brand endpoints under `/api/brands` |
+| Stock | Movement endpoints under `/api/stock` |
+| Warehouses | Warehouse, zone, aisle, and location endpoints under `/api/warehouses` |
+| Inventory | Inventory count endpoints under `/api/inventory` |
+| Dashboard | KPI and alert endpoints under `/api/dashboard` |
 
 ## Roadmap
 
@@ -363,9 +344,10 @@ Representative endpoints:
 - [x] Stock service unit tests and source-location stock guards.
 - [x] Products service unit tests and tenant-scoped catalog ownership guards.
 - [x] Warehouses service unit tests for scoping, hierarchy, duplicates, and protected deletes.
-- [ ] Second-pass frontend refactor for large feature containers and placeholder pages.
-- [ ] Barcode/QR scanner with Capacitor.
-- [ ] Product image upload storage.
+- [x] Receptions — full INBOUND WMS flow with location cascade and scan support.
+- [x] Expeditions — full OUTBOUND WMS flow with source location and stock guard.
+- [x] Barcode/QR scanner — Capacitor ML Kit (native) + ZXing (web fallback).
+- [ ] Product image upload and storage.
 - [ ] CSV/export flows.
 - [ ] Cypress e2e coverage.
 - [ ] Production Docker image.
