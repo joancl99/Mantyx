@@ -63,9 +63,10 @@ Frontend areas currently present:
 - Stock.
 - Movements.
 - Warehouses drill-down.
+- Management: operational command center using dashboard stats, low-stock risk, recent movements, and quick actions.
 - Admin: different views for `SUPERADMIN` and `ADMIN`.
 - Inventory counts: list, filters, creation modal, detail, line editing, start/complete actions, completed read-only state.
-- Placeholder frontend pages/components currently present but not implemented: Management, Receptions, Expeditions, and Stock Query.
+- Placeholder frontend pages/components currently present but not implemented: Receptions, Expeditions, and Stock Query.
 
 ## Current Frontend Architecture
 
@@ -90,7 +91,7 @@ Remaining frontend refactor notes:
 - The main second-pass frontend container cleanup is complete for Admin, Warehouses, Inventory, Products, and Movements. Optional follow-ups remain for Admin user/company modals, Warehouses sublevel CRUD, Inventory detail actions, Products form/delete orchestration, and Movements create modal orchestration.
 - Dashboard still has a large component stylesheet; move repeated card/grid/stat patterns to shared styles only when another feature needs the same pattern.
 - `_shared.scss` owns shared action button variants, including activate/deactivate modifiers used across Admin and Warehouses.
-- Management is a routed placeholder page; Receptions, Expeditions, and Stock Query are placeholder components not currently exposed in the shell routes.
+- Management is implemented as an operational command center. Receptions, Expeditions, and Stock Query are placeholder components not currently exposed in the shell routes.
 - Keep placeholder pages minimal until their backend/product flows are implemented.
 
 ## Remaining Product Focus

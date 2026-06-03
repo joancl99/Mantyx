@@ -81,11 +81,12 @@ Fresh database bootstrap:
 - Stock.
 - Movements.
 - Warehouses drill-down.
+- Management operational command center with stock health, replenishment risks, recent movements, and quick actions.
 - Admin page with role-specific views:
   - `SUPERADMIN`: global company management.
   - `ADMIN`: tenant users, categories, and brands.
 - Inventory counts are connected to the backend API with list, status filter, creation, detail, line editing, completion, and completed read-only handling.
-- Placeholder frontend pages/components currently present but not implemented: Management, Receptions, Expeditions, and Stock Query.
+- Placeholder frontend pages/components currently present but not implemented: Receptions, Expeditions, and Stock Query.
 
 ## Current Architecture Notes
 
