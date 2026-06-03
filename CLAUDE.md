@@ -95,8 +95,8 @@ Frontend areas currently present:
 - Auth and socket payload types live in `core/models`; `core/services` should not export shared DTO/model interfaces.
 - `core/services` should remain HTTP/service focused; shared model/DTO types should live in `core/models` or feature-local `models`.
 - `ScannerService` (`core/services/scanner.service.ts`) exposes `scan(): Observable<ScanResult | null>` and `showOverlay = signal(false)`.
-- `ScannerOverlayComponent` (`core/scanner/`) renders a ZXing camera overlay on web; the shell hosts it with `@if (scannerService.showOverlay())`.
-- Reception and Expedition modals are smart (inject `WarehousesService` + `ProductsService` + `ScannerService`).
+- `ScannerOverlayComponent` (`core/scanner/`) renders a ZXing camera overlay on web; the shell hosts it with `@if (scannerService.showOverlay())`. The overlay backdrop is an accessible button to satisfy Angular template lint rules.
+- Reception and Expedition modals are smart (inject `WarehousesService` + `ProductsService` + `ScannerService`) and use `CUSTOM_ELEMENTS_SCHEMA` for Ionic custom elements in component tests.
 - Scan-to-fill matches scanned `rawValue` against the already-loaded `products()` signal by `barcode` or `sku` — no extra API call needed.
 - `StockLocationEntry` and `StockByProductResponse` are typed interfaces in `core/models/stock.models.ts`.
 
@@ -109,10 +109,13 @@ Remaining frontend work:
 
 - Inventory counts are implemented and hardened with service unit tests under `apps/api/src/inventory`.
 - Inventory lines are unique per `(inventoryCountId, locationId)` via Prisma schema and migration `20260602142000_inventory_line_location_unique`.
-- Stock service now has focused unit tests for movement scoping, source-location stock guards, inbound audit/alerts, and overview filtering.
+- Stock service now has focused unit tests for movement scoping, source-location stock guards, required source/destination locations, transfer location validation, inbound audit/alerts, and overview filtering.
 - Products service now validates category/brand tenant ownership for create/update/list filters and has unit tests for product scoping, catalog ownership, duplicate SKU handling, and soft delete.
 - Warehouses service now has unit tests for company scoping, hierarchy ownership, duplicate handling, and protected deletes.
-- Next roadmap items: Cypress e2e coverage, frontend unit tests.
+- Frontend tests currently cover app route smoke behavior, `roleGuard`, and Reception/Expedition modal data loading + submit validation.
+- API e2e now runs in-process with `@nestjs/testing` on a dynamic port for the public health endpoint; it no longer depends on `api:serve` or port-killing setup files.
+- CI (`.github/workflows/ci.yml`) explicitly runs format check, lint for api/web/types/api-e2e, tests for api/web/types, builds for api/web/types, and `api-e2e`.
+- Next roadmap items: expand API e2e beyond health, add broader frontend unit tests for scanner/CSV/services, and consider Cypress/Playwright browser e2e coverage for full user flows.
 - To build natively for Android: `pnpm nx build web` → `npx cap add android` → `npx cap sync` → open in Android Studio.
 - `npx cap add ios` requires macOS/Xcode.
 
@@ -191,8 +194,21 @@ Before applying migrations that add unique constraints, check whether existing d
 
 - Remote: `https://github.com/joancl99/Mantyx.git`.
 - Main branch: `main`.
-- Before merging to `main`, run formatting and affected lint from the development branch.
+- Before merging to `main`, run the explicit quality gate used by CI: format check, lint, tests, builds, and `api-e2e`.
 - If the workspace is not connected to Nx Cloud, do not leave `nxCloudId` in `nx.json`; it can break CI authorization.
+- Current CI commands:
+  - `pnpm nx format:check --base=origin/main`
+  - `pnpm nx run api:eslint:lint`
+  - `pnpm nx lint web`
+  - `pnpm nx run types:eslint:lint`
+  - `pnpm nx run api-e2e:eslint:lint`
+  - `pnpm nx test api`
+  - `pnpm nx test web`
+  - `pnpm nx test types`
+  - `pnpm nx build api`
+  - `pnpm nx build web`
+  - `pnpm nx build types`
+  - `pnpm nx e2e api-e2e`
 
 ## Commit Message Style
 

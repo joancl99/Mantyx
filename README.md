@@ -44,7 +44,7 @@ Mantyx helps companies manage products, stock, movements, warehouses, locations,
 - Users: tenant user management.
 - Categories and brands: tenant-scoped catalog setup.
 - Products: CRUD, search (name/SKU/barcode), filters, pagination, soft delete.
-- Stock and movements: inbound, outbound, transfer, adjustment, movement history, source-location stock guards.
+- Stock and movements: inbound, outbound, transfer, adjustment, movement history, source-location stock guards, and warehouse/company location validation.
 - Warehouses: warehouses, zones, aisles, and locations.
 - Inventory counts: list/detail, creation, start, completion, and line add/update/delete.
 - Dashboard: KPIs, alerts, and latest movements.
@@ -71,6 +71,7 @@ Mantyx helps companies manage products, stock, movements, warehouses, locations,
 - **CSV export**: `CsvExportService` with BOM prefix (Excel-compatible), RFC-4180 escaping, and timestamped filename. Export button in every list page (Stock, Movements, Receptions, Expeditions) using active filters.
 - **Product images**: upload via `PATCH /products/:id/image` (Multer, jpg/png/webp ≤5 MB). Stored on disk, served as static assets. Image picker with live preview in the product form modal.
 - **Realtime low-stock alerts**: `SocketService` connects on login, listens to Socket.io `low-stock` events, and shows a dismissible Ionic warning toast in the shell.
+- **Frontend route authorization**: shell routes use role metadata and `roleGuard` to keep restricted pages aligned with the menu permissions.
 
 ## Multi-Tenancy And Roles
 
@@ -297,22 +298,38 @@ Required native permissions after `cap add`:
 | `pnpm run build:web`                                      | Build the web app for production       |
 | `pnpm run test`                                           | Run tests across configured projects   |
 | `pnpm nx test api`                                        | Run API unit tests                     |
+| `pnpm nx test web`                                        | Run Angular/Vitest frontend tests      |
+| `pnpm nx e2e api-e2e`                                     | Run API e2e health check in-process    |
 | `pnpm run lint`                                           | Run lint across configured projects    |
 | `pnpm run docker:up`                                      | Start local infrastructure             |
 | `pnpm run docker:down`                                    | Stop local infrastructure              |
-| `pnpm nx affected -t lint --base=origin/main --head=HEAD` | Run affected lint before merging       |
+| `pnpm nx format:check --base=origin/main`                 | Check formatting before merging        |
 
 ## Quality Checks
 
-Use these commands to verify the project before committing or opening a PR:
+Use these commands to verify the project before committing or opening a PR. This mirrors the current CI quality gate:
 
 ```bash
-pnpm nx format:check
-pnpm nx run-many -t lint
-pnpm nx run-many -t test
-pnpm nx build api --configuration=development
-pnpm nx build web --configuration=production
+pnpm nx format:check --base=origin/main
+pnpm nx run api:eslint:lint
+pnpm nx lint web
+pnpm nx run types:eslint:lint
+pnpm nx run api-e2e:eslint:lint
+pnpm nx test api
+pnpm nx test web
+pnpm nx test types
+pnpm nx build api
+pnpm nx build web
+pnpm nx build types
+pnpm nx e2e api-e2e
 ```
+
+Current test baseline:
+
+- API unit tests cover inventory, products, stock, and warehouses service behavior.
+- Frontend unit tests cover route smoke behavior, `roleGuard`, and Reception/Expedition modal data loading + submit validation.
+- API e2e runs a deterministic in-process Nest app for `/api/health`; it does not require `api:serve` or a fixed port.
+- Lint passes with existing warnings, mostly historical non-null assertions and `any` usage.
 
 ## Development Rules
 
@@ -373,8 +390,13 @@ Representative endpoints:
 - [x] CSV export flows (Stock, Movements, Receptions, Expeditions + albarán modal).
 - [x] Realtime low-stock alerts — Socket.io gateway connected to shell with Ionic toast.
 - [x] Production Docker image — multi-stage Dockerfile.api + Dockerfile.web + docker-compose.prod.yml.
-- [ ] Cypress e2e coverage.
-- [ ] Frontend unit tests.
+- [x] Frontend route guard and Reception/Expedition modal unit tests.
+- [x] API e2e health check that runs in-process without `api:serve`.
+- [x] CI quality gate with explicit format, lint, test, build, and e2e steps.
+- [ ] Expand API e2e coverage beyond health: auth, tenant-scoped products, stock movements, inventory lifecycle.
+- [ ] Broaden frontend unit tests: scanner, CSV export, services, products modal, inventory flows.
+- [ ] Cypress or Playwright browser e2e coverage for full user journeys.
+- [ ] Optional: reduce existing lint warnings and consider `--max-warnings=0` once cleaned up.
 
 ## License
 

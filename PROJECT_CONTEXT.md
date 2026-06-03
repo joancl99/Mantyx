@@ -70,6 +70,7 @@ Fresh database bootstrap:
 - Brands: tenant-scoped catalog setup.
 - Products: CRUD, search, filters, pagination, soft delete. Search includes name, SKU, and barcode fields.
 - Stock and movements: inbound, outbound, transfer, adjustment, movement history. Source-location stock guards on outbound.
+- Stock movement creation validates that source/destination locations belong to the selected warehouse and company.
 - Low-stock realtime base: Socket.io gateway in the stock area.
 - Warehouses: warehouses, zones, aisles, locations.
 - Inventory counts: tenant-scoped list/detail, creation, start, completion, and line add/update/delete flows.
@@ -111,22 +112,35 @@ Fresh database bootstrap:
 - Expeditions list/filter/pagination state lives in feature-local `expeditions-list-state.ts` (always sends `type: 'OUTBOUND'`).
 - `apps/web/src/styles/_shared.scss` contains shared page headers, buttons (`.btn-primary`, `.btn-ghost`, `.btn-danger`, `.btn-clear`, `.btn-export`), `.page-header__actions`, filters, modals, modal success state (`.modal-success`, `.success-icon`, `.success-title`, `.success-sub`, `.success-actions`), forms, empty states, pagination, `.input-with-scan`, and `.btn-scan`.
 - `ScannerService` (`core/services/scanner.service.ts`) — `scan()` returns `Observable<ScanResult | null>`, uses `Capacitor.isNativePlatform()` to route to ML Kit or ZXing.
-- `ScannerOverlayComponent` (`core/scanner/`) — ZXing camera overlay with animated crosshair, hosted by the shell.
-- Reception and Expedition modals are smart: they inject `WarehousesService`, `ProductsService`, and `ScannerService` directly. Scan-to-fill matches the barcode/SKU against the already-loaded products signal with no extra API call.
+- `ScannerOverlayComponent` (`core/scanner/`) — ZXing camera overlay with animated crosshair, hosted by the shell. Its backdrop is an accessible button so template lint passes.
+- Reception and Expedition modals are smart: they inject `WarehousesService`, `ProductsService`, and `ScannerService` directly. Scan-to-fill matches the barcode/SKU against the already-loaded products signal with no extra API call. The modals use `CUSTOM_ELEMENTS_SCHEMA` so Ionic custom elements remain test-friendly in Angular/Vitest.
 - Keep `core/services` focused on HTTP/service behavior; shared model/DTO types live under `core/models`.
 - Management is a routed operational command center (not a placeholder).
+
+## Testing And CI Status
+
+- API unit tests cover inventory, products, stock, and warehouses service behavior.
+- Stock service tests include multi-tenant scoping, source-location stock guards, required source/destination location validation, transfer validation, inbound audit/alert behavior, and overview filtering.
+- Frontend unit tests cover route smoke behavior, `roleGuard`, and Reception/Expedition modal data loading + submit validation.
+- `api-e2e` is configured as a deterministic in-process Nest e2e test for `/api/health`; it listens on a dynamic port and closes itself after the suite. It no longer depends on `api:serve`, `global-setup`, `global-teardown`, or `test-setup`.
+- CI currently runs explicit full quality gates instead of relying on affected-only tasks: format check, lint for `api`, `web`, `types`, and `api-e2e`, tests for `api`, `web`, and `types`, builds for `api`, `web`, and `types`, and `api-e2e`.
+- Lint currently passes with warnings. Existing warnings are mostly historical non-null assertions and `any` in tests/services.
 
 Remaining work:
 
 - Main second-pass frontend container cleanup is complete for Admin, Warehouses, Inventory, Products, and Movements.
 - Inventory scanner integration (scan location QR to auto-fill location selector) is deferred — requires a backend location-search-by-code endpoint.
 - Optional: cancel support for `CANCELLED` inventory counts.
-- Next roadmap items: Cypress e2e coverage, frontend unit tests.
+- Expand API e2e beyond health: auth login/register/refresh, tenant-scoped product CRUD, stock movement guards, and inventory lifecycle.
+- Add broader frontend unit tests: scanner service/overlay, CSV export, stock/movements services, products modal image handling, and inventory create/detail behavior.
+- Consider Cypress or Playwright e2e coverage for browser flows: login, product creation, reception, expedition, inventory count lifecycle, and role-restricted navigation.
+- Reduce existing lint warnings if the project starts enforcing `--max-warnings=0`.
 
 ## Current Priority
 
 - All main product areas are implemented: inventory counts, receptions, expeditions, barcode scanner, CSV export, product images, realtime alerts, and production Docker.
-- Next: Cypress e2e coverage and/or polishing individual pages.
+- Current quality baseline is in place: backend service tests, initial frontend unit tests, in-process API e2e, and explicit CI quality gates.
+- Next: extend e2e coverage into real business flows, broaden frontend unit tests, and then polish individual pages.
 
 ## Visual Direction
 
@@ -213,5 +227,5 @@ Required native permissions (add after `cap add`):
 
 - Remote: `https://github.com/joancl99/Mantyx.git`.
 - Main branch: `main`.
-- Run formatting and affected lint before merging to `main`.
+- Before merging to `main`, run the same explicit quality gate as CI: format check, lint, tests, builds, and `api-e2e`.
 - Do not leave `nxCloudId` in `nx.json` unless the workspace is connected to Nx Cloud.
