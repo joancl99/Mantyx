@@ -57,11 +57,12 @@ Mantyx helps companies manage products, stock, movements, warehouses, locations,
 - Stock.
 - Movements.
 - Warehouses drill-down.
+- Management operational command center.
 - Administration:
   - `SUPERADMIN`: global company management.
   - `ADMIN`: tenant users, categories, and brands.
 - Inventory counts: list, filters, creation modal, detail, line editing, start/complete actions, and completed read-only state.
-- Placeholder frontend pages/components currently present but not implemented: Management, Receptions, Expeditions, and Stock Query.
+- Placeholder frontend pages/components currently present but not implemented: Receptions, Expeditions, and Stock Query.
 
 ## Multi-Tenancy And Roles
 
@@ -111,7 +112,8 @@ Frontend refactor status:
 - Admin uses shared `core/models/user.models.ts` and `core/models/company.models.ts`, with child components for companies, users, and catalog sections.
 - Auth and socket payload models live in `core/models`, keeping `core/services` HTTP/service focused.
 - Shared SCSS patterns live in `apps/web/src/styles/_shared.scss`.
-- Management, Receptions, Expeditions, and Stock Query remain placeholder pages.
+- Management is implemented with operational stock health, replenishment risk, recent movement, and quick-action panels.
+- Receptions, Expeditions, and Stock Query remain placeholder pages.
 
 Remaining frontend refactor work:
 
@@ -119,7 +121,7 @@ Remaining frontend refactor work:
 - Main second-pass frontend container cleanup is complete for Admin, Warehouses, Inventory, Products, and Movements. Remaining modal/detail orchestration cleanup can still be revisited later.
 - Dashboard still has a large component stylesheet; extract only reusable patterns to `_shared.scss` when another feature needs them.
 - Shared activate/deactivate action button variants are centralized in `_shared.scss`.
-- Management is a routed placeholder page.
+- Management is a routed operational command center.
 - Receptions, Expeditions, and Stock Query are placeholder components not currently exposed in shell routes.
 
 ## Monorepo Structure
