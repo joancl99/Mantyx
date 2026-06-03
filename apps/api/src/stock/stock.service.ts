@@ -44,6 +44,13 @@ export class StockService {
       if (!warehouse)
         throw new NotFoundException(`Warehouse ${warehouseId} not found`);
 
+      if (fromLocationId) {
+        await this.findMovementLocation(tx, fromLocationId, warehouseId, companyId);
+      }
+      if (toLocationId) {
+        await this.findMovementLocation(tx, toLocationId, warehouseId, companyId);
+      }
+
       // Compute previous stock across all locations for this product
       const agg = await tx.stockEntry.aggregate({
         where: { productId },
@@ -334,5 +341,21 @@ export class StockService {
 
     const total = entries.reduce((sum, e) => sum + e.quantity, 0);
     return { product, total, entries };
+  }
+
+  private async findMovementLocation(
+    tx: Prisma.TransactionClient,
+    locationId: string,
+    warehouseId: string,
+    companyId: string,
+  ) {
+    const location = await tx.location.findFirst({
+      where: {
+        id: locationId,
+        aisle: { zone: { warehouse: { id: warehouseId, companyId } } },
+      },
+    });
+    if (!location) throw new NotFoundException(`Location ${locationId} not found`);
+    return location;
   }
 }

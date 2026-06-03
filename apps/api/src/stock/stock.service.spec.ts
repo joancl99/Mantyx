@@ -9,6 +9,7 @@ function createPrismaMock(): any {
       findMany: jest.fn(),
     },
     warehouse: { findFirst: jest.fn() },
+    location: { findFirst: jest.fn() },
     stockEntry: {
       aggregate: jest.fn(),
       findFirst: jest.fn(),
@@ -38,6 +39,7 @@ describe('StockService', () => {
     prisma = createPrismaMock();
     alerts = { emitLowStock: jest.fn() };
     service = new StockService(prisma as never, alerts as never);
+    prisma.location.findFirst.mockResolvedValue({ id: 'location-1' });
   });
 
   it('scopes movement detail by company through warehouse ownership', async () => {
@@ -77,6 +79,39 @@ describe('StockService', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
 
     expect(prisma.stockEntry.update).not.toHaveBeenCalled();
+    expect(prisma.stockMovement.create).not.toHaveBeenCalled();
+  });
+
+  it('rejects movement when location is outside the warehouse scope', async () => {
+    prisma.product.findFirst.mockResolvedValue({
+      id: 'product-1',
+      name: 'Widget',
+      sku: 'W-1',
+      minStock: 2,
+    });
+    prisma.warehouse.findFirst.mockResolvedValue({ id: 'warehouse-1' });
+    prisma.location.findFirst.mockResolvedValue(null);
+
+    await expect(
+      service.createMovement(
+        {
+          productId: 'product-1',
+          warehouseId: 'warehouse-1',
+          type: MovementType.INBOUND,
+          quantity: 5,
+          toLocationId: 'foreign-location',
+        },
+        'user-1',
+        'company-1',
+      ),
+    ).rejects.toBeInstanceOf(NotFoundException);
+
+    expect(prisma.location.findFirst).toHaveBeenCalledWith({
+      where: {
+        id: 'foreign-location',
+        aisle: { zone: { warehouse: { id: 'warehouse-1', companyId: 'company-1' } } },
+      },
+    });
     expect(prisma.stockMovement.create).not.toHaveBeenCalled();
   });
 
