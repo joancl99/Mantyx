@@ -1,0 +1,115 @@
+<div
+  class="modal-backdrop"
+  tabindex="0"
+  (click)="closeModal.emit()"
+  (keydown.escape)="closeModal.emit()"
+>
+  <div class="modal" role="presentation" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">Nuevo movimiento</h2>
+      <button class="modal-close" (click)="closeModal.emit()">
+        <ion-icon name="close-outline" />
+      </button>
+    </div>
+
+    <form [formGroup]="form()" (ngSubmit)="submitForm.emit()" class="modal-body">
+      <div class="form-field">
+        <span class="form-label">Tipo *</span>
+        <div class="type-pills" role="group" aria-label="Tipo de movimiento">
+          @for (type of availableTypes(); track type) {
+            <button
+              type="button"
+              class="type-pill {{ typeConfig()[type].cssClass }}"
+              [class.active]="form().get('type')?.value === type"
+              (click)="form().get('type')?.setValue(type)"
+            >
+              <ion-icon [name]="typeConfig()[type].icon" />
+              {{ typeConfig()[type].label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div
+        class="form-field"
+        [class.has-error]="submitted() && form().get('productId')?.invalid"
+      >
+        <label class="form-label" for="mov-product">Producto *</label>
+        <select id="mov-product" class="form-input" formControlName="productId">
+          <option value="">Seleccionar producto</option>
+          @for (product of products(); track product.id) {
+            <option [value]="product.id">{{ product.name }} — {{ product.sku }}</option>
+          }
+        </select>
+        @if (submitted() && form().get('productId')?.hasError('required')) {
+          <span class="form-error">Selecciona un producto</span>
+        }
+      </div>
+
+      <div
+        class="form-field"
+        [class.has-error]="submitted() && form().get('warehouseId')?.invalid"
+      >
+        <label class="form-label" for="mov-warehouse">Almacén *</label>
+        <select id="mov-warehouse" class="form-input" formControlName="warehouseId">
+          <option value="">Seleccionar almacén</option>
+          @for (warehouse of warehouses(); track warehouse.id) {
+            <option [value]="warehouse.id">{{ warehouse.name }}</option>
+          }
+        </select>
+        @if (submitted() && form().get('warehouseId')?.hasError('required')) {
+          <span class="form-error">Selecciona un almacén</span>
+        }
+      </div>
+
+      <div
+        class="form-field"
+        [class.has-error]="submitted() && form().get('quantity')?.invalid"
+      >
+        <label class="form-label" for="mov-quantity">Cantidad *</label>
+        <input
+          id="mov-quantity"
+          class="form-input"
+          type="number"
+          formControlName="quantity"
+          min="1"
+          placeholder="1"
+        />
+        @if (submitted() && form().get('quantity')?.invalid) {
+          <span class="form-error">Mínimo 1 unidad</span>
+        }
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="mov-notes">Notas</label>
+        <textarea
+          id="mov-notes"
+          class="form-input form-textarea"
+          formControlName="notes"
+          rows="3"
+          placeholder="Referencia, motivo, albarán..."
+        ></textarea>
+      </div>
+
+      @if (formError()) {
+        <div class="form-alert">
+          <ion-icon name="alert-circle-outline" />
+          {{ formError() }}
+        </div>
+      }
+
+      <div class="modal-footer">
+        <button type="button" class="btn-ghost" (click)="closeModal.emit()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="saving()">
+          @if (saving()) {
+            <ion-spinner name="crescent" />
+          } @else {
+            Registrar movimiento
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,35 @@
+<div
+  class="modal-backdrop"
+  tabindex="0"
+  (click)="cancelDelete.emit()"
+  (keydown.escape)="cancelDelete.emit()"
+>
+  <div
+    class="modal modal--sm"
+    role="presentation"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="modal-header">
+      <h2 class="modal-title">Eliminar producto</h2>
+    </div>
+    <div class="modal-body">
+      <p class="delete-text">
+        ¿Eliminar <strong>{{ product().name }}</strong>? Esta acción no se puede deshacer.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="cancelDelete.emit()">Cancelar</button>
+      <button
+        class="btn-danger"
+        [disabled]="saving()"
+        (click)="executeDelete.emit()"
+      >
+        @if (saving()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          Eliminar
+        }
+      </button>
+    </div>
+  </div>
+</div>

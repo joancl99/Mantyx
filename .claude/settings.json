@@ -1,12 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(cd*; npm exec nx -- build api *)",
-      "PowerShell(cd*; npm exec nx -- build web *)",
-      "PowerShell(cd*; dotenv -e .env -- npx prisma validate *)",
-      "PowerShell(cd*; dotenv -e .env -- npx prisma validate)",
-      "Bash(npm run docker:up)",
-      "Bash(npm run docker:down)",
+      "PowerShell(cd*; pnpm nx build api *)",
+      "PowerShell(cd*; pnpm nx build web *)",
+      "PowerShell(cd*; dotenv -e .env -- pnpm prisma validate *)",
+      "PowerShell(cd*; dotenv -e .env -- pnpm prisma validate)",
+      "Bash(pnpm run docker:up)",
+      "Bash(pnpm run docker:down)",
       "Bash(docker compose *)",
       "Bash(git checkout *)",
       "Bash(git branch *)",
@@ -22,6 +22,16 @@
             "command": "npx autoskills",
             "timeout": 60,
             "statusMessage": "Actualizando skills del proyecto..."
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "Write-Output '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"frontend-design skill is active. Invoke it proactively for all Angular UI and frontend work in Mantyx: components, pages, visual design.\"}}'",
+            "shell": "powershell",
+            "statusMessage": "Cargando frontend-design skill..."
           }
         ]
       }

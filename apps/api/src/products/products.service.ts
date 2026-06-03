@@ -18,9 +18,32 @@ const productInclude = {
 export class ProductsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private async ensureCatalogOwnership(
+    companyId: string,
+    dto: Partial<Pick<CreateProductDto, 'categoryId' | 'brandId'>>,
+  ) {
+    if (dto.categoryId) {
+      const category = await this.prisma.category.findFirst({
+        where: { id: dto.categoryId, companyId },
+        select: { id: true },
+      });
+      if (!category) throw new NotFoundException('Category not found');
+    }
+
+    if (dto.brandId) {
+      const brand = await this.prisma.brand.findFirst({
+        where: { id: dto.brandId, companyId },
+        select: { id: true },
+      });
+      if (!brand) throw new NotFoundException('Brand not found');
+    }
+  }
+
   async findAll(companyId: string, query: ProductQueryDto) {
     const { page = 1, limit = 20, search, categoryId, brandId } = query;
     const skip = (page - 1) * limit;
+
+    await this.ensureCatalogOwnership(companyId, { categoryId, brandId });
 
     const where: Prisma.ProductWhereInput = {
       companyId,
@@ -60,6 +83,7 @@ export class ProductsService {
   }
 
   async create(companyId: string, dto: CreateProductDto) {
+    await this.ensureCatalogOwnership(companyId, dto);
     try {
       return await this.prisma.product.create({
         data: { ...dto, companyId },
@@ -78,6 +102,7 @@ export class ProductsService {
 
   async update(id: string, companyId: string, dto: UpdateProductDto) {
     await this.findOne(id, companyId);
+    await this.ensureCatalogOwnership(companyId, dto);
     try {
       return await this.prisma.product.update({
         where: { id },

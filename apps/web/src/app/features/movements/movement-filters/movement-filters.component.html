@@ -1,0 +1,35 @@
+<div class="filters-bar">
+  <select class="filter-select" (change)="typeChanged.emit($event)">
+    <option value="" [selected]="filterType() === ''">Todos los tipos</option>
+    <option value="INBOUND" [selected]="filterType() === 'INBOUND'">Entradas</option>
+    <option value="OUTBOUND" [selected]="filterType() === 'OUTBOUND'">Salidas</option>
+    <option value="TRANSFER" [selected]="filterType() === 'TRANSFER'">Traslados</option>
+    <option value="ADJUSTMENT" [selected]="filterType() === 'ADJUSTMENT'">Ajustes</option>
+    <option value="RETURN" [selected]="filterType() === 'RETURN'">Devoluciones</option>
+  </select>
+
+  <div class="date-range">
+    <input
+      class="filter-input"
+      type="date"
+      [value]="filterDateFrom()"
+      (change)="dateFromChanged.emit($event)"
+      title="Desde"
+    />
+    <span class="date-sep">—</span>
+    <input
+      class="filter-input"
+      type="date"
+      [value]="filterDateTo()"
+      (change)="dateToChanged.emit($event)"
+      title="Hasta"
+    />
+  </div>
+
+  @if (hasActiveFilters()) {
+    <button class="btn-clear" (click)="filtersCleared.emit()">
+      <ion-icon name="close-outline" />
+      Limpiar
+    </button>
+  }
+</div>

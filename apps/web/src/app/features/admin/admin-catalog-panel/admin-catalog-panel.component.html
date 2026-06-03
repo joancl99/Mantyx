@@ -1,0 +1,60 @@
+<header class="page-header">
+  <div class="page-header__left">
+    <h1 class="page-title">{{ title() }}</h1>
+    <span class="page-subtitle">
+      {{ items().length }} {{ items().length === 1 ? subtitleSingular() : subtitlePlural() }}
+    </span>
+  </div>
+  <button class="btn-primary" (click)="createItem.emit()">
+    <ion-icon name="add-outline" />
+    {{ createLabel() }}
+  </button>
+</header>
+
+<div class="filters-bar">
+  <div class="search-wrap search-wrap--grow">
+    <ion-icon name="search-outline" class="search-icon" />
+    <input
+      class="search-input"
+      [placeholder]="searchPlaceholder()"
+      [ngModel]="search()"
+      (ngModelChange)="searchChange.emit($event)"
+    />
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
+} @else if (items().length === 0) {
+  <div class="state-center">
+    <div class="empty-icon"><ion-icon [name]="iconName()" /></div>
+    <p class="empty-title">{{ emptyTitle() }}</p>
+    <p class="empty-sub">
+      @if (search()) { {{ noResultsMessage() }} }
+      @else { {{ emptyMessage() }} }
+    </p>
+  </div>
+} @else {
+  <div class="catalog-list">
+    @for (item of items(); track item.id) {
+      <div class="catalog-row">
+        <div class="catalog-dot" [class.catalog-dot--cat]="kind() === 'category'" [class.catalog-dot--brand]="kind() === 'brand'"></div>
+        <span class="catalog-name">{{ item.name }}</span>
+        <div class="catalog-actions">
+          <button class="action-btn action-btn--edit" (click)="editItem.emit(item)" title="Renombrar">
+            <ion-icon name="create-outline" />
+          </button>
+          <button class="action-btn action-btn--delete" (click)="deleteItem.emit(item)" title="Eliminar">
+            <ion-icon name="trash-outline" />
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+@if (formError() && !modalOpen()) {
+  <div class="form-alert catalog-error">
+    <ion-icon name="alert-circle-outline" />{{ formError() }}
+  </div>
+}

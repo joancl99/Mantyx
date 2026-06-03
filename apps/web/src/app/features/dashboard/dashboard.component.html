@@ -1,6 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
+    <ion-title>Dashboard</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -135,8 +136,8 @@
         <div class="quick-actions">
           @for (action of quickActions; track action.label) {
             <a
-              class="action-btn"
-              [class.action-btn--accent]="action.accent"
+              class="quick-action"
+              [class.quick-action--accent]="action.accent"
               [routerLink]="action.route"
             >
               <ion-icon [name]="action.icon"></ion-icon>

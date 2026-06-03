@@ -1,0 +1,146 @@
+@if (view() === 'zones') {
+  <header class="page-header">
+    <div class="page-header__left">
+      <h1 class="page-title">Zonas</h1>
+      <span class="page-subtitle">{{ zones().length }} zona{{ zones().length === 1 ? '' : 's' }} en {{ warehouseName() }}</span>
+    </div>
+    @if (canManage()) {
+      <button class="btn-primary" (click)="createLevel.emit('zone')">
+        <ion-icon name="add-outline" />
+        Nueva zona
+      </button>
+    }
+  </header>
+
+  @if (loading()) {
+    <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
+  } @else if (zones().length === 0) {
+    <div class="state-center">
+      <div class="empty-icon"><ion-icon name="layers-outline" /></div>
+      <p class="empty-title">Sin zonas</p>
+      <p class="empty-sub">Crea la primera zona para organizar los pasillos</p>
+    </div>
+  } @else {
+    <div class="sub-list">
+      @for (zone of zones(); track zone.id) {
+        <div class="sub-row">
+          <div class="sub-row__icon sub-row__icon--zone"><ion-icon name="layers-outline" /></div>
+          <span class="sub-row__name">{{ zone.name }}</span>
+          <span class="sub-row__count">{{ zone._count.aisles }} pasillo{{ zone._count.aisles === 1 ? '' : 's' }}</span>
+          <div class="sub-row__actions">
+            @if (canManage()) {
+              <button class="action-btn action-btn--edit" (click)="editItem.emit({ id: zone.id, value: zone.name, level: 'zone' })" title="Renombrar">
+                <ion-icon name="create-outline" />
+              </button>
+            }
+            @if (canEdit()) {
+              <button class="action-btn action-btn--delete" (click)="deleteItem.emit({ id: zone.id, label: zone.name, level: 'zone' })" title="Eliminar">
+                <ion-icon name="trash-outline" />
+              </button>
+            }
+            <button class="action-btn action-btn--enter" (click)="enterZone.emit(zone)" title="Ver pasillos">
+              <ion-icon name="chevron-forward-outline" />
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+}
+
+@if (view() === 'aisles') {
+  <header class="page-header">
+    <div class="page-header__left">
+      <h1 class="page-title">Pasillos</h1>
+      <span class="page-subtitle">{{ aisles().length }} pasillo{{ aisles().length === 1 ? '' : 's' }} en {{ zoneName() }}</span>
+    </div>
+    @if (canManage()) {
+      <button class="btn-primary" (click)="createLevel.emit('aisle')">
+        <ion-icon name="add-outline" />
+        Nuevo pasillo
+      </button>
+    }
+  </header>
+
+  @if (loading()) {
+    <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
+  } @else if (aisles().length === 0) {
+    <div class="state-center">
+      <div class="empty-icon"><ion-icon name="git-branch-outline" /></div>
+      <p class="empty-title">Sin pasillos</p>
+      <p class="empty-sub">Crea el primer pasillo para agregar ubicaciones</p>
+    </div>
+  } @else {
+    <div class="sub-list">
+      @for (aisle of aisles(); track aisle.id) {
+        <div class="sub-row">
+          <div class="sub-row__icon sub-row__icon--aisle"><ion-icon name="git-branch-outline" /></div>
+          <span class="sub-row__name">{{ aisle.name }}</span>
+          <span class="sub-row__count">{{ aisle._count.locations }} ubicación{{ aisle._count.locations === 1 ? '' : 'es' }}</span>
+          <div class="sub-row__actions">
+            @if (canManage()) {
+              <button class="action-btn action-btn--edit" (click)="editItem.emit({ id: aisle.id, value: aisle.name, level: 'aisle' })" title="Renombrar">
+                <ion-icon name="create-outline" />
+              </button>
+            }
+            @if (canEdit()) {
+              <button class="action-btn action-btn--delete" (click)="deleteItem.emit({ id: aisle.id, label: aisle.name, level: 'aisle' })" title="Eliminar">
+                <ion-icon name="trash-outline" />
+              </button>
+            }
+            <button class="action-btn action-btn--enter" (click)="enterAisle.emit(aisle)" title="Ver ubicaciones">
+              <ion-icon name="chevron-forward-outline" />
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+}
+
+@if (view() === 'locations') {
+  <header class="page-header">
+    <div class="page-header__left">
+      <h1 class="page-title">Ubicaciones</h1>
+      <span class="page-subtitle">{{ locations().length }} ubicación{{ locations().length === 1 ? '' : 'es' }} en {{ aisleName() }}</span>
+    </div>
+    @if (canManage()) {
+      <button class="btn-primary" (click)="createLevel.emit('location')">
+        <ion-icon name="add-outline" />
+        Nueva ubicación
+      </button>
+    }
+  </header>
+
+  @if (loading()) {
+    <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
+  } @else if (locations().length === 0) {
+    <div class="state-center">
+      <div class="empty-icon"><ion-icon name="cube-outline" /></div>
+      <p class="empty-title">Sin ubicaciones</p>
+      <p class="empty-sub">Añade ubicaciones (ej. A-01-01) para registrar stock</p>
+    </div>
+  } @else {
+    <div class="sub-list">
+      @for (loc of locations(); track loc.id) {
+        <div class="sub-row">
+          <div class="sub-row__icon sub-row__icon--location"><ion-icon name="cube-outline" /></div>
+          <span class="sub-row__name sub-row__name--code">{{ loc.code }}</span>
+          <span class="sub-row__count">{{ loc._count.stockEntries }} artículo{{ loc._count.stockEntries === 1 ? '' : 's' }}</span>
+          <div class="sub-row__actions">
+            @if (canManage()) {
+              <button class="action-btn action-btn--edit" (click)="editItem.emit({ id: loc.id, value: loc.code, level: 'location' })" title="Editar código">
+                <ion-icon name="create-outline" />
+              </button>
+            }
+            @if (canEdit()) {
+              <button class="action-btn action-btn--delete" (click)="deleteItem.emit({ id: loc.id, label: loc.code, level: 'location' })" title="Eliminar">
+                <ion-icon name="trash-outline" />
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+}

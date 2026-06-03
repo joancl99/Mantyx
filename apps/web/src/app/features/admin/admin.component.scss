@@ -1,3 +1,72 @@
 :host {
   display: contents;
 }
+
+.admin-page {
+  padding: 20px;
+  max-width: 900px;
+}
+
+// ── Tab bar ───────────────────────────────────────────────────────────────────
+.tab-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--wh-border);
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--wh-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: -1px;
+  transition: color 0.15s, border-color 0.15s;
+
+  ion-icon { font-size: 16px; }
+
+  &:hover { color: var(--wh-text); }
+
+  &.active {
+    color: var(--wh-accent);
+    border-bottom-color: var(--wh-accent);
+    font-weight: 600;
+  }
+}
+
+// ── Password field ────────────────────────────────────────────────────────────
+.password-wrap {
+  position: relative;
+
+  .form-input { padding-right: 40px; width: 100%; }
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--wh-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  padding: 4px;
+
+  &:hover { color: var(--wh-text); }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 720px) {
+  .tab-btn span { display: none; }
+}

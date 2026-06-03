@@ -1,0 +1,63 @@
+@if (loading()) {
+  <div class="state-center">
+    <ion-spinner name="crescent" class="main-spinner" />
+  </div>
+} @else if (movements().length === 0) {
+  <div class="state-center">
+    <div class="empty-icon">
+      <ion-icon name="swap-horizontal-outline" />
+    </div>
+    <p class="empty-title">Sin movimientos</p>
+    <p class="empty-sub">{{ emptyMessage() }}</p>
+  </div>
+} @else {
+  <div class="movement-list">
+    @for (movement of movements(); track movement.id) {
+      <div class="movement-row">
+        <div class="type-badge {{ typeCssClass(movement.type) }}">
+          <ion-icon [name]="typeIcon(movement.type)" />
+          <span>{{ typeLabel(movement.type) }}</span>
+        </div>
+
+        <div class="movement-product">
+          <span class="product-name">{{ movement.product.name }}</span>
+          <span class="product-sku">{{ movement.product.sku }}</span>
+        </div>
+
+        <div class="movement-qty {{ typeCssClass(movement.type) }}">
+          <span class="qty-value">{{ quantityDisplay(movement) }}</span>
+          <span class="qty-delta">{{ stockDelta(movement) }}</span>
+        </div>
+
+        <div class="movement-meta">
+          <span class="meta-warehouse">{{ movement.warehouse.name }}</span>
+          <span class="meta-user">{{ movement.user.name }}</span>
+        </div>
+
+        <div class="movement-date">
+          {{ movement.createdAt | date: 'dd/MM/yy HH:mm' }}
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (totalPages() > 1) {
+    <div class="pagination">
+      <button
+        class="page-btn"
+        [disabled]="currentPage() === 1"
+        (click)="pageChanged.emit(currentPage() - 1)"
+      >
+        <ion-icon name="chevron-back-outline" />
+      </button>
+      <span class="page-info">{{ currentPage() }} / {{ totalPages() }}</span>
+      <button
+        class="page-btn"
+        [disabled]="currentPage() === totalPages()"
+        (click)="pageChanged.emit(currentPage() + 1)"
+      >
+        <ion-icon name="chevron-forward-outline" />
+      </button>
+    </div>
+  }
+}
