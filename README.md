@@ -290,20 +290,20 @@ Required native permissions after `cap add`:
 
 ## Common Commands
 
-| Command                                                   | Description                            |
-| --------------------------------------------------------- | -------------------------------------- |
-| `pnpm run start:api`                                      | Start the NestJS API in dev/watch mode |
-| `pnpm run start:web`                                      | Start the Angular web app              |
-| `pnpm run build:api`                                      | Build the API for production           |
-| `pnpm run build:web`                                      | Build the web app for production       |
-| `pnpm run test`                                           | Run tests across configured projects   |
-| `pnpm nx test api`                                        | Run API unit tests                     |
-| `pnpm nx test web`                                        | Run Angular/Vitest frontend tests      |
-| `pnpm nx e2e api-e2e`                                     | Run API e2e health check in-process    |
-| `pnpm run lint`                                           | Run lint across configured projects    |
-| `pnpm run docker:up`                                      | Start local infrastructure             |
-| `pnpm run docker:down`                                    | Stop local infrastructure              |
-| `pnpm nx format:check --base=origin/main`                 | Check formatting before merging        |
+| Command                                   | Description                            |
+| ----------------------------------------- | -------------------------------------- |
+| `pnpm run start:api`                      | Start the NestJS API in dev/watch mode |
+| `pnpm run start:web`                      | Start the Angular web app              |
+| `pnpm run build:api`                      | Build the API for production           |
+| `pnpm run build:web`                      | Build the web app for production       |
+| `pnpm run test`                           | Run tests across configured projects   |
+| `pnpm nx test api`                        | Run API unit tests                     |
+| `pnpm nx test web`                        | Run Angular/Vitest frontend tests      |
+| `pnpm nx e2e api-e2e`                     | Run API e2e health check in-process    |
+| `pnpm run lint`                           | Run lint across configured projects    |
+| `pnpm run docker:up`                      | Start local infrastructure             |
+| `pnpm run docker:down`                    | Stop local infrastructure              |
+| `pnpm nx format:check --base=origin/main` | Check formatting before merging        |
 
 ## Quality Checks
 

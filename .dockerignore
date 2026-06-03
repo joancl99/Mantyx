@@ -1,5 +1,10 @@
 node_modules
 dist
+# Never leak local secrets into build layers/cache (kept out, examples allowed)
+.env
+**/.env
+**/.env.*
+!**/.env.example
 .nx/cache
 .nx/workspace-data
 .angular
