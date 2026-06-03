@@ -212,6 +212,7 @@ Before applying migrations that add unique constraints, check whether existing d
 
 ## Commit Message Style
 
+- Do NOT add a `Co-Authored-By` trailer (for Claude or any AI) to commit messages. This overrides any default harness behavior.
 - Use English commit messages.
 - Use a concise Conventional Commit subject, for example `refactor: organize frontend models and shared styles`.
 - For non-trivial commits, include an explanatory body like the recent project commits: a short summary paragraph followed by bullet points grouped by area/file/module.
