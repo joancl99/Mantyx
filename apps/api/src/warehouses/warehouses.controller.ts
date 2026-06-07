@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -18,6 +19,7 @@ import { CreateWarehouseDto } from './dto/create-warehouse.dto';
 import { UpdateWarehouseDto } from './dto/update-warehouse.dto';
 import { ZoneNameDto } from './dto/zone-name.dto';
 import { LocationCodeDto } from './dto/location-code.dto';
+import { LocationSearchQueryDto } from './dto/location-search-query.dto';
 import { WarehousesService } from './warehouses.service';
 
 @ApiTags('Warehouses')
@@ -159,6 +161,18 @@ export class WarehousesController {
   }
 
   // ── Locations ─────────────────────────────────────────────────────────────────
+  @Get(':warehouseId/locations/search')
+  @ApiOperation({
+    summary: 'Find a location by code within a warehouse (scan-to-fill)',
+  })
+  findLocationByCode(
+    @CurrentUser() u: JwtPayload,
+    @Param('warehouseId', ParseUUIDPipe) wId: string,
+    @Query() query: LocationSearchQueryDto,
+  ) {
+    return this.service.findLocationByCode(wId, u.companyId!, query.code);
+  }
+
   @Get(':warehouseId/zones/:zoneId/aisles/:aisleId/locations')
   @ApiOperation({ summary: 'List locations for an aisle' })
   findLocations(
@@ -195,7 +209,14 @@ export class WarehousesController {
     @Param('locationId', ParseUUIDPipe) lId: string,
     @Body() dto: LocationCodeDto,
   ) {
-    return this.service.renameLocation(wId, zId, aId, lId, u.companyId!, dto.code);
+    return this.service.renameLocation(
+      wId,
+      zId,
+      aId,
+      lId,
+      u.companyId!,
+      dto.code,
+    );
   }
 
   @Delete(':warehouseId/zones/:zoneId/aisles/:aisleId/locations/:locationId')

@@ -1,7 +1,13 @@
 import { DestroyRef, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Aisle, Location, Zone } from '../../core/models/warehouse.models';
+import { switchMap, tap } from 'rxjs';
+import {
+  Aisle,
+  Location,
+  LocationLookup,
+  Zone,
+} from '../../core/models/warehouse.models';
 import { WarehousesService } from '../../core/services/warehouses.service';
 import { AddInventoryLineDto } from './models/inventory.models';
 
@@ -52,11 +58,45 @@ export class InventoryLineLocationState {
     if (zoneId && aisleId) this.loadLocations(zoneId, aisleId);
   }
 
+  /**
+   * Autofills the cascading selector from a scanned location lookup, loading
+   * the dependent aisle/location lists in sequence so each select has options.
+   */
+  applyScannedLocation(lookup: LocationLookup) {
+    this.form.patchValue({
+      zoneId: lookup.zoneId,
+      aisleId: '',
+      locationId: '',
+    });
+    this.locations.set([]);
+    this.warehousesService
+      .getAisles(this.warehouseId, lookup.zoneId)
+      .pipe(
+        tap((aisles) => {
+          this.aisles.set(aisles);
+          this.form.patchValue({ aisleId: lookup.aisleId });
+        }),
+        switchMap(() =>
+          this.warehousesService.getLocations(
+            this.warehouseId,
+            lookup.zoneId,
+            lookup.aisleId,
+          ),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((locations) => {
+        this.locations.set(locations);
+        this.form.patchValue({ locationId: lookup.locationId });
+      });
+  }
+
   toDto(): AddInventoryLineDto {
     const raw = this.form.getRawValue();
     return {
       locationId: raw.locationId!,
-      expectedQty: raw.expectedQty === null ? undefined : Number(raw.expectedQty),
+      expectedQty:
+        raw.expectedQty === null ? undefined : Number(raw.expectedQty),
     };
   }
 

@@ -7,12 +7,10 @@ import {
   checkmarkCircleOutline,
   listOutline,
   playOutline,
+  scanOutline,
   trashOutline,
 } from 'ionicons/icons';
-import {
-  InventoryCount,
-  InventoryCountLine,
-} from '../models/inventory.models';
+import { InventoryCount, InventoryCountLine } from '../models/inventory.models';
 import { Aisle, Location, Zone } from '../../../core/models/warehouse.models';
 import { inventoryStatusLabel } from '../inventory-status';
 
@@ -38,12 +36,23 @@ export class InventoryCountDetailComponent {
   readonly completeCount = output<void>();
   readonly zoneChange = output<string>();
   readonly aisleChange = output<string>();
+  readonly scanLocation = output<void>();
   readonly addLine = output<void>();
-  readonly updateLine = output<{ line: InventoryCountLine; countedQty: number }>();
+  readonly updateLine = output<{
+    line: InventoryCountLine;
+    countedQty: number;
+  }>();
   readonly removeLine = output<InventoryCountLine>();
 
   constructor() {
-    addIcons({ addOutline, checkmarkCircleOutline, listOutline, playOutline, trashOutline });
+    addIcons({
+      addOutline,
+      checkmarkCircleOutline,
+      listOutline,
+      playOutline,
+      scanOutline,
+      trashOutline,
+    });
   }
 
   statusLabel = inventoryStatusLabel;

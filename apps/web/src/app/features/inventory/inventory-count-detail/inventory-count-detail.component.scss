@@ -55,6 +55,10 @@
   max-width: 130px;
 }
 
+.line-form .scan-btn {
+  flex: 0 0 auto;
+}
+
 .inline-error {
   margin: -6px 0 12px;
   color: #ef4444;
@@ -120,9 +124,15 @@
   padding: 6px 10px;
 }
 
-.diff-negative { color: #ef4444; }
-.diff-positive { color: var(--wh-accent); }
-.compact { min-height: 320px; }
+.diff-negative {
+  color: #ef4444;
+}
+.diff-positive {
+  color: var(--wh-accent);
+}
+.compact {
+  min-height: 320px;
+}
 
 @media (max-width: 620px) {
   .detail-header {

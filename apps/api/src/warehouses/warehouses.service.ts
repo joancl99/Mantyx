@@ -17,9 +17,21 @@ const WH_SELECT = {
   _count: { select: { zones: true } },
 };
 
-const ZONE_SELECT = { id: true, name: true, _count: { select: { aisles: true } } };
-const AISLE_SELECT = { id: true, name: true, _count: { select: { locations: true } } };
-const LOC_SELECT = { id: true, code: true, _count: { select: { stockEntries: true } } };
+const ZONE_SELECT = {
+  id: true,
+  name: true,
+  _count: { select: { aisles: true } },
+};
+const AISLE_SELECT = {
+  id: true,
+  name: true,
+  _count: { select: { locations: true } },
+};
+const LOC_SELECT = {
+  id: true,
+  code: true,
+  _count: { select: { stockEntries: true } },
+};
 
 @Injectable()
 export class WarehousesService {
@@ -38,12 +50,23 @@ export class WarehousesService {
     const exists = await this.prisma.warehouse.findFirst({
       where: { companyId, name: dto.name },
     });
-    if (exists) throw new ConflictException(`Ya existe un almacén con el nombre "${dto.name}"`);
+    if (exists)
+      throw new ConflictException(
+        `Ya existe un almacén con el nombre "${dto.name}"`,
+      );
     try {
-      return await this.prisma.warehouse.create({ data: { ...dto, companyId }, select: WH_SELECT });
+      return await this.prisma.warehouse.create({
+        data: { ...dto, companyId },
+        select: WH_SELECT,
+      });
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-        throw new ConflictException(`Ya existe un almacén con el nombre "${dto.name}"`);
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2002'
+      ) {
+        throw new ConflictException(
+          `Ya existe un almacén con el nombre "${dto.name}"`,
+        );
       }
       throw e;
     }
@@ -55,13 +78,25 @@ export class WarehousesService {
       const conflict = await this.prisma.warehouse.findFirst({
         where: { companyId, name: dto.name, NOT: { id } },
       });
-      if (conflict) throw new ConflictException(`Ya existe un almacén con el nombre "${dto.name}"`);
+      if (conflict)
+        throw new ConflictException(
+          `Ya existe un almacén con el nombre "${dto.name}"`,
+        );
     }
     try {
-      return await this.prisma.warehouse.update({ where: { id }, data: dto, select: WH_SELECT });
+      return await this.prisma.warehouse.update({
+        where: { id },
+        data: dto,
+        select: WH_SELECT,
+      });
     } catch (e) {
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-        throw new ConflictException(`Ya existe un almacén con el nombre "${dto.name}"`);
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2002'
+      ) {
+        throw new ConflictException(
+          `Ya existe un almacén con el nombre "${dto.name}"`,
+        );
       }
       throw e;
     }
@@ -89,20 +124,34 @@ export class WarehousesService {
   async createZone(warehouseId: string, companyId: string, name: string) {
     await this.findWarehouse(warehouseId, companyId);
     try {
-      return await this.prisma.zone.create({ data: { name, warehouseId }, select: ZONE_SELECT });
+      return await this.prisma.zone.create({
+        data: { name, warehouseId },
+        select: ZONE_SELECT,
+      });
     } catch (e: any) {
-      if (e.code === 'P2002') throw new ConflictException(`Ya existe una zona "${name}"`);
+      if (e.code === 'P2002')
+        throw new ConflictException(`Ya existe una zona "${name}"`);
       throw e;
     }
   }
 
-  async renameZone(warehouseId: string, zoneId: string, companyId: string, name: string) {
+  async renameZone(
+    warehouseId: string,
+    zoneId: string,
+    companyId: string,
+    name: string,
+  ) {
     await this.findWarehouse(warehouseId, companyId);
     await this.findZoneInWh(zoneId, warehouseId);
     try {
-      return await this.prisma.zone.update({ where: { id: zoneId }, data: { name }, select: ZONE_SELECT });
+      return await this.prisma.zone.update({
+        where: { id: zoneId },
+        data: { name },
+        select: ZONE_SELECT,
+      });
     } catch (e: any) {
-      if (e.code === 'P2002') throw new ConflictException(`Ya existe una zona "${name}"`);
+      if (e.code === 'P2002')
+        throw new ConflictException(`Ya existe una zona "${name}"`);
       throw e;
     }
   }
@@ -113,7 +162,10 @@ export class WarehousesService {
     try {
       await this.prisma.zone.delete({ where: { id: zoneId } });
     } catch (e: any) {
-      if (e.code === 'P2003') throw new ConflictException('No se puede eliminar: la zona tiene pasillos');
+      if (e.code === 'P2003')
+        throw new ConflictException(
+          'No se puede eliminar: la zona tiene pasillos',
+        );
       throw e;
     }
     return { id: zoneId };
@@ -130,13 +182,22 @@ export class WarehousesService {
     });
   }
 
-  async createAisle(warehouseId: string, zoneId: string, companyId: string, name: string) {
+  async createAisle(
+    warehouseId: string,
+    zoneId: string,
+    companyId: string,
+    name: string,
+  ) {
     await this.findWarehouse(warehouseId, companyId);
     await this.findZoneInWh(zoneId, warehouseId);
     try {
-      return await this.prisma.aisle.create({ data: { name, zoneId }, select: AISLE_SELECT });
+      return await this.prisma.aisle.create({
+        data: { name, zoneId },
+        select: AISLE_SELECT,
+      });
     } catch (e: any) {
-      if (e.code === 'P2002') throw new ConflictException(`Ya existe un pasillo "${name}"`);
+      if (e.code === 'P2002')
+        throw new ConflictException(`Ya existe un pasillo "${name}"`);
       throw e;
     }
   }
@@ -152,28 +213,46 @@ export class WarehousesService {
     await this.findZoneInWh(zoneId, warehouseId);
     await this.findAisleInZone(aisleId, zoneId);
     try {
-      return await this.prisma.aisle.update({ where: { id: aisleId }, data: { name }, select: AISLE_SELECT });
+      return await this.prisma.aisle.update({
+        where: { id: aisleId },
+        data: { name },
+        select: AISLE_SELECT,
+      });
     } catch (e: any) {
-      if (e.code === 'P2002') throw new ConflictException(`Ya existe un pasillo "${name}"`);
+      if (e.code === 'P2002')
+        throw new ConflictException(`Ya existe un pasillo "${name}"`);
       throw e;
     }
   }
 
-  async deleteAisle(warehouseId: string, zoneId: string, aisleId: string, companyId: string) {
+  async deleteAisle(
+    warehouseId: string,
+    zoneId: string,
+    aisleId: string,
+    companyId: string,
+  ) {
     await this.findWarehouse(warehouseId, companyId);
     await this.findZoneInWh(zoneId, warehouseId);
     await this.findAisleInZone(aisleId, zoneId);
     try {
       await this.prisma.aisle.delete({ where: { id: aisleId } });
     } catch (e: any) {
-      if (e.code === 'P2003') throw new ConflictException('No se puede eliminar: el pasillo tiene ubicaciones');
+      if (e.code === 'P2003')
+        throw new ConflictException(
+          'No se puede eliminar: el pasillo tiene ubicaciones',
+        );
       throw e;
     }
     return { id: aisleId };
   }
 
   // ── Locations ─────────────────────────────────────────────────────────────────
-  async findLocations(warehouseId: string, zoneId: string, aisleId: string, companyId: string) {
+  async findLocations(
+    warehouseId: string,
+    zoneId: string,
+    aisleId: string,
+    companyId: string,
+  ) {
     await this.findWarehouse(warehouseId, companyId);
     await this.findZoneInWh(zoneId, warehouseId);
     await this.findAisleInZone(aisleId, zoneId);
@@ -195,9 +274,13 @@ export class WarehousesService {
     await this.findZoneInWh(zoneId, warehouseId);
     await this.findAisleInZone(aisleId, zoneId);
     try {
-      return await this.prisma.location.create({ data: { code, aisleId }, select: LOC_SELECT });
+      return await this.prisma.location.create({
+        data: { code, aisleId },
+        select: LOC_SELECT,
+      });
     } catch (e: any) {
-      if (e.code === 'P2002') throw new ConflictException(`Ya existe una ubicación "${code}"`);
+      if (e.code === 'P2002')
+        throw new ConflictException(`Ya existe una ubicación "${code}"`);
       throw e;
     }
   }
@@ -221,7 +304,8 @@ export class WarehousesService {
         select: LOC_SELECT,
       });
     } catch (e: any) {
-      if (e.code === 'P2002') throw new ConflictException(`Ya existe una ubicación "${code}"`);
+      if (e.code === 'P2002')
+        throw new ConflictException(`Ya existe una ubicación "${code}"`);
       throw e;
     }
   }
@@ -240,33 +324,74 @@ export class WarehousesService {
     try {
       await this.prisma.location.delete({ where: { id: locationId } });
     } catch (e: any) {
-      if (e.code === 'P2003') throw new ConflictException('No se puede eliminar: hay stock en esta ubicación');
+      if (e.code === 'P2003')
+        throw new ConflictException(
+          'No se puede eliminar: hay stock en esta ubicación',
+        );
       throw e;
     }
     return { id: locationId };
   }
 
+  // ── Location lookup (scan-to-fill) ──────────────────────────────────────────────
+  async findLocationByCode(
+    warehouseId: string,
+    companyId: string,
+    code: string,
+  ) {
+    await this.findWarehouse(warehouseId, companyId);
+    const location = await this.prisma.location.findFirst({
+      where: { code, aisle: { zone: { warehouseId } } },
+      orderBy: { code: 'asc' },
+      select: {
+        id: true,
+        code: true,
+        aisle: { select: { id: true, zone: { select: { id: true } } } },
+      },
+    });
+    if (!location) {
+      throw new NotFoundException(
+        `No se encontró una ubicación con código "${code}" en este almacén`,
+      );
+    }
+    return {
+      warehouseId,
+      zoneId: location.aisle.zone.id,
+      aisleId: location.aisle.id,
+      locationId: location.id,
+      code: location.code,
+    };
+  }
+
   // ── Private helpers ───────────────────────────────────────────────────────────
   private async findWarehouse(id: string, companyId: string) {
-    const wh = await this.prisma.warehouse.findFirst({ where: { id, companyId } });
+    const wh = await this.prisma.warehouse.findFirst({
+      where: { id, companyId },
+    });
     if (!wh) throw new NotFoundException(`Almacén ${id} no encontrado`);
     return wh;
   }
 
   private async findZoneInWh(zoneId: string, warehouseId: string) {
-    const zone = await this.prisma.zone.findFirst({ where: { id: zoneId, warehouseId } });
+    const zone = await this.prisma.zone.findFirst({
+      where: { id: zoneId, warehouseId },
+    });
     if (!zone) throw new NotFoundException('Zona no encontrada');
     return zone;
   }
 
   private async findAisleInZone(aisleId: string, zoneId: string) {
-    const aisle = await this.prisma.aisle.findFirst({ where: { id: aisleId, zoneId } });
+    const aisle = await this.prisma.aisle.findFirst({
+      where: { id: aisleId, zoneId },
+    });
     if (!aisle) throw new NotFoundException('Pasillo no encontrado');
     return aisle;
   }
 
   private async findLocationInAisle(locationId: string, aisleId: string) {
-    const location = await this.prisma.location.findFirst({ where: { id: locationId, aisleId } });
+    const location = await this.prisma.location.findFirst({
+      where: { id: locationId, aisleId },
+    });
     if (!location) throw new NotFoundException('Ubicación no encontrada');
     return location;
   }

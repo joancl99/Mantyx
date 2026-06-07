@@ -1,4 +1,11 @@
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import {
@@ -20,6 +27,7 @@ import {
 import { InventoryService } from './data-access/inventory.service';
 import { Warehouse } from '../../core/models/warehouse.models';
 import { WarehousesService } from '../../core/services/warehouses.service';
+import { ScannerService } from '../../core/services/scanner.service';
 import { CreateInventoryCountModalComponent } from './create-inventory-count-modal/create-inventory-count-modal.component';
 import { InventoryCountDetailComponent } from './inventory-count-detail/inventory-count-detail.component';
 import { InventoryCountListComponent } from './inventory-count-list/inventory-count-list.component';
@@ -49,6 +57,7 @@ import { INVENTORY_STATUS_OPTIONS } from './inventory-status';
 export class InventoryComponent implements OnInit {
   private readonly inventoryService = inject(InventoryService);
   private readonly warehousesService = inject(WarehousesService);
+  private readonly scannerService = inject(ScannerService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly counts = signal<InventoryCount[]>([]);
@@ -74,7 +83,9 @@ export class InventoryComponent implements OnInit {
   readonly pageSize = 20;
   readonly statusOptions = INVENTORY_STATUS_OPTIONS;
 
-  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.total() / this.pageSize)));
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.total() / this.pageSize)),
+  );
   readonly totalLabel = computed(() => {
     const t = this.total();
     return t === 0 ? 'Sin conteos' : `${t} conteo${t === 1 ? '' : 's'}`;
@@ -202,7 +213,8 @@ export class InventoryComponent implements OnInit {
     this.saving.set(true);
     this.inventoryService.complete(count.id).subscribe({
       next: (updated) => this.afterDetailAction(updated),
-      error: (err) => this.handleActionError(err, 'Error al completar el conteo'),
+      error: (err) =>
+        this.handleActionError(err, 'Error al completar el conteo'),
     });
   }
 
@@ -214,6 +226,29 @@ export class InventoryComponent implements OnInit {
     this.lineLocation.onAisleChange(aisleId);
   }
 
+  scanLocation() {
+    const count = this.selectedCount();
+    if (!count) return;
+    this.scannerService
+      .scan()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((result) => {
+        const code = result?.value?.trim();
+        if (!code) return;
+        this.formError.set('');
+        this.warehousesService
+          .findLocationByCode(count.warehouseId, code)
+          .subscribe({
+            next: (lookup) => this.lineLocation.applyScannedLocation(lookup),
+            error: (err) =>
+              this.formError.set(
+                err?.error?.message ??
+                  `No se encontró la ubicación "${code}" en este almacén.`,
+              ),
+          });
+      });
+  }
+
   submitLine() {
     const count = this.selectedCount();
     if (!count) return;
@@ -222,23 +257,28 @@ export class InventoryComponent implements OnInit {
 
     this.saving.set(true);
     this.formError.set('');
-    this.inventoryService.addLine(count.id, this.lineLocation.toDto()).subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.loadDetail(count);
-      },
-      error: (err) => this.handleActionError(err, 'Error al añadir la línea'),
-    });
+    this.inventoryService
+      .addLine(count.id, this.lineLocation.toDto())
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.loadDetail(count);
+        },
+        error: (err) => this.handleActionError(err, 'Error al añadir la línea'),
+      });
   }
 
   updateLine(event: { line: InventoryCountLine; countedQty: number }) {
     const count = this.selectedCount();
     if (!count) return;
 
-    this.inventoryService.updateLine(count.id, event.line.id, event.countedQty).subscribe({
-      next: () => this.loadDetail(count),
-      error: (err) => this.handleActionError(err, 'Error al actualizar la línea'),
-    });
+    this.inventoryService
+      .updateLine(count.id, event.line.id, event.countedQty)
+      .subscribe({
+        next: () => this.loadDetail(count),
+        error: (err) =>
+          this.handleActionError(err, 'Error al actualizar la línea'),
+      });
   }
 
   removeLine(line: InventoryCountLine) {

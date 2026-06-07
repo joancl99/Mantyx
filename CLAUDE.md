@@ -67,7 +67,7 @@ Frontend areas currently present:
 - Warehouses drill-down.
 - Management: operational command center using dashboard stats, low-stock risk, recent movements, and quick actions.
 - Admin: different views for `SUPERADMIN` and `ADMIN`.
-- Inventory counts: list, filters, creation modal, detail, line editing, start/complete actions, completed read-only state.
+- Inventory counts: list, filters, creation modal, detail, line editing, start/complete actions, completed read-only state. Scan-to-fill location: a "Escanear" button in the line form scans a location QR/barcode, resolves it via `GET /warehouses/:warehouseId/locations/search?code=`, and autofills the zone→aisle→location cascade.
 - Receptions: full INBOUND flow — warehouse + cascading location selector (zone→aisle→location), multi-line form, scan-to-fill product, `forkJoin` submit.
 - Expeditions: full OUTBOUND flow — same pattern as Receptions but OUTBOUND, with source location and backend stock guard.
 - Barcode/QR scanner: `ScannerService` with platform detection; ML Kit on native, ZXing overlay on web. Integrated in FAB, Reception modal, and Expedition modal.
@@ -102,7 +102,6 @@ Frontend areas currently present:
 
 Remaining frontend work:
 
-- Inventory scanner integration (scan location QR to auto-fill location selector) is deferred — requires a backend location-search-by-code endpoint.
 - Optional: cancel support for `CANCELLED` inventory counts.
 
 ## Remaining Product Focus
