@@ -33,19 +33,19 @@ Mantyx is multi-tenant.
 - `OPERATOR`: warehouse operations role.
 - `VIEWER`: read-only role.
 
-Fresh database bootstrap requirement:
+User onboarding is invite-based (no public self-registration):
 
-1. Create a `Company` in Prisma Studio or via a seed/script.
-2. Assign the initial non-SUPERADMIN `User.companyId`.
-3. Log in again so the JWT contains the new `companyId`.
+1. The first `SUPERADMIN` is created manually (Prisma Studio / SQL) with `companyId = null`.
+2. The `SUPERADMIN` creates each company **together with its initial `ADMIN`** in one step (`POST /companies` takes `adminName`/`adminEmail`/`adminPassword`; company + ADMIN are created in a transaction).
+3. Each `ADMIN` provisions their own workers via the Administración page (`POST /users`), assigning only `MANAGER`/`OPERATOR`/`VIEWER` — `ADMIN`/`SUPERADMIN` are never assignable.
 
-Most business endpoints must be scoped by `companyId` unless explicitly platform-level and restricted to `SUPERADMIN`.
+Most business endpoints must be scoped by `companyId` unless explicitly platform-level and restricted to `SUPERADMIN`. The global `CompanyGuard` returns 403 (not 500) if an authenticated user without a `companyId` hits a tenant-scoped route; platform routes are marked `@AllowNoCompany` (e.g. Companies).
 
 ## Implemented Modules
 
 Backend modules currently present:
 
-- Auth: register, login, refresh, logout, JWT guards, RBAC, throttling. Session security: access token (15m) carries a `jti`; logout stores the `jti` in a Redis denylist (TTL = remaining token life) so the token cannot be reused before expiry, and `JwtStrategy` re-fetches the live user every request (deactivation / role / company changes take effect immediately). The refresh token (7d) is delivered in an httpOnly + Secure + SameSite=strict cookie (`refresh_token`, path `/api/auth`) via `cookie-parser` — never in the response body or JS-readable storage; `JwtRefreshStrategy` reads it from the cookie. Frontend keeps the access token in memory only and restores the session on load via a `provideAppInitializer` silent refresh. Strict CSP + security headers are set in `docker/nginx.conf` (the SPA is served by nginx), allowing only same-origin code plus Google Fonts. The web production build sets `optimization.styles.inlineCritical: false` (in `apps/web/project.json`) because Angular's critical-CSS inlining emits an inline `onload="this.media='all'"` handler that the strict `script-src 'self'` blocks — do not re-enable it without relaxing the CSP. Verified with a headless Chrome render against the prod stack: 0 CSP violations.
+- Auth: login, refresh, logout, JWT guards, RBAC, throttling (no public registration — onboarding is invite-based, see above). Per-account login lockout (5 failures → 15-min Redis lock, 429). Session security: access token (15m) carries a `jti`; logout stores the `jti` in a Redis denylist (TTL = remaining token life) so the token cannot be reused before expiry, and `JwtStrategy` re-fetches the live user every request (deactivation / role / company changes take effect immediately). The refresh token (7d) is delivered in an httpOnly + Secure + SameSite=strict cookie (`refresh_token`, path `/api/auth`) via `cookie-parser` — never in the response body or JS-readable storage; `JwtRefreshStrategy` reads it from the cookie. Frontend keeps the access token in memory only and restores the session on load via a `provideAppInitializer` silent refresh. Strict CSP + security headers are set in `docker/nginx.conf` (the SPA is served by nginx), allowing only same-origin code plus Google Fonts. The web production build sets `optimization.styles.inlineCritical: false` (in `apps/web/project.json`) because Angular's critical-CSS inlining emits an inline `onload="this.media='all'"` handler that the strict `script-src 'self'` blocks — do not re-enable it without relaxing the CSP. Verified with a headless Chrome render against the prod stack: 0 CSP violations.
 - Companies: `SUPERADMIN` company management.
 - Users: tenant user management.
 - Categories and brands: tenant-scoped catalog setup.
@@ -58,7 +58,7 @@ Backend modules currently present:
 
 Frontend areas currently present:
 
-- Auth pages: login/register.
+- Auth pages: login (no register — invite-based onboarding).
 - Shell with Ionic side menu and global scanner FAB (functional).
 - Dashboard.
 - Products.
