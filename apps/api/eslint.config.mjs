@@ -12,7 +12,9 @@ export default [
       // so the pruned production install (Docker) is correct and reproducible.
       // ignoredDependencies are runtime deps that aren't statically imported but
       // must ship: prisma (CLI run by the entrypoint), tslib (tsc importHelpers),
-      // and rxjs/reflect-metadata (required by NestJS internals at runtime).
+      // rxjs/reflect-metadata (required by NestJS internals at runtime), and
+      // multer (used by @nestjs/platform-express's FileInterceptor for uploads
+      // and referenced only via its types, not a value import).
       '@nx/dependency-checks': [
         'error',
         {
@@ -21,7 +23,13 @@ export default [
             '{projectRoot}/webpack.config.{js,cjs,mjs}',
             '{projectRoot}/jest.config.{js,cjs,mjs,ts}',
           ],
-          ignoredDependencies: ['prisma', 'tslib', 'rxjs', 'reflect-metadata'],
+          ignoredDependencies: [
+            'prisma',
+            'tslib',
+            'rxjs',
+            'reflect-metadata',
+            'multer',
+          ],
         },
       ],
     },

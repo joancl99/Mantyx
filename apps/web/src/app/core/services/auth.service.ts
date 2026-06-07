@@ -40,16 +40,6 @@ export class AuthService {
       .pipe(tap((res) => this._storeSession(res)));
   }
 
-  register(name: string, email: string, password: string) {
-    return this.http
-      .post<AuthResponse>(
-        `${environment.apiUrl}/auth/register`,
-        { name, email, password },
-        this.withCredentials,
-      )
-      .pipe(tap((res) => this._storeSession(res)));
-  }
-
   refresh() {
     return this.http
       .post<RefreshResponse>(

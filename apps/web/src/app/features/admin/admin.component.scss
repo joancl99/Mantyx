@@ -2,6 +2,15 @@
   display: contents;
 }
 
+.section-label {
+  margin: 4px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--wh-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .admin-page {
   padding: 20px;
   max-width: 900px;
@@ -29,11 +38,17 @@
   font-weight: 500;
   cursor: pointer;
   margin-bottom: -1px;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 
-  ion-icon { font-size: 16px; }
+  ion-icon {
+    font-size: 16px;
+  }
 
-  &:hover { color: var(--wh-text); }
+  &:hover {
+    color: var(--wh-text);
+  }
 
   &.active {
     color: var(--wh-accent);
@@ -46,7 +61,10 @@
 .password-wrap {
   position: relative;
 
-  .form-input { padding-right: 40px; width: 100%; }
+  .form-input {
+    padding-right: 40px;
+    width: 100%;
+  }
 }
 
 .password-toggle {
@@ -63,10 +81,14 @@
   font-size: 16px;
   padding: 4px;
 
-  &:hover { color: var(--wh-text); }
+  &:hover {
+    color: var(--wh-text);
+  }
 }
 
 // ── Responsive ────────────────────────────────────────────────────────────────
 @media (max-width: 720px) {
-  .tab-btn span { display: none; }
+  .tab-btn span {
+    display: none;
+  }
 }

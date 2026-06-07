@@ -25,7 +25,6 @@ import {
   AuthTokensDto,
 } from './dto/auth-tokens.dto';
 import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { clearRefreshCookie, setRefreshCookie } from './refresh-cookie';
 import { JwtPayload, JwtRefreshPayload } from './types/jwt-payload.interface';
@@ -41,17 +40,6 @@ export class AuthController {
     config: ConfigService,
   ) {
     this.isProd = config.get<string>('NODE_ENV') === 'production';
-  }
-
-  @Public()
-  @Post('register')
-  @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 201, type: AuthSessionDto })
-  async register(
-    @Body() dto: RegisterDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<AuthSessionDto> {
-    return this.issueSession(await this.auth.register(dto), res);
   }
 
   @Public()

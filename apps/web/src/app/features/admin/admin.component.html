@@ -7,9 +7,7 @@
 
 <ion-content [scrollY]="true" [fullscreen]="true">
   <div class="admin-page">
-
     @if (isSuperAdmin()) {
-
       <app-admin-company-list
         [companies]="filteredCompanies()"
         [loading]="companiesLoading()"
@@ -19,20 +17,30 @@
         (editCompany)="openEditCompany($event)"
         (toggleCompany)="confirmToggleCompany($event)"
       />
-
     } @else {
-
       <!-- Tab bar -->
       <div class="tab-bar">
-        <button class="tab-btn" [class.active]="activeTab() === 'usuarios'" (click)="setTab('usuarios')">
+        <button
+          class="tab-btn"
+          [class.active]="activeTab() === 'usuarios'"
+          (click)="setTab('usuarios')"
+        >
           <ion-icon name="people-outline" />
           Usuarios
         </button>
-        <button class="tab-btn" [class.active]="activeTab() === 'categorias'" (click)="setTab('categorias')">
+        <button
+          class="tab-btn"
+          [class.active]="activeTab() === 'categorias'"
+          (click)="setTab('categorias')"
+        >
           <ion-icon name="pricetags-outline" />
           Categorías
         </button>
-        <button class="tab-btn" [class.active]="activeTab() === 'marcas'" (click)="setTab('marcas')">
+        <button
+          class="tab-btn"
+          [class.active]="activeTab() === 'marcas'"
+          (click)="setTab('marcas')"
+        >
           <ion-icon name="storefront-outline" />
           Marcas
         </button>
@@ -40,7 +48,6 @@
 
       <!-- ── USUARIOS ─────────────────────────────────────────────────────────── -->
       @if (activeTab() === 'usuarios') {
-
         <app-admin-users-panel
           [users]="filteredUsers()"
           [loading]="usersLoading()"
@@ -58,12 +65,10 @@
           (editUser)="openEditUser($event)"
           (toggleUser)="confirmToggle($event)"
         />
-
       }
 
       <!-- ── CATEGORÍAS ───────────────────────────────────────────────────────── -->
       @if (activeTab() === 'categorias') {
-
         <app-admin-catalog-panel
           kind="category"
           title="Categorías"
@@ -84,12 +89,10 @@
           (editItem)="categoryCatalog.openEdit($event)"
           (deleteItem)="categoryCatalog.confirmDelete($event)"
         />
-
       }
 
       <!-- ── MARCAS ────────────────────────────────────────────────────────────── -->
       @if (activeTab() === 'marcas') {
-
         <app-admin-catalog-panel
           kind="brand"
           title="Marcas"
@@ -110,34 +113,67 @@
           (editItem)="brandCatalog.openEdit($event)"
           (deleteItem)="brandCatalog.confirmDelete($event)"
         />
-
       }
-
     }
-
   </div>
 </ion-content>
 
 <!-- ── USER modal ──────────────────────────────────────────────────────────────── -->
 @if (showUserModal()) {
-  <div class="modal-backdrop" tabindex="0" (click)="closeUserModal()" (keydown.escape)="closeUserModal()">
+  <div
+    class="modal-backdrop"
+    tabindex="0"
+    (click)="closeUserModal()"
+    (keydown.escape)="closeUserModal()"
+  >
     <div class="modal" role="presentation" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2 class="modal-title">{{ userModalMode() === 'create' ? 'Nuevo usuario' : 'Editar usuario' }}</h2>
-        <button class="modal-close" (click)="closeUserModal()"><ion-icon name="close-outline" /></button>
+        <h2 class="modal-title">
+          {{
+            userModalMode() === 'create' ? 'Nuevo usuario' : 'Editar usuario'
+          }}
+        </h2>
+        <button class="modal-close" (click)="closeUserModal()">
+          <ion-icon name="close-outline" />
+        </button>
       </div>
-      <form [formGroup]="userForm" (ngSubmit)="submitUserForm()" class="modal-body">
+      <form
+        [formGroup]="userForm"
+        (ngSubmit)="submitUserForm()"
+        class="modal-body"
+      >
         <div class="form-row">
-          <div class="form-field" [class.has-error]="userSubmitted() && userForm.get('name')?.invalid">
+          <div
+            class="form-field"
+            [class.has-error]="userSubmitted() && userForm.get('name')?.invalid"
+          >
             <label class="form-label" for="u-name">Nombre *</label>
-            <input id="u-name" class="form-input" formControlName="name" placeholder="Juan García" />
-            @if (userSubmitted() && userForm.get('name')?.hasError('required')) {
+            <input
+              id="u-name"
+              class="form-input"
+              formControlName="name"
+              placeholder="Juan García"
+            />
+            @if (
+              userSubmitted() && userForm.get('name')?.hasError('required')
+            ) {
               <span class="form-error">Campo obligatorio</span>
             }
           </div>
-          <div class="form-field" [class.has-error]="userSubmitted() && userForm.get('email')?.invalid">
+          <div
+            class="form-field"
+            [class.has-error]="
+              userSubmitted() && userForm.get('email')?.invalid
+            "
+          >
             <label class="form-label" for="u-email">Email *</label>
-            <input id="u-email" class="form-input" formControlName="email" placeholder="juan@empresa.com" type="email" />
+            <input
+              id="u-email"
+              class="form-input"
+              formControlName="email"
+              placeholder="juan@empresa.com"
+              type="email"
+            />
             @if (userSubmitted() && userForm.get('email')?.hasError('email')) {
               <span class="form-error">Email no válido</span>
             }
@@ -153,29 +189,59 @@
             </select>
           </div>
           @if (userModalMode() === 'create') {
-            <div class="form-field" [class.has-error]="userSubmitted() && userForm.get('password')?.invalid">
+            <div
+              class="form-field"
+              [class.has-error]="
+                userSubmitted() && userForm.get('password')?.invalid
+              "
+            >
               <label class="form-label" for="u-password">Contraseña *</label>
               <div class="password-wrap">
-                <input id="u-password" class="form-input" formControlName="password"
-                  [type]="showPassword() ? 'text' : 'password'" placeholder="Mínimo 8 caracteres" />
-                <button type="button" class="password-toggle" (click)="showPassword.set(!showPassword())">
-                  <ion-icon [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'" />
+                <input
+                  id="u-password"
+                  class="form-input"
+                  formControlName="password"
+                  [type]="showPassword() ? 'text' : 'password'"
+                  placeholder="Mínimo 8 caracteres"
+                />
+                <button
+                  type="button"
+                  class="password-toggle"
+                  (click)="showPassword.set(!showPassword())"
+                >
+                  <ion-icon
+                    [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'"
+                  />
                 </button>
               </div>
-              @if (userSubmitted() && userForm.get('password')?.hasError('minlength')) {
+              @if (
+                userSubmitted() &&
+                userForm.get('password')?.hasError('minlength')
+              ) {
                 <span class="form-error">Mínimo 8 caracteres</span>
               }
             </div>
           }
         </div>
         @if (userFormError()) {
-          <div class="form-alert"><ion-icon name="alert-circle-outline" />{{ userFormError() }}</div>
+          <div class="form-alert">
+            <ion-icon name="alert-circle-outline" />{{ userFormError() }}
+          </div>
         }
         <div class="modal-footer">
-          <button type="button" class="btn-ghost" (click)="closeUserModal()">Cancelar</button>
+          <button type="button" class="btn-ghost" (click)="closeUserModal()">
+            Cancelar
+          </button>
           <button type="submit" class="btn-primary" [disabled]="userSaving()">
-            @if (userSaving()) { <ion-spinner name="crescent" /> }
-            @else { {{ userModalMode() === 'create' ? 'Crear usuario' : 'Guardar cambios' }} }
+            @if (userSaving()) {
+              <ion-spinner name="crescent" />
+            } @else {
+              {{
+                userModalMode() === 'create'
+                  ? 'Crear usuario'
+                  : 'Guardar cambios'
+              }}
+            }
           </button>
         </div>
       </form>
@@ -185,24 +251,48 @@
 
 <!-- ── USER toggle confirm ─────────────────────────────────────────────────────── -->
 @if (toggleTarget()) {
-  <div class="modal-backdrop" tabindex="0" (click)="cancelToggle()" (keydown.escape)="cancelToggle()">
-    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+  <div
+    class="modal-backdrop"
+    tabindex="0"
+    (click)="cancelToggle()"
+    (keydown.escape)="cancelToggle()"
+  >
+    <div
+      class="modal modal--sm"
+      role="presentation"
+      (click)="$event.stopPropagation()"
+    >
       <div class="modal-header">
-        <h2 class="modal-title">{{ toggleTarget()!.isActive ? 'Desactivar usuario' : 'Activar usuario' }}</h2>
+        <h2 class="modal-title">
+          {{
+            toggleTarget()!.isActive ? 'Desactivar usuario' : 'Activar usuario'
+          }}
+        </h2>
       </div>
       <div class="modal-body">
         <p class="delete-text">
           {{ toggleTarget()!.isActive ? '¿Desactivar a ' : '¿Activar a ' }}
-          <strong>{{ toggleTarget()!.name }}</strong>?
-          {{ toggleTarget()!.isActive ? ' No podrá acceder al sistema.' : ' Volverá a tener acceso.' }}
+          <strong>{{ toggleTarget()!.name }}</strong
+          >?
+          {{
+            toggleTarget()!.isActive
+              ? ' No podrá acceder al sistema.'
+              : ' Volverá a tener acceso.'
+          }}
         </p>
       </div>
       <div class="modal-footer">
         <button class="btn-ghost" (click)="cancelToggle()">Cancelar</button>
-        <button [class]="toggleTarget()!.isActive ? 'btn-danger' : 'btn-primary'"
-          [disabled]="userSaving()" (click)="executeToggle()">
-          @if (userSaving()) { <ion-spinner name="crescent" /> }
-          @else { {{ toggleTarget()!.isActive ? 'Desactivar' : 'Activar' }} }
+        <button
+          [class]="toggleTarget()!.isActive ? 'btn-danger' : 'btn-primary'"
+          [disabled]="userSaving()"
+          (click)="executeToggle()"
+        >
+          @if (userSaving()) {
+            <ion-spinner name="crescent" />
+          } @else {
+            {{ toggleTarget()!.isActive ? 'Desactivar' : 'Activar' }}
+          }
         </button>
       </div>
     </div>
@@ -211,28 +301,77 @@
 
 <!-- ── CATEGORY modal ─────────────────────────────────────────────────────────── -->
 @if (categoryCatalog.showModal()) {
-  <div class="modal-backdrop" tabindex="0" (click)="categoryCatalog.closeModal()" (keydown.escape)="categoryCatalog.closeModal()">
-    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+  <div
+    class="modal-backdrop"
+    tabindex="0"
+    (click)="categoryCatalog.closeModal()"
+    (keydown.escape)="categoryCatalog.closeModal()"
+  >
+    <div
+      class="modal modal--sm"
+      role="presentation"
+      (click)="$event.stopPropagation()"
+    >
       <div class="modal-header">
-        <h2 class="modal-title">{{ categoryCatalog.modalMode() === 'create' ? 'Nueva categoría' : 'Renombrar categoría' }}</h2>
-        <button class="modal-close" (click)="categoryCatalog.closeModal()"><ion-icon name="close-outline" /></button>
+        <h2 class="modal-title">
+          {{
+            categoryCatalog.modalMode() === 'create'
+              ? 'Nueva categoría'
+              : 'Renombrar categoría'
+          }}
+        </h2>
+        <button class="modal-close" (click)="categoryCatalog.closeModal()">
+          <ion-icon name="close-outline" />
+        </button>
       </div>
       <div class="modal-body">
-        <div class="form-field" [class.has-error]="categoryCatalog.submitted() && categoryCatalog.form.invalid">
+        <div
+          class="form-field"
+          [class.has-error]="
+            categoryCatalog.submitted() && categoryCatalog.form.invalid
+          "
+        >
           <label class="form-label" for="cat-name">Nombre *</label>
-          <input id="cat-name" class="form-input" [formControl]="categoryCatalog.form" placeholder="Ej: Electrónica" />
-          @if (categoryCatalog.submitted() && categoryCatalog.form.hasError('required')) {
+          <input
+            id="cat-name"
+            class="form-input"
+            [formControl]="categoryCatalog.form"
+            placeholder="Ej: Electrónica"
+          />
+          @if (
+            categoryCatalog.submitted() &&
+            categoryCatalog.form.hasError('required')
+          ) {
             <span class="form-error">Campo obligatorio</span>
           }
         </div>
         @if (categoryCatalog.formError()) {
-          <div class="form-alert"><ion-icon name="alert-circle-outline" />{{ categoryCatalog.formError() }}</div>
+          <div class="form-alert">
+            <ion-icon name="alert-circle-outline" />{{
+              categoryCatalog.formError()
+            }}
+          </div>
         }
         <div class="modal-footer">
-          <button type="button" class="btn-ghost" (click)="categoryCatalog.closeModal()">Cancelar</button>
-          <button class="btn-primary" [disabled]="categoryCatalog.saving()" (click)="categoryCatalog.submitForm()">
-            @if (categoryCatalog.saving()) { <ion-spinner name="crescent" /> }
-            @else { {{ categoryCatalog.modalMode() === 'create' ? 'Crear' : 'Guardar' }} }
+          <button
+            type="button"
+            class="btn-ghost"
+            (click)="categoryCatalog.closeModal()"
+          >
+            Cancelar
+          </button>
+          <button
+            class="btn-primary"
+            [disabled]="categoryCatalog.saving()"
+            (click)="categoryCatalog.submitForm()"
+          >
+            @if (categoryCatalog.saving()) {
+              <ion-spinner name="crescent" />
+            } @else {
+              {{
+                categoryCatalog.modalMode() === 'create' ? 'Crear' : 'Guardar'
+              }}
+            }
           </button>
         </div>
       </div>
@@ -242,20 +381,39 @@
 
 <!-- ── CATEGORY delete confirm ────────────────────────────────────────────────── -->
 @if (categoryCatalog.deleteTarget()) {
-  <div class="modal-backdrop" tabindex="0" (click)="categoryCatalog.cancelDelete()" (keydown.escape)="categoryCatalog.cancelDelete()">
-    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+  <div
+    class="modal-backdrop"
+    tabindex="0"
+    (click)="categoryCatalog.cancelDelete()"
+    (keydown.escape)="categoryCatalog.cancelDelete()"
+  >
+    <div
+      class="modal modal--sm"
+      role="presentation"
+      (click)="$event.stopPropagation()"
+    >
       <div class="modal-header">
         <h2 class="modal-title">Eliminar categoría</h2>
       </div>
       <div class="modal-body">
         <p class="delete-text">
-          ¿Eliminar <strong>{{ categoryCatalog.deleteTarget()!.name }}</strong>?
-          Si hay productos con esta categoría, no se podrá eliminar.
+          ¿Eliminar <strong>{{ categoryCatalog.deleteTarget()!.name }}</strong
+          >? Si hay productos con esta categoría, no se podrá eliminar.
         </p>
         <div class="modal-footer">
-          <button class="btn-ghost" (click)="categoryCatalog.cancelDelete()">Cancelar</button>
-          <button class="btn-danger" [disabled]="categoryCatalog.deleting()" (click)="categoryCatalog.executeDelete()">
-            @if (categoryCatalog.deleting()) { <ion-spinner name="crescent" /> } @else { Eliminar }
+          <button class="btn-ghost" (click)="categoryCatalog.cancelDelete()">
+            Cancelar
+          </button>
+          <button
+            class="btn-danger"
+            [disabled]="categoryCatalog.deleting()"
+            (click)="categoryCatalog.executeDelete()"
+          >
+            @if (categoryCatalog.deleting()) {
+              <ion-spinner name="crescent" />
+            } @else {
+              Eliminar
+            }
           </button>
         </div>
       </div>
@@ -265,28 +423,74 @@
 
 <!-- ── BRAND modal ────────────────────────────────────────────────────────────── -->
 @if (brandCatalog.showModal()) {
-  <div class="modal-backdrop" tabindex="0" (click)="brandCatalog.closeModal()" (keydown.escape)="brandCatalog.closeModal()">
-    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+  <div
+    class="modal-backdrop"
+    tabindex="0"
+    (click)="brandCatalog.closeModal()"
+    (keydown.escape)="brandCatalog.closeModal()"
+  >
+    <div
+      class="modal modal--sm"
+      role="presentation"
+      (click)="$event.stopPropagation()"
+    >
       <div class="modal-header">
-        <h2 class="modal-title">{{ brandCatalog.modalMode() === 'create' ? 'Nueva marca' : 'Renombrar marca' }}</h2>
-        <button class="modal-close" (click)="brandCatalog.closeModal()"><ion-icon name="close-outline" /></button>
+        <h2 class="modal-title">
+          {{
+            brandCatalog.modalMode() === 'create'
+              ? 'Nueva marca'
+              : 'Renombrar marca'
+          }}
+        </h2>
+        <button class="modal-close" (click)="brandCatalog.closeModal()">
+          <ion-icon name="close-outline" />
+        </button>
       </div>
       <div class="modal-body">
-        <div class="form-field" [class.has-error]="brandCatalog.submitted() && brandCatalog.form.invalid">
+        <div
+          class="form-field"
+          [class.has-error]="
+            brandCatalog.submitted() && brandCatalog.form.invalid
+          "
+        >
           <label class="form-label" for="brand-name">Nombre *</label>
-          <input id="brand-name" class="form-input" [formControl]="brandCatalog.form" placeholder="Ej: Samsung" />
-          @if (brandCatalog.submitted() && brandCatalog.form.hasError('required')) {
+          <input
+            id="brand-name"
+            class="form-input"
+            [formControl]="brandCatalog.form"
+            placeholder="Ej: Samsung"
+          />
+          @if (
+            brandCatalog.submitted() && brandCatalog.form.hasError('required')
+          ) {
             <span class="form-error">Campo obligatorio</span>
           }
         </div>
         @if (brandCatalog.formError()) {
-          <div class="form-alert"><ion-icon name="alert-circle-outline" />{{ brandCatalog.formError() }}</div>
+          <div class="form-alert">
+            <ion-icon name="alert-circle-outline" />{{
+              brandCatalog.formError()
+            }}
+          </div>
         }
         <div class="modal-footer">
-          <button type="button" class="btn-ghost" (click)="brandCatalog.closeModal()">Cancelar</button>
-          <button class="btn-primary" [disabled]="brandCatalog.saving()" (click)="brandCatalog.submitForm()">
-            @if (brandCatalog.saving()) { <ion-spinner name="crescent" /> }
-            @else { {{ brandCatalog.modalMode() === 'create' ? 'Crear' : 'Guardar' }} }
+          <button
+            type="button"
+            class="btn-ghost"
+            (click)="brandCatalog.closeModal()"
+          >
+            Cancelar
+          </button>
+          <button
+            class="btn-primary"
+            [disabled]="brandCatalog.saving()"
+            (click)="brandCatalog.submitForm()"
+          >
+            @if (brandCatalog.saving()) {
+              <ion-spinner name="crescent" />
+            } @else {
+              {{ brandCatalog.modalMode() === 'create' ? 'Crear' : 'Guardar' }}
+            }
           </button>
         </div>
       </div>
@@ -296,20 +500,39 @@
 
 <!-- ── BRAND delete confirm ───────────────────────────────────────────────────── -->
 @if (brandCatalog.deleteTarget()) {
-  <div class="modal-backdrop" tabindex="0" (click)="brandCatalog.cancelDelete()" (keydown.escape)="brandCatalog.cancelDelete()">
-    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+  <div
+    class="modal-backdrop"
+    tabindex="0"
+    (click)="brandCatalog.cancelDelete()"
+    (keydown.escape)="brandCatalog.cancelDelete()"
+  >
+    <div
+      class="modal modal--sm"
+      role="presentation"
+      (click)="$event.stopPropagation()"
+    >
       <div class="modal-header">
         <h2 class="modal-title">Eliminar marca</h2>
       </div>
       <div class="modal-body">
         <p class="delete-text">
-          ¿Eliminar <strong>{{ brandCatalog.deleteTarget()!.name }}</strong>?
-          Si hay productos con esta marca, no se podrá eliminar.
+          ¿Eliminar <strong>{{ brandCatalog.deleteTarget()!.name }}</strong
+          >? Si hay productos con esta marca, no se podrá eliminar.
         </p>
         <div class="modal-footer">
-          <button class="btn-ghost" (click)="brandCatalog.cancelDelete()">Cancelar</button>
-          <button class="btn-danger" [disabled]="brandCatalog.deleting()" (click)="brandCatalog.executeDelete()">
-            @if (brandCatalog.deleting()) { <ion-spinner name="crescent" /> } @else { Eliminar }
+          <button class="btn-ghost" (click)="brandCatalog.cancelDelete()">
+            Cancelar
+          </button>
+          <button
+            class="btn-danger"
+            [disabled]="brandCatalog.deleting()"
+            (click)="brandCatalog.executeDelete()"
+          >
+            @if (brandCatalog.deleting()) {
+              <ion-spinner name="crescent" />
+            } @else {
+              Eliminar
+            }
           </button>
         </div>
       </div>
@@ -319,32 +542,151 @@
 
 <!-- ── COMPANY CREATE / EDIT MODAL ───────────────────────────────────────── -->
 @if (showCompanyModal()) {
-  <div class="modal-backdrop" tabindex="0" (click)="closeCompanyModal()" (keydown.escape)="closeCompanyModal()">
-    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+  <div
+    class="modal-backdrop"
+    tabindex="0"
+    (click)="closeCompanyModal()"
+    (keydown.escape)="closeCompanyModal()"
+  >
+    <div
+      class="modal modal--sm"
+      role="presentation"
+      (click)="$event.stopPropagation()"
+    >
       <div class="modal-header">
-        <h2 class="modal-title">{{ companyModalMode() === 'create' ? 'Nueva empresa' : 'Editar empresa' }}</h2>
-        <button class="modal-close" (click)="closeCompanyModal()"><ion-icon name="close-outline" /></button>
+        <h2 class="modal-title">
+          {{
+            companyModalMode() === 'create' ? 'Nueva empresa' : 'Editar empresa'
+          }}
+        </h2>
+        <button class="modal-close" (click)="closeCompanyModal()">
+          <ion-icon name="close-outline" />
+        </button>
       </div>
-      <form [formGroup]="companyForm" (ngSubmit)="submitCompanyForm()" class="modal-body">
-        <div class="form-field" [class.has-error]="companySubmitted() && companyForm.get('name')?.invalid">
+      <form
+        [formGroup]="companyForm"
+        (ngSubmit)="submitCompanyForm()"
+        class="modal-body"
+      >
+        <div
+          class="form-field"
+          [class.has-error]="
+            companySubmitted() && companyForm.get('name')?.invalid
+          "
+        >
           <label class="form-label" for="company-name">Nombre *</label>
-          <input id="company-name" class="form-input" formControlName="name" placeholder="Acme Corp" />
-          @if (companySubmitted() && companyForm.get('name')?.hasError('required')) {
+          <input
+            id="company-name"
+            class="form-input"
+            formControlName="name"
+            placeholder="Acme Corp"
+          />
+          @if (
+            companySubmitted() && companyForm.get('name')?.hasError('required')
+          ) {
             <span class="form-error">Campo obligatorio</span>
           }
         </div>
         <div class="form-field">
           <label class="form-label" for="company-taxid">CIF / NIF</label>
-          <input id="company-taxid" class="form-input" formControlName="taxId" placeholder="B12345678" />
+          <input
+            id="company-taxid"
+            class="form-input"
+            formControlName="taxId"
+            placeholder="B12345678"
+          />
         </div>
+
+        @if (companyModalMode() === 'create') {
+          <p class="section-label">Administrador inicial de la empresa</p>
+          <div
+            class="form-field"
+            [class.has-error]="
+              companySubmitted() && companyForm.get('adminName')?.invalid
+            "
+          >
+            <label class="form-label" for="admin-name"
+              >Nombre del admin *</label
+            >
+            <input
+              id="admin-name"
+              class="form-input"
+              formControlName="adminName"
+              placeholder="María López"
+            />
+            @if (companySubmitted() && companyForm.get('adminName')?.invalid) {
+              <span class="form-error"
+                >Nombre obligatorio (mín. 2 caracteres)</span
+              >
+            }
+          </div>
+          <div
+            class="form-field"
+            [class.has-error]="
+              companySubmitted() && companyForm.get('adminEmail')?.invalid
+            "
+          >
+            <label class="form-label" for="admin-email"
+              >Email del admin *</label
+            >
+            <input
+              id="admin-email"
+              type="email"
+              class="form-input"
+              formControlName="adminEmail"
+              placeholder="admin@acme.com"
+            />
+            @if (companySubmitted() && companyForm.get('adminEmail')?.invalid) {
+              <span class="form-error">Email válido obligatorio</span>
+            }
+          </div>
+          <div
+            class="form-field"
+            [class.has-error]="
+              companySubmitted() && companyForm.get('adminPassword')?.invalid
+            "
+          >
+            <label class="form-label" for="admin-password"
+              >Contraseña del admin *</label
+            >
+            <input
+              id="admin-password"
+              type="password"
+              class="form-input"
+              formControlName="adminPassword"
+              placeholder="Mínimo 8 caracteres"
+            />
+            @if (
+              companySubmitted() && companyForm.get('adminPassword')?.invalid
+            ) {
+              <span class="form-error">Mínimo 8 caracteres</span>
+            }
+          </div>
+        }
+
         @if (companyFormError()) {
-          <div class="form-alert"><ion-icon name="alert-circle-outline" />{{ companyFormError() }}</div>
+          <div class="form-alert">
+            <ion-icon name="alert-circle-outline" />{{ companyFormError() }}
+          </div>
         }
         <div class="modal-footer">
-          <button type="button" class="btn-ghost" (click)="closeCompanyModal()">Cancelar</button>
-          <button type="submit" class="btn-primary" [disabled]="companySaving()">
-            @if (companySaving()) { <ion-spinner name="crescent" /> }
-            @else { {{ companyModalMode() === 'create' ? 'Crear empresa' : 'Guardar cambios' }} }
+          <button type="button" class="btn-ghost" (click)="closeCompanyModal()">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="btn-primary"
+            [disabled]="companySaving()"
+          >
+            @if (companySaving()) {
+              <ion-spinner name="crescent" />
+            } @else {
+              {{
+                companyModalMode() === 'create'
+                  ? 'Crear empresa'
+                  : 'Guardar cambios'
+              }}
+            }
           </button>
         </div>
       </form>
@@ -354,26 +696,59 @@
 
 <!-- ── COMPANY TOGGLE STATUS CONFIRM ─────────────────────────────────────── -->
 @if (companyToggleTarget()) {
-  <div class="modal-backdrop" tabindex="0" (click)="cancelToggleCompany()" (keydown.escape)="cancelToggleCompany()">
-    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+  <div
+    class="modal-backdrop"
+    tabindex="0"
+    (click)="cancelToggleCompany()"
+    (keydown.escape)="cancelToggleCompany()"
+  >
+    <div
+      class="modal modal--sm"
+      role="presentation"
+      (click)="$event.stopPropagation()"
+    >
       <div class="modal-header">
         <h2 class="modal-title">
-          {{ companyToggleTarget()!.status === 'ACTIVE' ? 'Desactivar empresa' : 'Activar empresa' }}
+          {{
+            companyToggleTarget()!.status === 'ACTIVE'
+              ? 'Desactivar empresa'
+              : 'Activar empresa'
+          }}
         </h2>
       </div>
       <div class="modal-body">
         <p class="delete-text">
-          {{ companyToggleTarget()!.status === 'ACTIVE' ? '¿Desactivar' : '¿Activar' }}
-          <strong>{{ companyToggleTarget()!.name }}</strong>?
-          {{ companyToggleTarget()!.status === 'ACTIVE'
-            ? 'Los usuarios de esta empresa no podrán acceder.'
-            : 'Los usuarios de esta empresa recuperarán el acceso.' }}
+          {{
+            companyToggleTarget()!.status === 'ACTIVE'
+              ? '¿Desactivar'
+              : '¿Activar'
+          }}
+          <strong>{{ companyToggleTarget()!.name }}</strong
+          >?
+          {{
+            companyToggleTarget()!.status === 'ACTIVE'
+              ? 'Los usuarios de esta empresa no podrán acceder.'
+              : 'Los usuarios de esta empresa recuperarán el acceso.'
+          }}
         </p>
         <div class="modal-footer">
-          <button class="btn-ghost" (click)="cancelToggleCompany()">Cancelar</button>
-          <button class="btn-primary" [disabled]="companySaving()" (click)="executeToggleCompany()">
-            @if (companySaving()) { <ion-spinner name="crescent" /> }
-            @else { {{ companyToggleTarget()!.status === 'ACTIVE' ? 'Desactivar' : 'Activar' }} }
+          <button class="btn-ghost" (click)="cancelToggleCompany()">
+            Cancelar
+          </button>
+          <button
+            class="btn-primary"
+            [disabled]="companySaving()"
+            (click)="executeToggleCompany()"
+          >
+            @if (companySaving()) {
+              <ion-spinner name="crescent" />
+            } @else {
+              {{
+                companyToggleTarget()!.status === 'ACTIVE'
+                  ? 'Desactivar'
+                  : 'Activar'
+              }}
+            }
           </button>
         </div>
       </div>

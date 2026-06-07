@@ -18,7 +18,10 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtPayload } from '../auth/types/jwt-payload.interface';
 import { UsersService } from './users.service';
 
-const ASSIGNABLE = [Role.ADMIN, Role.MANAGER, Role.OPERATOR, Role.VIEWER];
+// An ADMIN provisions worker accounts only — never other ADMINs or the
+// platform SUPERADMIN. The company's initial ADMIN is created by the
+// SUPERADMIN when the company is created.
+const ASSIGNABLE = [Role.MANAGER, Role.OPERATOR, Role.VIEWER];
 
 class CreateUserDto {
   @ApiProperty({ example: 'Juan García' })

@@ -42,12 +42,16 @@ import {
   addOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
-import { CompanyUser, USER_ROLE_LABELS, UserRole } from '../../core/models/user.models';
+import {
+  CompanyUser,
+  USER_ROLE_LABELS,
+  UserRole,
+} from '../../core/models/user.models';
 import { UsersService } from '../../core/services/users.service';
 import { Brand, Category } from '../../core/models/product.models';
 import { CategoriesService } from '../../core/services/categories.service';
 import { BrandsService } from '../../core/services/brands.service';
-import { CompanyInfo, CreateCompanyDto } from '../../core/models/company.models';
+import { CompanyInfo } from '../../core/models/company.models';
 import { CompaniesService } from '../../core/services/companies.service';
 import { AdminCatalogPanelComponent } from './admin-catalog-panel/admin-catalog-panel.component';
 import { AdminCatalogState } from './admin-catalog-state';
@@ -89,7 +93,9 @@ export class AdminComponent implements OnInit {
   readonly activeTab = signal<AdminTab>('usuarios');
 
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? '');
-  readonly isSuperAdmin = computed(() => this.auth.currentUser()?.role === 'SUPERADMIN');
+  readonly isSuperAdmin = computed(
+    () => this.auth.currentUser()?.role === 'SUPERADMIN',
+  );
 
   readonly categoryCatalog = new AdminCatalogState<Category>(
     this.categoriesService,
@@ -121,14 +127,27 @@ export class AdminComponent implements OnInit {
     const q = this.userSearch().toLowerCase();
     const role = this.roleFilter();
     return this.users()
-      .filter(u => !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q))
-      .filter(u => !role || u.role === role);
+      .filter(
+        (u) =>
+          !q ||
+          u.name.toLowerCase().includes(q) ||
+          u.email.toLowerCase().includes(q),
+      )
+      .filter((u) => !role || u.role === role);
   });
 
   readonly totalCount = computed(() => this.users().length);
-  readonly activeCount = computed(() => this.users().filter(u => u.isActive).length);
-  readonly inactiveCount = computed(() => this.users().filter(u => !u.isActive).length);
-  readonly adminCount = computed(() => this.users().filter(u => u.role === 'ADMIN' || u.role === 'MANAGER').length);
+  readonly activeCount = computed(
+    () => this.users().filter((u) => u.isActive).length,
+  );
+  readonly inactiveCount = computed(
+    () => this.users().filter((u) => !u.isActive).length,
+  );
+  readonly adminCount = computed(
+    () =>
+      this.users().filter((u) => u.role === 'ADMIN' || u.role === 'MANAGER')
+        .length,
+  );
 
   readonly showUserModal = signal(false);
   readonly userModalMode = signal<'create' | 'edit'>('create');
@@ -141,11 +160,15 @@ export class AdminComponent implements OnInit {
   readonly userForm = new FormGroup({
     name: new FormControl('', [Validators.required, Validators.minLength(2)]),
     email: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [Validators.required, Validators.minLength(8)]),
+    password: new FormControl('', [
+      Validators.required,
+      Validators.minLength(8),
+    ]),
     role: new FormControl<UserRole>('OPERATOR', Validators.required),
   });
 
-  readonly assignableRoles: UserRole[] = ['ADMIN', 'MANAGER', 'OPERATOR', 'VIEWER'];
+  // An ADMIN provisions worker accounts only — never ADMIN/SUPERADMIN.
+  readonly assignableRoles: UserRole[] = ['MANAGER', 'OPERATOR', 'VIEWER'];
 
   // ── Companies (SUPERADMIN) ────────────────────────────────────────────────────
   readonly companies = signal<CompanyInfo[]>([]);
@@ -155,7 +178,9 @@ export class AdminComponent implements OnInit {
   readonly companySearch = signal('');
   readonly filteredCompanies = computed(() => {
     const q = this.companySearch().toLowerCase();
-    return this.companies().filter(c => !q || c.name.toLowerCase().includes(q));
+    return this.companies().filter(
+      (c) => !q || c.name.toLowerCase().includes(q),
+    );
   });
 
   readonly showCompanyModal = signal(false);
@@ -168,14 +193,28 @@ export class AdminComponent implements OnInit {
   readonly companyForm = new FormGroup({
     name: new FormControl('', [Validators.required, Validators.minLength(2)]),
     taxId: new FormControl(''),
+    // Initial ADMIN — only required when creating a company (see setAdminValidators).
+    adminName: new FormControl(''),
+    adminEmail: new FormControl(''),
+    adminPassword: new FormControl(''),
   });
 
   constructor() {
     addIcons({
-      peopleOutline, personAddOutline, createOutline, powerOutline,
-      closeOutline, alertCircleOutline, searchOutline, shieldOutline,
-      eyeOutline, eyeOffOutline, pricetagsOutline, storefrontOutline,
-      trashOutline, addOutline,
+      peopleOutline,
+      personAddOutline,
+      createOutline,
+      powerOutline,
+      closeOutline,
+      alertCircleOutline,
+      searchOutline,
+      shieldOutline,
+      eyeOutline,
+      eyeOffOutline,
+      pricetagsOutline,
+      storefrontOutline,
+      trashOutline,
+      addOutline,
     });
   }
 
@@ -196,10 +235,16 @@ export class AdminComponent implements OnInit {
   // ── Users methods ─────────────────────────────────────────────────────────────
   loadUsers() {
     this.usersLoading.set(true);
-    this.usersService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: list => { this.users.set(list); this.usersLoading.set(false); },
-      error: () => this.usersLoading.set(false),
-    });
+    this.usersService
+      .getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (list) => {
+          this.users.set(list);
+          this.usersLoading.set(false);
+        },
+        error: () => this.usersLoading.set(false),
+      });
   }
 
   roleLabel(role: UserRole): string {
@@ -208,7 +253,9 @@ export class AdminComponent implements OnInit {
 
   openCreateUser() {
     this.userForm.reset({ role: 'OPERATOR' });
-    this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(8)]);
+    this.userForm
+      .get('password')
+      ?.setValidators([Validators.required, Validators.minLength(8)]);
     this.userForm.get('password')?.updateValueAndValidity();
     this.userSubmitted.set(false);
     this.userFormError.set('');
@@ -219,7 +266,12 @@ export class AdminComponent implements OnInit {
   }
 
   openEditUser(user: CompanyUser) {
-    this.userForm.patchValue({ name: user.name, email: user.email, password: '', role: user.role });
+    this.userForm.patchValue({
+      name: user.name,
+      email: user.email,
+      password: '',
+      role: user.role,
+    });
     this.userForm.get('password')?.clearValidators();
     this.userForm.get('password')?.updateValueAndValidity();
     this.userSubmitted.set(false);
@@ -230,7 +282,9 @@ export class AdminComponent implements OnInit {
     this.showUserModal.set(true);
   }
 
-  closeUserModal() { this.showUserModal.set(false); }
+  closeUserModal() {
+    this.showUserModal.set(false);
+  }
 
   submitUserForm() {
     this.userSubmitted.set(true);
@@ -239,43 +293,80 @@ export class AdminComponent implements OnInit {
     this.userFormError.set('');
     const raw = this.userForm.getRawValue();
 
-    const req$ = this.userModalMode() === 'create'
-      ? this.usersService.create({ name: raw.name!, email: raw.email!, password: raw.password!, role: raw.role! })
-      : this.usersService.update(this.userEditingId()!, { name: raw.name!, email: raw.email!, role: raw.role! });
+    const req$ =
+      this.userModalMode() === 'create'
+        ? this.usersService.create({
+            name: raw.name!,
+            email: raw.email!,
+            password: raw.password!,
+            role: raw.role!,
+          })
+        : this.usersService.update(this.userEditingId()!, {
+            name: raw.name!,
+            email: raw.email!,
+            role: raw.role!,
+          });
 
     req$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => { this.userSaving.set(false); this.showUserModal.set(false); this.loadUsers(); },
-      error: err => {
+      next: () => {
         this.userSaving.set(false);
-        this.userFormError.set(err?.error?.message ?? 'Error al guardar el usuario');
+        this.showUserModal.set(false);
+        this.loadUsers();
+      },
+      error: (err) => {
+        this.userSaving.set(false);
+        this.userFormError.set(
+          err?.error?.message ?? 'Error al guardar el usuario',
+        );
       },
     });
   }
 
-  confirmToggle(user: CompanyUser) { this.toggleTarget.set(user); }
-  cancelToggle() { this.toggleTarget.set(null); }
+  confirmToggle(user: CompanyUser) {
+    this.toggleTarget.set(user);
+  }
+  cancelToggle() {
+    this.toggleTarget.set(null);
+  }
 
   executeToggle() {
     const user = this.toggleTarget();
     if (!user) return;
     this.userSaving.set(true);
-    this.usersService.toggleActive(user.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => { this.userSaving.set(false); this.toggleTarget.set(null); this.loadUsers(); },
-      error: () => { this.userSaving.set(false); this.toggleTarget.set(null); },
-    });
+    this.usersService
+      .toggleActive(user.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.userSaving.set(false);
+          this.toggleTarget.set(null);
+          this.loadUsers();
+        },
+        error: () => {
+          this.userSaving.set(false);
+          this.toggleTarget.set(null);
+        },
+      });
   }
 
   // ── Companies methods (SUPERADMIN) ────────────────────────────────────────────
   loadCompanies() {
     this.companiesLoading.set(true);
-    this.companiesService.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: list => { this.companies.set(list); this.companiesLoading.set(false); },
-      error: () => this.companiesLoading.set(false),
-    });
+    this.companiesService
+      .getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (list) => {
+          this.companies.set(list);
+          this.companiesLoading.set(false);
+        },
+        error: () => this.companiesLoading.set(false),
+      });
   }
 
   openCreateCompany() {
     this.companyForm.reset();
+    this.setAdminValidators(true);
     this.companySubmitted.set(false);
     this.companyFormError.set('');
     this.companyEditingId.set(null);
@@ -284,6 +375,8 @@ export class AdminComponent implements OnInit {
   }
 
   openEditCompany(c: CompanyInfo) {
+    this.companyForm.reset();
+    this.setAdminValidators(false);
     this.companyForm.patchValue({ name: c.name, taxId: c.taxId ?? '' });
     this.companySubmitted.set(false);
     this.companyFormError.set('');
@@ -292,7 +385,26 @@ export class AdminComponent implements OnInit {
     this.showCompanyModal.set(true);
   }
 
-  closeCompanyModal() { this.showCompanyModal.set(false); }
+  // The initial-admin fields only exist when creating a company.
+  private setAdminValidators(required: boolean) {
+    const { adminName, adminEmail, adminPassword } = this.companyForm.controls;
+    adminName.setValidators(
+      required ? [Validators.required, Validators.minLength(2)] : [],
+    );
+    adminEmail.setValidators(
+      required ? [Validators.required, Validators.email] : [],
+    );
+    adminPassword.setValidators(
+      required ? [Validators.required, Validators.minLength(8)] : [],
+    );
+    adminName.updateValueAndValidity();
+    adminEmail.updateValueAndValidity();
+    adminPassword.updateValueAndValidity();
+  }
+
+  closeCompanyModal() {
+    this.showCompanyModal.set(false);
+  }
 
   submitCompanyForm() {
     this.companySubmitted.set(true);
@@ -300,29 +412,58 @@ export class AdminComponent implements OnInit {
     this.companySaving.set(true);
     this.companyFormError.set('');
     const raw = this.companyForm.getRawValue();
-    const dto: CreateCompanyDto = { name: raw.name!, taxId: raw.taxId || undefined };
 
-    const req$ = this.companyModalMode() === 'create'
-      ? this.companiesService.create(dto)
-      : this.companiesService.update(this.companyEditingId()!, dto);
+    const req$ =
+      this.companyModalMode() === 'create'
+        ? this.companiesService.create({
+            name: raw.name!,
+            taxId: raw.taxId || undefined,
+            adminName: raw.adminName!,
+            adminEmail: raw.adminEmail!,
+            adminPassword: raw.adminPassword!,
+          })
+        : this.companiesService.update(this.companyEditingId()!, {
+            name: raw.name!,
+            taxId: raw.taxId || undefined,
+          });
 
     req$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => { this.companySaving.set(false); this.showCompanyModal.set(false); this.loadCompanies(); },
-      error: err => { this.companySaving.set(false); this.companyFormError.set(err?.error?.message ?? 'Error al guardar'); },
+      next: () => {
+        this.companySaving.set(false);
+        this.showCompanyModal.set(false);
+        this.loadCompanies();
+      },
+      error: (err) => {
+        this.companySaving.set(false);
+        this.companyFormError.set(err?.error?.message ?? 'Error al guardar');
+      },
     });
   }
 
-  confirmToggleCompany(c: CompanyInfo) { this.companyToggleTarget.set(c); }
-  cancelToggleCompany() { this.companyToggleTarget.set(null); }
+  confirmToggleCompany(c: CompanyInfo) {
+    this.companyToggleTarget.set(c);
+  }
+  cancelToggleCompany() {
+    this.companyToggleTarget.set(null);
+  }
 
   executeToggleCompany() {
     const c = this.companyToggleTarget();
     if (!c) return;
     this.companySaving.set(true);
-    this.companiesService.toggleStatus(c.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => { this.companySaving.set(false); this.companyToggleTarget.set(null); this.loadCompanies(); },
-      error: () => { this.companySaving.set(false); this.companyToggleTarget.set(null); },
-    });
+    this.companiesService
+      .toggleStatus(c.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.companySaving.set(false);
+          this.companyToggleTarget.set(null);
+          this.loadCompanies();
+        },
+        error: () => {
+          this.companySaving.set(false);
+          this.companyToggleTarget.set(null);
+        },
+      });
   }
-
 }

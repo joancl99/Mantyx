@@ -14,7 +14,6 @@ import { RedisService } from '../redis/redis.service';
 import { UsersService } from '../users/users.service';
 import { AuthTokensDto } from './dto/auth-tokens.dto';
 import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
 import { denylistKey } from './token-denylist';
 import { JwtPayload } from './types/jwt-payload.interface';
 
@@ -43,11 +42,6 @@ export class AuthService {
     this.refreshSecret = config.getOrThrow('JWT_REFRESH_SECRET');
     this.accessExpiry = config.getOrThrow('JWT_ACCESS_EXPIRES_IN');
     this.refreshExpiry = config.getOrThrow('JWT_REFRESH_EXPIRES_IN');
-  }
-
-  async register(dto: RegisterDto): Promise<AuthTokensDto> {
-    const user = await this.users.create(dto.email, dto.name, dto.password);
-    return this.issueTokens(user);
   }
 
   async login(dto: LoginDto): Promise<AuthTokensDto> {

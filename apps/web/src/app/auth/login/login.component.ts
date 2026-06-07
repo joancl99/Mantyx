@@ -5,7 +5,7 @@ import {
   FormControl,
   Validators,
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { IonContent, IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -20,7 +20,7 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, IonContent, IonIcon, IonSpinner],
+  imports: [ReactiveFormsModule, IonContent, IonIcon, IonSpinner],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })

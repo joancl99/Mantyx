@@ -35,16 +35,6 @@ export class UsersService {
 
   // ── Auth-internal ────────────────────────────────────────────────────────────
 
-  async create(email: string, name: string, password: string): Promise<User> {
-    const exists = await this.prisma.user.findUnique({ where: { email } });
-    if (exists) throw new ConflictException('Email already registered');
-
-    const hashed = await bcrypt.hash(password, 10);
-    return this.prisma.user.create({
-      data: { email, name, password: hashed },
-    });
-  }
-
   findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({ where: { email } });
   }
