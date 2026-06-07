@@ -20,7 +20,7 @@ import { AuthTokensDto } from './dto/auth-tokens.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
-import { JwtRefreshPayload } from './types/jwt-payload.interface';
+import { JwtPayload, JwtRefreshPayload } from './types/jwt-payload.interface';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -59,9 +59,11 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth('access-token')
-  @ApiOperation({ summary: 'Logout and invalidate refresh token' })
+  @ApiOperation({
+    summary: 'Logout, revoke access token and invalidate refresh token',
+  })
   @ApiResponse({ status: 204 })
-  logout(@CurrentUser('sub') userId: string): Promise<void> {
-    return this.auth.logout(userId);
+  logout(@CurrentUser() user: JwtPayload): Promise<void> {
+    return this.auth.logout(user);
   }
 }

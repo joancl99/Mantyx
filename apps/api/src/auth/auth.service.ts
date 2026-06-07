@@ -7,11 +7,13 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 import { RedisService } from '../redis/redis.service';
 import { UsersService } from '../users/users.service';
 import { AuthTokensDto } from './dto/auth-tokens.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { denylistKey } from './token-denylist';
 import { JwtPayload } from './types/jwt-payload.interface';
 
 const REFRESH_TTL = 7 * 24 * 60 * 60; // 7 days in seconds
@@ -65,17 +67,28 @@ export class AuthService {
     return this.issueTokens(user);
   }
 
-  async logout(userId: string): Promise<void> {
-    await this.redis.del(`refresh:${userId}`);
+  async logout(user: JwtPayload): Promise<void> {
+    await this.redis.del(`refresh:${user.sub}`);
+
+    // Revoke the access token used for this request so it cannot be reused
+    // before its natural expiry. TTL = remaining lifetime of the token.
+    if (user.jti && user.exp) {
+      const ttl = user.exp - Math.floor(Date.now() / 1000);
+      if (ttl > 0) {
+        await this.redis.set(denylistKey(user.jti), '1', ttl);
+      }
+    }
   }
 
   private async issueTokens(user: User): Promise<AuthTokensDto> {
+    const jti = randomUUID();
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
       companyId: user.companyId,
+      jti,
     };
 
     const signOpts = (secret: string, expiresIn: string) => ({
