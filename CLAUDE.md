@@ -110,11 +110,14 @@ Remaining frontend work:
 - Inventory lines are unique per `(inventoryCountId, locationId)` via Prisma schema and migration `20260602142000_inventory_line_location_unique`.
 - Stock service now has focused unit tests for movement scoping, source-location stock guards, required source/destination locations, transfer location validation, inbound audit/alerts, and overview filtering.
 - Products service now validates category/brand tenant ownership for create/update/list filters and has unit tests for product scoping, catalog ownership, duplicate SKU handling, and soft delete.
-- Warehouses service now has unit tests for company scoping, hierarchy ownership, duplicate handling, and protected deletes.
+- Warehouses service now has unit tests for company scoping, hierarchy ownership, duplicate handling, protected deletes, and location-by-code lookup (scan-to-fill).
+- Auth/security has unit tests: `auth.service.spec.ts` (logout access-token denylist + login lockout), `strategies/jwt.strategy.spec.ts` (revoked jti, inactive/missing user, live claims), `guards/company.guard.spec.ts` (no-company 403), and `products/image-signature.spec.ts` (upload magic-byte detection). API unit suite is ~50 tests.
 - Frontend tests currently cover app route smoke behavior, `roleGuard`, and Reception/Expedition modal data loading + submit validation.
 - API e2e now runs in-process with `@nestjs/testing` on a dynamic port for the public health endpoint; it no longer depends on `api:serve` or port-killing setup files.
 - CI (`.github/workflows/ci.yml`) explicitly runs format check, lint for api/web/types/api-e2e, tests for api/web/types, builds for api/web/types, and `api-e2e`.
-- Next roadmap items: expand API e2e beyond health, add broader frontend unit tests for scanner/CSV/services, and consider Cypress/Playwright browser e2e coverage for full user flows.
+- **NEXT SESSION:** implement finding #8 — currently there is a single refresh token per user (`refresh:<userId>` in Redis), so logging in on a second device invalidates the first. Not a security issue, but a multi-device UX gap. Plan: key refresh tokens per session/device (e.g. `refresh:<userId>:<sessionId>`) so concurrent sessions coexist; tie revocation/logout to the specific session.
+- Security audit (2026-06-07) is fully addressed: access-token revocation on logout, refresh in httpOnly cookie + strict CSP, invite-based onboarding (no public registration), JWT secret ≥32, magic-byte upload validation, login lockout, Swagger off in prod, CORS URI validation, and CompanyGuard (403 instead of 500 for no-company users).
+- Other roadmap items: expand API e2e beyond health, add broader frontend unit tests for scanner/CSV/services, and consider Cypress/Playwright browser e2e coverage for full user flows.
 - To build natively for Android: `pnpm nx build web` → `npx cap add android` → `npx cap sync` → open in Android Studio.
 - `npx cap add ios` requires macOS/Xcode.
 
