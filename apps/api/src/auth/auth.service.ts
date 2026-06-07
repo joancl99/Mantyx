@@ -1,5 +1,7 @@
 import {
   ForbiddenException,
+  HttpException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -17,6 +19,12 @@ import { denylistKey } from './token-denylist';
 import { JwtPayload } from './types/jwt-payload.interface';
 
 const REFRESH_TTL = 7 * 24 * 60 * 60; // 7 days in seconds
+
+// Per-account login lockout: after this many consecutive failures the account
+// is locked for the window. Complements the per-IP throttle, stopping slow /
+// distributed brute force against a single account.
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOGIN_LOCK_SECONDS = 15 * 60; // 15 minutes
 
 @Injectable()
 export class AuthService {
@@ -43,14 +51,27 @@ export class AuthService {
   }
 
   async login(dto: LoginDto): Promise<AuthTokensDto> {
-    const user = await this.users.findByEmail(dto.email);
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+    const lockKey = `login-fail:${dto.email.trim().toLowerCase()}`;
 
-    const match = await bcrypt.compare(dto.password, user.password);
-    if (!match) throw new UnauthorizedException('Invalid credentials');
+    const attempts = Number((await this.redis.get(lockKey)) ?? 0);
+    if (attempts >= MAX_LOGIN_ATTEMPTS) {
+      throw new HttpException(
+        'Demasiados intentos fallidos. Inténtalo de nuevo en unos minutos.',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const user = await this.users.findByEmail(dto.email);
+    const valid = user && (await bcrypt.compare(dto.password, user.password));
+    if (!valid) {
+      await this.redis.increment(lockKey, LOGIN_LOCK_SECONDS);
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
     if (!user.isActive) throw new ForbiddenException('Account is deactivated');
 
+    // Successful credentials — reset the failure counter.
+    await this.redis.del(lockKey);
     return this.issueTokens(user);
   }
 

@@ -22,6 +22,16 @@ export class RedisService implements OnModuleDestroy {
     return this.client.get(key);
   }
 
+  /**
+   * Atomically increments a counter, setting its TTL on first creation
+   * (fixed-window). Returns the new count. Used for login lockout.
+   */
+  async increment(key: string, ttlSeconds: number): Promise<number> {
+    const count = await this.client.incr(key);
+    if (count === 1) await this.client.expire(key, ttlSeconds);
+    return count;
+  }
+
   async del(key: string): Promise<void> {
     await this.client.del(key);
   }
