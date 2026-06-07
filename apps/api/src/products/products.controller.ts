@@ -1,3 +1,4 @@
+/// <reference types="multer" />
 import {
   BadRequestException,
   Body,
@@ -23,10 +24,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
-import { diskStorage } from 'multer';
-import { mkdirSync } from 'fs';
-import { extname, join } from 'path';
-import { randomUUID } from 'crypto';
+import { extname } from 'path';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtPayload } from '../auth/types/jwt-payload.interface';
@@ -37,16 +35,6 @@ import { ProductsService } from './products.service';
 
 const ALLOWED_TYPES = /\.(jpg|jpeg|png|webp)$/i;
 const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
-
-const imageStorage = diskStorage({
-  destination: (_req, _file, cb) => {
-    const uploadDir = join(process.cwd(), 'uploads', 'products');
-    mkdirSync(uploadDir, { recursive: true });
-    cb(null, uploadDir);
-  },
-  filename: (_req, file, cb) =>
-    cb(null, `${randomUUID()}${extname(file.originalname)}`),
-});
 
 @ApiTags('Products')
 @ApiBearerAuth('access-token')
@@ -106,7 +94,8 @@ export class ProductsController {
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: imageStorage,
+      // Kept in memory so the content can be validated by magic bytes before
+      // anything is written to disk (see ProductsService.uploadImage).
       limits: { fileSize: MAX_SIZE },
       fileFilter: (_req, file, cb) => {
         if (!ALLOWED_TYPES.test(extname(file.originalname))) {

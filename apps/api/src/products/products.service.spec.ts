@@ -1,4 +1,8 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ProductsService } from './products.service';
 
@@ -28,12 +32,28 @@ describe('ProductsService', () => {
   it('scopes product detail by company and active state', async () => {
     prisma.product.findFirst.mockResolvedValue(null);
 
-    await expect(service.findOne('product-1', 'company-1')).rejects.toBeInstanceOf(NotFoundException);
+    await expect(
+      service.findOne('product-1', 'company-1'),
+    ).rejects.toBeInstanceOf(NotFoundException);
     expect(prisma.product.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { id: 'product-1', companyId: 'company-1', isActive: true },
       }),
     );
+  });
+
+  it('rejects an uploaded file whose content is not a real image', async () => {
+    const file = {
+      buffer: Buffer.from('<script>alert(1)</script>'),
+      originalname: 'evil.png',
+    } as Express.Multer.File;
+
+    await expect(
+      service.uploadImage('product-1', 'company-1', file),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    // Fails before touching the DB or the product lookup.
+    expect(prisma.product.findFirst).not.toHaveBeenCalled();
+    expect(prisma.product.update).not.toHaveBeenCalled();
   });
 
   it('rejects creating a product with a category outside the company', async () => {
@@ -106,9 +126,14 @@ describe('ProductsService', () => {
 
   it('soft deletes only after finding an active company product', async () => {
     prisma.product.findFirst.mockResolvedValue({ id: 'product-1' });
-    prisma.product.update.mockResolvedValue({ id: 'product-1', isActive: false });
+    prisma.product.update.mockResolvedValue({
+      id: 'product-1',
+      isActive: false,
+    });
 
-    await expect(service.remove('product-1', 'company-1')).resolves.toBeUndefined();
+    await expect(
+      service.remove('product-1', 'company-1'),
+    ).resolves.toBeUndefined();
     expect(prisma.product.update).toHaveBeenCalledWith({
       where: { id: 'product-1' },
       data: { isActive: false },

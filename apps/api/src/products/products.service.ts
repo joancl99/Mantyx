@@ -1,15 +1,19 @@
+/// <reference types="multer" />
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { existsSync, mkdirSync, unlinkSync } from 'fs';
+import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { detectImageType } from './image-signature';
 
 const productInclude = {
   category: { select: { id: true, name: true } },
@@ -131,6 +135,15 @@ export class ProductsService {
   }
 
   async uploadImage(id: string, companyId: string, file: Express.Multer.File) {
+    // Validate the real content by magic bytes, not the extension/MIME the
+    // client claims — a script renamed to .png is rejected here.
+    const type = detectImageType(file.buffer);
+    if (!type) {
+      throw new BadRequestException(
+        'El archivo no es una imagen válida (jpg, png o webp)',
+      );
+    }
+
     const product = await this.findOne(id, companyId);
 
     // Delete previous image file if it exists on disk
@@ -142,7 +155,12 @@ export class ProductsService {
     const uploadsDir = join(process.cwd(), 'uploads', 'products');
     if (!existsSync(uploadsDir)) mkdirSync(uploadsDir, { recursive: true });
 
-    const imageUrl = `/uploads/products/${file.filename}`;
+    // Filename uses a random UUID and the detected type's extension, never the
+    // user-supplied name.
+    const filename = `${randomUUID()}.${type}`;
+    writeFileSync(join(uploadsDir, filename), file.buffer);
+
+    const imageUrl = `/uploads/products/${filename}`;
     return this.prisma.product.update({
       where: { id },
       data: { imageUrl },
