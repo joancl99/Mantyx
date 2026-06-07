@@ -37,25 +37,31 @@ async function bootstrap() {
     }),
   );
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('Mantyx API')
-    .setDescription('Warehouse management SaaS REST API reference')
-    .setVersion('1.0')
-    .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
-      'access-token',
-    )
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, document, {
-    swaggerOptions: { persistAuthorization: true },
-  });
+  // Swagger exposes the full API surface — only mount it outside production.
+  const isProd = config.get<string>('NODE_ENV') === 'production';
+  if (!isProd) {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('Mantyx API')
+      .setDescription('Warehouse management SaaS REST API reference')
+      .setVersion('1.0')
+      .addBearerAuth(
+        { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+        'access-token',
+      )
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: { persistAuthorization: true },
+    });
+  }
 
   const port = config.get<number>('PORT') ?? 3000;
   await app.listen(port);
 
   Logger.log(`API running at:     http://localhost:${port}/api`);
-  Logger.log(`Swagger docs at:    http://localhost:${port}/api/docs`);
+  if (!isProd) {
+    Logger.log(`Swagger docs at:    http://localhost:${port}/api/docs`);
+  }
 }
 
 bootstrap();
