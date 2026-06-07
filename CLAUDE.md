@@ -18,7 +18,7 @@ Use Mantyx in user-facing text, titles, documentation headings, and product refe
 - Barcode scanning: `@capacitor-mlkit/barcode-scanning` 8.1.0 (native ML Kit on Android/iOS), `@zxing/browser` 0.2.0 (web/development fallback).
 - Backend: NestJS 11, TypeScript.
 - Database: PostgreSQL 16 with Prisma ORM 6.19.3.
-- Cache/Auth: Redis 7 for refresh tokens and JWT invalidation/blacklist behavior.
+- Cache/Auth: Redis 7 for refresh tokens and access-token revocation (logout denylist by `jti`).
 - Monorepo: Nx 22.7.x.
 - Local infra: Docker Compose.
 - API docs: Swagger at `/api/docs` when the API is running.
@@ -45,7 +45,7 @@ Most business endpoints must be scoped by `companyId` unless explicitly platform
 
 Backend modules currently present:
 
-- Auth: register, login, refresh, logout, JWT guards, RBAC, throttling.
+- Auth: register, login, refresh, logout, JWT guards, RBAC, throttling. Session security: access token (15m) carries a `jti`; logout stores the `jti` in a Redis denylist (TTL = remaining token life) so the token cannot be reused before expiry, and `JwtStrategy` re-fetches the live user every request (deactivation / role / company changes take effect immediately). The refresh token (7d) is delivered in an httpOnly + Secure + SameSite=strict cookie (`refresh_token`, path `/api/auth`) via `cookie-parser` — never in the response body or JS-readable storage; `JwtRefreshStrategy` reads it from the cookie. Frontend keeps the access token in memory only and restores the session on load via a `provideAppInitializer` silent refresh. Strict CSP + security headers are set in `docker/nginx.conf` (the SPA is served by nginx), allowing only same-origin code plus Google Fonts.
 - Companies: `SUPERADMIN` company management.
 - Users: tenant user management.
 - Categories and brands: tenant-scoped catalog setup.

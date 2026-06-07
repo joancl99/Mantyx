@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { join } from 'path';
 import { AppModule } from './app/app.module';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
@@ -17,6 +18,7 @@ async function bootstrap() {
   app.useWebSocketAdapter(new IoAdapter(app));
 
   app.use(helmet());
+  app.use(cookieParser());
 
   app.enableCors({
     origin: config.get<string>('CORS_ORIGIN'),

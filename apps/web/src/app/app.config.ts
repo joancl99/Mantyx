@@ -1,5 +1,7 @@
 import {
   ApplicationConfig,
+  inject,
+  provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
@@ -7,6 +9,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideIonicAngular } from '@ionic/angular/standalone';
 import { appRoutes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { AuthService } from './core/services/auth.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -14,5 +17,8 @@ export const appConfig: ApplicationConfig = {
     provideIonicAngular({ mode: 'md' }),
     provideRouter(appRoutes, withComponentInputBinding()),
     provideHttpClient(withInterceptors([authInterceptor])),
+    // Restore the session from the refresh cookie before the app renders, so
+    // route guards see the correct auth state after a full page reload.
+    provideAppInitializer(() => inject(AuthService).bootstrap()),
   ],
 };
