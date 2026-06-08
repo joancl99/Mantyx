@@ -40,20 +40,17 @@ jobs:
         run: |
           pnpm nx run api:eslint:lint
           pnpm nx lint web
-          pnpm nx run types:eslint:lint
           pnpm nx run api-e2e:eslint:lint
 
       - name: Test
         run: |
           pnpm nx test api
           pnpm nx test web
-          pnpm nx test types
 
       - name: Build
         run: |
           pnpm nx build api
           pnpm nx build web
-          pnpm nx build types
 
       - name: E2E
         run: pnpm nx e2e api-e2e

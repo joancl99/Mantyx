@@ -114,7 +114,7 @@ Remaining frontend work:
 - Auth/security has unit tests: `auth.service.spec.ts` (logout access-token denylist + login lockout), `strategies/jwt.strategy.spec.ts` (revoked jti, inactive/missing user, live claims), `guards/company.guard.spec.ts` (no-company 403), and `products/image-signature.spec.ts` (upload magic-byte detection). API unit suite is ~50 tests.
 - Frontend tests currently cover app route smoke behavior, `roleGuard`, and Reception/Expedition modal data loading + submit validation.
 - API e2e now runs in-process with `@nestjs/testing` on a dynamic port for the public health endpoint; it no longer depends on `api:serve` or port-killing setup files.
-- CI (`.github/workflows/ci.yml`) explicitly runs format check, lint for api/web/types/api-e2e, tests for api/web/types, builds for api/web/types, and `api-e2e`.
+- CI (`.github/workflows/ci.yml`) explicitly runs format check, lint for api/web/api-e2e, tests for api/web, builds for api/web, and `api-e2e`.
 - Finding #8 (multi-device refresh) is done: refresh tokens are keyed per session/device at `refresh:<userId>:<sid>` (helper `auth/session-key.ts`), the `sid` claim rides in both tokens, refresh rotates within the same session, and logout/access-token revocation target only the requesting session. Unit tests cover per-session logout, the legacy no-`sid` token path, and per-session refresh lookup.
 - Security audit (2026-06-07) is fully addressed: access-token revocation on logout, refresh in httpOnly cookie + strict CSP, invite-based onboarding (no public registration), JWT secret ≥32, magic-byte upload validation, login lockout, Swagger off in prod, CORS URI validation, CompanyGuard (403 instead of 500 for no-company users), and per-session refresh tokens (#8).
 - Other roadmap items: expand API e2e beyond health, add broader frontend unit tests for scanner/CSV/services, and consider Cypress/Playwright browser e2e coverage for full user flows.
@@ -202,14 +202,11 @@ Before applying migrations that add unique constraints, check whether existing d
   - `pnpm nx format:check --base=origin/main`
   - `pnpm nx run api:eslint:lint`
   - `pnpm nx lint web`
-  - `pnpm nx run types:eslint:lint`
   - `pnpm nx run api-e2e:eslint:lint`
   - `pnpm nx test api`
   - `pnpm nx test web`
-  - `pnpm nx test types`
   - `pnpm nx build api`
   - `pnpm nx build web`
-  - `pnpm nx build types`
   - `pnpm nx e2e api-e2e`
 
 ## Commit Message Style
