@@ -9,13 +9,13 @@
   <div class="admin-page">
     @if (isSuperAdmin()) {
       <app-admin-company-list
-        [companies]="filteredCompanies()"
-        [loading]="companiesLoading()"
-        [search]="companySearch()"
-        (searchChange)="companySearch.set($event)"
-        (createCompany)="openCreateCompany()"
-        (editCompany)="openEditCompany($event)"
-        (toggleCompany)="confirmToggleCompany($event)"
+        [companies]="companies.filteredCompanies()"
+        [loading]="companies.loading()"
+        [search]="companies.search()"
+        (searchChange)="companies.search.set($event)"
+        (createCompany)="companies.openCreate()"
+        (editCompany)="companies.openEdit($event)"
+        (toggleCompany)="companies.confirmToggle($event)"
       />
     } @else {
       <!-- Tab bar -->
@@ -49,21 +49,21 @@
       <!-- ── USUARIOS ─────────────────────────────────────────────────────────── -->
       @if (activeTab() === 'usuarios') {
         <app-admin-users-panel
-          [users]="filteredUsers()"
-          [loading]="usersLoading()"
-          [search]="userSearch()"
-          [roleFilter]="roleFilter()"
-          [roles]="assignableRoles"
+          [users]="users.filteredUsers()"
+          [loading]="users.loading()"
+          [search]="users.search()"
+          [roleFilter]="users.roleFilter()"
+          [roles]="users.assignableRoles"
           [currentUserId]="currentUserId()"
-          [totalCount]="totalCount()"
-          [activeCount]="activeCount()"
-          [inactiveCount]="inactiveCount()"
-          [adminCount]="adminCount()"
-          (searchChange)="userSearch.set($event)"
-          (roleFilterChange)="roleFilter.set($event)"
-          (createUser)="openCreateUser()"
-          (editUser)="openEditUser($event)"
-          (toggleUser)="confirmToggle($event)"
+          [totalCount]="users.totalCount()"
+          [activeCount]="users.activeCount()"
+          [inactiveCount]="users.inactiveCount()"
+          [adminCount]="users.adminCount()"
+          (searchChange)="users.search.set($event)"
+          (roleFilterChange)="users.roleFilter.set($event)"
+          (createUser)="users.openCreate()"
+          (editUser)="users.openEdit($event)"
+          (toggleUser)="users.confirmToggle($event)"
         />
       }
 
@@ -119,33 +119,35 @@
 </ion-content>
 
 <!-- ── USER modal ──────────────────────────────────────────────────────────────── -->
-@if (showUserModal()) {
+@if (users.showModal()) {
   <div
     class="modal-backdrop"
     tabindex="0"
-    (click)="closeUserModal()"
-    (keydown.escape)="closeUserModal()"
+    (click)="users.closeModal()"
+    (keydown.escape)="users.closeModal()"
   >
     <div class="modal" role="presentation" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h2 class="modal-title">
           {{
-            userModalMode() === 'create' ? 'Nuevo usuario' : 'Editar usuario'
+            users.modalMode() === 'create' ? 'Nuevo usuario' : 'Editar usuario'
           }}
         </h2>
-        <button class="modal-close" (click)="closeUserModal()">
+        <button class="modal-close" (click)="users.closeModal()">
           <ion-icon name="close-outline" />
         </button>
       </div>
       <form
-        [formGroup]="userForm"
-        (ngSubmit)="submitUserForm()"
+        [formGroup]="users.form"
+        (ngSubmit)="users.submitForm()"
         class="modal-body"
       >
         <div class="form-row">
           <div
             class="form-field"
-            [class.has-error]="userSubmitted() && userForm.get('name')?.invalid"
+            [class.has-error]="
+              users.submitted() && users.form.get('name')?.invalid
+            "
           >
             <label class="form-label" for="u-name">Nombre *</label>
             <input
@@ -155,7 +157,7 @@
               placeholder="Juan García"
             />
             @if (
-              userSubmitted() && userForm.get('name')?.hasError('required')
+              users.submitted() && users.form.get('name')?.hasError('required')
             ) {
               <span class="form-error">Campo obligatorio</span>
             }
@@ -163,7 +165,7 @@
           <div
             class="form-field"
             [class.has-error]="
-              userSubmitted() && userForm.get('email')?.invalid
+              users.submitted() && users.form.get('email')?.invalid
             "
           >
             <label class="form-label" for="u-email">Email *</label>
@@ -174,7 +176,9 @@
               placeholder="juan@empresa.com"
               type="email"
             />
-            @if (userSubmitted() && userForm.get('email')?.hasError('email')) {
+            @if (
+              users.submitted() && users.form.get('email')?.hasError('email')
+            ) {
               <span class="form-error">Email no válido</span>
             }
           </div>
@@ -183,16 +187,16 @@
           <div class="form-field">
             <label class="form-label" for="u-role">Rol *</label>
             <select id="u-role" class="form-input" formControlName="role">
-              @for (role of assignableRoles; track role) {
-                <option [value]="role">{{ roleLabel(role) }}</option>
+              @for (role of users.assignableRoles; track role) {
+                <option [value]="role">{{ users.roleLabel(role) }}</option>
               }
             </select>
           </div>
-          @if (userModalMode() === 'create') {
+          @if (users.modalMode() === 'create') {
             <div
               class="form-field"
               [class.has-error]="
-                userSubmitted() && userForm.get('password')?.invalid
+                users.submitted() && users.form.get('password')?.invalid
               "
             >
               <label class="form-label" for="u-password">Contraseña *</label>
@@ -201,43 +205,45 @@
                   id="u-password"
                   class="form-input"
                   formControlName="password"
-                  [type]="showPassword() ? 'text' : 'password'"
+                  [type]="users.showPassword() ? 'text' : 'password'"
                   placeholder="Mínimo 8 caracteres"
                 />
                 <button
                   type="button"
                   class="password-toggle"
-                  (click)="showPassword.set(!showPassword())"
+                  (click)="users.showPassword.set(!users.showPassword())"
                 >
                   <ion-icon
-                    [name]="showPassword() ? 'eye-off-outline' : 'eye-outline'"
+                    [name]="
+                      users.showPassword() ? 'eye-off-outline' : 'eye-outline'
+                    "
                   />
                 </button>
               </div>
               @if (
-                userSubmitted() &&
-                userForm.get('password')?.hasError('minlength')
+                users.submitted() &&
+                users.form.get('password')?.hasError('minlength')
               ) {
                 <span class="form-error">Mínimo 8 caracteres</span>
               }
             </div>
           }
         </div>
-        @if (userFormError()) {
+        @if (users.formError()) {
           <div class="form-alert">
-            <ion-icon name="alert-circle-outline" />{{ userFormError() }}
+            <ion-icon name="alert-circle-outline" />{{ users.formError() }}
           </div>
         }
         <div class="modal-footer">
-          <button type="button" class="btn-ghost" (click)="closeUserModal()">
+          <button type="button" class="btn-ghost" (click)="users.closeModal()">
             Cancelar
           </button>
-          <button type="submit" class="btn-primary" [disabled]="userSaving()">
-            @if (userSaving()) {
+          <button type="submit" class="btn-primary" [disabled]="users.saving()">
+            @if (users.saving()) {
               <ion-spinner name="crescent" />
             } @else {
               {{
-                userModalMode() === 'create'
+                users.modalMode() === 'create'
                   ? 'Crear usuario'
                   : 'Guardar cambios'
               }}
@@ -250,12 +256,12 @@
 }
 
 <!-- ── USER toggle confirm ─────────────────────────────────────────────────────── -->
-@if (toggleTarget()) {
+@if (users.toggleTarget()) {
   <div
     class="modal-backdrop"
     tabindex="0"
-    (click)="cancelToggle()"
-    (keydown.escape)="cancelToggle()"
+    (click)="users.cancelToggle()"
+    (keydown.escape)="users.cancelToggle()"
   >
     <div
       class="modal modal--sm"
@@ -265,33 +271,41 @@
       <div class="modal-header">
         <h2 class="modal-title">
           {{
-            toggleTarget()!.isActive ? 'Desactivar usuario' : 'Activar usuario'
+            users.toggleTarget()!.isActive
+              ? 'Desactivar usuario'
+              : 'Activar usuario'
           }}
         </h2>
       </div>
       <div class="modal-body">
         <p class="delete-text">
-          {{ toggleTarget()!.isActive ? '¿Desactivar a ' : '¿Activar a ' }}
-          <strong>{{ toggleTarget()!.name }}</strong
+          {{
+            users.toggleTarget()!.isActive ? '¿Desactivar a ' : '¿Activar a '
+          }}
+          <strong>{{ users.toggleTarget()!.name }}</strong
           >?
           {{
-            toggleTarget()!.isActive
+            users.toggleTarget()!.isActive
               ? ' No podrá acceder al sistema.'
               : ' Volverá a tener acceso.'
           }}
         </p>
       </div>
       <div class="modal-footer">
-        <button class="btn-ghost" (click)="cancelToggle()">Cancelar</button>
+        <button class="btn-ghost" (click)="users.cancelToggle()">
+          Cancelar
+        </button>
         <button
-          [class]="toggleTarget()!.isActive ? 'btn-danger' : 'btn-primary'"
-          [disabled]="userSaving()"
-          (click)="executeToggle()"
+          [class]="
+            users.toggleTarget()!.isActive ? 'btn-danger' : 'btn-primary'
+          "
+          [disabled]="users.saving()"
+          (click)="users.executeToggle()"
         >
-          @if (userSaving()) {
+          @if (users.saving()) {
             <ion-spinner name="crescent" />
           } @else {
-            {{ toggleTarget()!.isActive ? 'Desactivar' : 'Activar' }}
+            {{ users.toggleTarget()!.isActive ? 'Desactivar' : 'Activar' }}
           }
         </button>
       </div>
@@ -541,12 +555,12 @@
 }
 
 <!-- ── COMPANY CREATE / EDIT MODAL ───────────────────────────────────────── -->
-@if (showCompanyModal()) {
+@if (companies.showModal()) {
   <div
     class="modal-backdrop"
     tabindex="0"
-    (click)="closeCompanyModal()"
-    (keydown.escape)="closeCompanyModal()"
+    (click)="companies.closeModal()"
+    (keydown.escape)="companies.closeModal()"
   >
     <div
       class="modal modal--sm"
@@ -556,22 +570,24 @@
       <div class="modal-header">
         <h2 class="modal-title">
           {{
-            companyModalMode() === 'create' ? 'Nueva empresa' : 'Editar empresa'
+            companies.modalMode() === 'create'
+              ? 'Nueva empresa'
+              : 'Editar empresa'
           }}
         </h2>
-        <button class="modal-close" (click)="closeCompanyModal()">
+        <button class="modal-close" (click)="companies.closeModal()">
           <ion-icon name="close-outline" />
         </button>
       </div>
       <form
-        [formGroup]="companyForm"
-        (ngSubmit)="submitCompanyForm()"
+        [formGroup]="companies.form"
+        (ngSubmit)="companies.submitForm()"
         class="modal-body"
       >
         <div
           class="form-field"
           [class.has-error]="
-            companySubmitted() && companyForm.get('name')?.invalid
+            companies.submitted() && companies.form.get('name')?.invalid
           "
         >
           <label class="form-label" for="company-name">Nombre *</label>
@@ -582,7 +598,8 @@
             placeholder="Acme Corp"
           />
           @if (
-            companySubmitted() && companyForm.get('name')?.hasError('required')
+            companies.submitted() &&
+            companies.form.get('name')?.hasError('required')
           ) {
             <span class="form-error">Campo obligatorio</span>
           }
@@ -597,12 +614,12 @@
           />
         </div>
 
-        @if (companyModalMode() === 'create') {
+        @if (companies.modalMode() === 'create') {
           <p class="section-label">Administrador inicial de la empresa</p>
           <div
             class="form-field"
             [class.has-error]="
-              companySubmitted() && companyForm.get('adminName')?.invalid
+              companies.submitted() && companies.form.get('adminName')?.invalid
             "
           >
             <label class="form-label" for="admin-name"
@@ -614,7 +631,9 @@
               formControlName="adminName"
               placeholder="María López"
             />
-            @if (companySubmitted() && companyForm.get('adminName')?.invalid) {
+            @if (
+              companies.submitted() && companies.form.get('adminName')?.invalid
+            ) {
               <span class="form-error"
                 >Nombre obligatorio (mín. 2 caracteres)</span
               >
@@ -623,7 +642,7 @@
           <div
             class="form-field"
             [class.has-error]="
-              companySubmitted() && companyForm.get('adminEmail')?.invalid
+              companies.submitted() && companies.form.get('adminEmail')?.invalid
             "
           >
             <label class="form-label" for="admin-email"
@@ -636,14 +655,17 @@
               formControlName="adminEmail"
               placeholder="admin@acme.com"
             />
-            @if (companySubmitted() && companyForm.get('adminEmail')?.invalid) {
+            @if (
+              companies.submitted() && companies.form.get('adminEmail')?.invalid
+            ) {
               <span class="form-error">Email válido obligatorio</span>
             }
           </div>
           <div
             class="form-field"
             [class.has-error]="
-              companySubmitted() && companyForm.get('adminPassword')?.invalid
+              companies.submitted() &&
+              companies.form.get('adminPassword')?.invalid
             "
           >
             <label class="form-label" for="admin-password"
@@ -657,32 +679,37 @@
               placeholder="Mínimo 8 caracteres"
             />
             @if (
-              companySubmitted() && companyForm.get('adminPassword')?.invalid
+              companies.submitted() &&
+              companies.form.get('adminPassword')?.invalid
             ) {
               <span class="form-error">Mínimo 8 caracteres</span>
             }
           </div>
         }
 
-        @if (companyFormError()) {
+        @if (companies.formError()) {
           <div class="form-alert">
-            <ion-icon name="alert-circle-outline" />{{ companyFormError() }}
+            <ion-icon name="alert-circle-outline" />{{ companies.formError() }}
           </div>
         }
         <div class="modal-footer">
-          <button type="button" class="btn-ghost" (click)="closeCompanyModal()">
+          <button
+            type="button"
+            class="btn-ghost"
+            (click)="companies.closeModal()"
+          >
             Cancelar
           </button>
           <button
             type="submit"
             class="btn-primary"
-            [disabled]="companySaving()"
+            [disabled]="companies.saving()"
           >
-            @if (companySaving()) {
+            @if (companies.saving()) {
               <ion-spinner name="crescent" />
             } @else {
               {{
-                companyModalMode() === 'create'
+                companies.modalMode() === 'create'
                   ? 'Crear empresa'
                   : 'Guardar cambios'
               }}
@@ -695,12 +722,12 @@
 }
 
 <!-- ── COMPANY TOGGLE STATUS CONFIRM ─────────────────────────────────────── -->
-@if (companyToggleTarget()) {
+@if (companies.toggleTarget()) {
   <div
     class="modal-backdrop"
     tabindex="0"
-    (click)="cancelToggleCompany()"
-    (keydown.escape)="cancelToggleCompany()"
+    (click)="companies.cancelToggle()"
+    (keydown.escape)="companies.cancelToggle()"
   >
     <div
       class="modal modal--sm"
@@ -710,7 +737,7 @@
       <div class="modal-header">
         <h2 class="modal-title">
           {{
-            companyToggleTarget()!.status === 'ACTIVE'
+            companies.toggleTarget()!.status === 'ACTIVE'
               ? 'Desactivar empresa'
               : 'Activar empresa'
           }}
@@ -719,32 +746,32 @@
       <div class="modal-body">
         <p class="delete-text">
           {{
-            companyToggleTarget()!.status === 'ACTIVE'
+            companies.toggleTarget()!.status === 'ACTIVE'
               ? '¿Desactivar'
               : '¿Activar'
           }}
-          <strong>{{ companyToggleTarget()!.name }}</strong
+          <strong>{{ companies.toggleTarget()!.name }}</strong
           >?
           {{
-            companyToggleTarget()!.status === 'ACTIVE'
+            companies.toggleTarget()!.status === 'ACTIVE'
               ? 'Los usuarios de esta empresa no podrán acceder.'
               : 'Los usuarios de esta empresa recuperarán el acceso.'
           }}
         </p>
         <div class="modal-footer">
-          <button class="btn-ghost" (click)="cancelToggleCompany()">
+          <button class="btn-ghost" (click)="companies.cancelToggle()">
             Cancelar
           </button>
           <button
             class="btn-primary"
-            [disabled]="companySaving()"
-            (click)="executeToggleCompany()"
+            [disabled]="companies.saving()"
+            (click)="companies.executeToggle()"
           >
-            @if (companySaving()) {
+            @if (companies.saving()) {
               <ion-spinner name="crescent" />
             } @else {
               {{
-                companyToggleTarget()!.status === 'ACTIVE'
+                companies.toggleTarget()!.status === 'ACTIVE'
                   ? 'Desactivar'
                   : 'Activar'
               }}
