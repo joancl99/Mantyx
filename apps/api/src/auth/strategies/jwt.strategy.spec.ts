@@ -21,6 +21,7 @@ const payload: JwtPayload = {
   role: Role.OPERATOR,
   companyId: 'company-1',
   jti: 'jti-1',
+  sid: 'sess-1',
   iat: 1000,
   exp: 2000,
 };
@@ -76,6 +77,7 @@ describe('JwtStrategy', () => {
       role: Role.ADMIN,
       companyId: 'company-2',
       jti: 'jti-1',
+      sid: 'sess-1',
       iat: 1000,
       exp: 2000,
     });

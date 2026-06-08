@@ -14,6 +14,7 @@ import { RedisService } from '../redis/redis.service';
 import { UsersService } from '../users/users.service';
 import { AuthTokensDto } from './dto/auth-tokens.dto';
 import { LoginDto } from './dto/login.dto';
+import { refreshKey } from './session-key';
 import { denylistKey } from './token-denylist';
 import { JwtPayload } from './types/jwt-payload.interface';
 
@@ -69,8 +70,14 @@ export class AuthService {
     return this.issueTokens(user);
   }
 
-  async refresh(userId: string, refreshToken: string): Promise<AuthTokensDto> {
-    const stored = await this.redis.get(`refresh:${userId}`);
+  async refresh(
+    userId: string,
+    sessionId: string | undefined,
+    refreshToken: string,
+  ): Promise<AuthTokensDto> {
+    if (!sessionId) throw new ForbiddenException('Session expired');
+
+    const stored = await this.redis.get(refreshKey(userId, sessionId));
     if (!stored) throw new ForbiddenException('Session expired');
 
     const match = await bcrypt.compare(refreshToken, stored);
@@ -79,11 +86,16 @@ export class AuthService {
     const user = await this.users.findById(userId);
     if (!user || !user.isActive) throw new ForbiddenException('Access denied');
 
-    return this.issueTokens(user);
+    // Rotate the token within the same session so other devices stay logged in.
+    return this.issueTokens(user, sessionId);
   }
 
   async logout(user: JwtPayload): Promise<void> {
-    await this.redis.del(`refresh:${user.sub}`);
+    // Revoke only the session this request belongs to — other devices keep
+    // their sessions. Old tokens predating per-session keys carry no `sid`.
+    if (user.sid) {
+      await this.redis.del(refreshKey(user.sub, user.sid));
+    }
 
     // Revoke the access token used for this request so it cannot be reused
     // before its natural expiry. TTL = remaining lifetime of the token.
@@ -95,7 +107,15 @@ export class AuthService {
     }
   }
 
-  private async issueTokens(user: User): Promise<AuthTokensDto> {
+  /**
+   * Issues a fresh access/refresh token pair. On login `sessionId` is omitted
+   * and a new session is created; on refresh the caller passes the existing
+   * `sessionId` so rotation stays within the same device session.
+   */
+  private async issueTokens(
+    user: User,
+    sessionId: string = randomUUID(),
+  ): Promise<AuthTokensDto> {
     const jti = randomUUID();
     const payload: JwtPayload = {
       sub: user.id,
@@ -104,6 +124,7 @@ export class AuthService {
       role: user.role,
       companyId: user.companyId,
       jti,
+      sid: sessionId,
     };
 
     const signOpts = (secret: string, expiresIn: string) => ({
@@ -130,7 +151,7 @@ export class AuthService {
     ]);
 
     const hashed = await bcrypt.hash(refreshToken, 10);
-    await this.redis.set(`refresh:${user.id}`, hashed, REFRESH_TTL);
+    await this.redis.set(refreshKey(user.id, sessionId), hashed, REFRESH_TTL);
 
     return {
       accessToken,

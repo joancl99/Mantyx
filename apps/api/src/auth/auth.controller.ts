@@ -64,7 +64,11 @@ export class AuthController {
     @CurrentUser() user: JwtRefreshPayload,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AccessTokenDto> {
-    const tokens = await this.auth.refresh(user.sub, user.refreshToken);
+    const tokens = await this.auth.refresh(
+      user.sub,
+      user.sid,
+      user.refreshToken,
+    );
     setRefreshCookie(res, tokens.refreshToken, this.isProd);
     return { accessToken: tokens.accessToken };
   }

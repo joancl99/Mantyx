@@ -33,14 +33,15 @@ describe('AuthService.logout', () => {
     name: 'A',
     role: Role.OPERATOR,
     companyId: 'company-1',
+    sid: 'sess-1',
   };
 
-  it('deletes the stored refresh token and denylists the access token jti', async () => {
+  it('deletes only the current session refresh token and denylists the jti', async () => {
     const { redis, service } = setup();
 
     await service.logout({ ...baseUser, jti: 'jti-1', exp: NOW + 600 });
 
-    expect(redis.del).toHaveBeenCalledWith('refresh:user-1');
+    expect(redis.del).toHaveBeenCalledWith('refresh:user-1:sess-1');
     expect(redis.set).toHaveBeenCalledWith(denylistKey('jti-1'), '1', 600);
   });
 
@@ -49,17 +50,46 @@ describe('AuthService.logout', () => {
 
     await service.logout({ ...baseUser, jti: 'jti-1', exp: NOW - 5 });
 
-    expect(redis.del).toHaveBeenCalledWith('refresh:user-1');
+    expect(redis.del).toHaveBeenCalledWith('refresh:user-1:sess-1');
     expect(redis.set).not.toHaveBeenCalled();
   });
 
-  it('still clears the refresh token when the token carries no jti', async () => {
+  it('still clears the session refresh token when the token carries no jti', async () => {
     const { redis, service } = setup();
 
     await service.logout(baseUser);
 
-    expect(redis.del).toHaveBeenCalledWith('refresh:user-1');
+    expect(redis.del).toHaveBeenCalledWith('refresh:user-1:sess-1');
     expect(redis.set).not.toHaveBeenCalled();
+  });
+
+  it('does not delete any session for a legacy token without a sid', async () => {
+    const { redis, service } = setup();
+
+    await service.logout({ ...baseUser, sid: undefined });
+
+    expect(redis.del).not.toHaveBeenCalled();
+  });
+});
+
+describe('AuthService.refresh', () => {
+  it('rejects a refresh token that carries no session id', async () => {
+    const { redis, service } = setup();
+
+    await expect(service.refresh('user-1', undefined, 'token')).rejects.toThrow(
+      'Session expired',
+    );
+    expect(redis.get).not.toHaveBeenCalled();
+  });
+
+  it('reads the refresh token for the specific session', async () => {
+    const { redis, service } = setup();
+    redis.get.mockResolvedValue(null);
+
+    await expect(service.refresh('user-1', 'sess-1', 'token')).rejects.toThrow(
+      'Session expired',
+    );
+    expect(redis.get).toHaveBeenCalledWith('refresh:user-1:sess-1');
   });
 });
 
