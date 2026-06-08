@@ -26,13 +26,14 @@ import {
   CreateMovementDto,
   StockMovement,
 } from '../../core/models/stock.models';
+import {
+  MovementFormModalComponent,
+  MovementModalConfig,
+  MovementSubmitData,
+} from '../../core/movement-modal/movement-form-modal.component';
 import { ExpeditionsListState } from './expeditions-list-state';
 import { ExpeditionFiltersComponent } from './expedition-filters/expedition-filters.component';
 import { ExpeditionListComponent } from './expedition-list/expedition-list.component';
-import {
-  CreateExpeditionModalComponent,
-  ExpeditionSubmitData,
-} from './create-expedition-modal/create-expedition-modal.component';
 
 @Component({
   selector: 'app-expeditions',
@@ -47,7 +48,7 @@ import {
     IonIcon,
     ExpeditionFiltersComponent,
     ExpeditionListComponent,
-    CreateExpeditionModalComponent,
+    MovementFormModalComponent,
   ],
   templateUrl: './expeditions.component.html',
   styleUrl: './expeditions.component.scss',
@@ -63,6 +64,22 @@ export class ExpeditionsComponent implements OnInit {
   readonly showModal = signal(false);
   readonly submitSucceeded = signal(false);
   readonly list = new ExpeditionsListState(this.stockService, this.destroyRef);
+
+  readonly modalConfig: MovementModalConfig = {
+    modalClass: 'modal--expedition',
+    icon: 'send-outline',
+    idPrefix: 'expedition',
+    title: 'Nueva Expedición',
+    warehouseSectionLabel: 'Almacén de origen',
+    locationLabel: 'Ubicación de recogida *',
+    locationRequiredAlert: 'Selecciona una ubicación de origen',
+    linesLabel: 'Productos a expedir',
+    notesPlaceholder: 'Pedido, referencia...',
+    submitLabel: 'Registrar expedición',
+    successTitle: 'Expedición registrada',
+    csvFilename: 'expedicion',
+    csvLocationHeader: 'Ubicación origen',
+  };
 
   readonly canCreate = computed(() => {
     const role = this.auth.currentUser()?.role;
@@ -126,7 +143,7 @@ export class ExpeditionsComponent implements OnInit {
     this.submitSucceeded.set(false);
   }
 
-  onSubmit(data: ExpeditionSubmitData) {
+  onSubmit(data: MovementSubmitData) {
     this.saving.set(true);
     this.formError.set('');
 
@@ -136,7 +153,7 @@ export class ExpeditionsComponent implements OnInit {
         warehouseId: data.warehouseId,
         type: 'OUTBOUND',
         quantity: line.quantity,
-        fromLocationId: data.fromLocationId,
+        fromLocationId: data.locationId,
         notes: line.notes || undefined,
       };
       return this.stockService.create(dto);

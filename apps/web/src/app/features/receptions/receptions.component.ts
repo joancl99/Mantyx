@@ -26,13 +26,14 @@ import {
   CreateMovementDto,
   StockMovement,
 } from '../../core/models/stock.models';
+import {
+  MovementFormModalComponent,
+  MovementModalConfig,
+  MovementSubmitData,
+} from '../../core/movement-modal/movement-form-modal.component';
 import { ReceptionsListState } from './receptions-list-state';
 import { ReceptionFiltersComponent } from './reception-filters/reception-filters.component';
 import { ReceptionListComponent } from './reception-list/reception-list.component';
-import {
-  CreateReceptionModalComponent,
-  ReceptionSubmitData,
-} from './create-reception-modal/create-reception-modal.component';
 
 @Component({
   selector: 'app-receptions',
@@ -47,7 +48,7 @@ import {
     IonIcon,
     ReceptionFiltersComponent,
     ReceptionListComponent,
-    CreateReceptionModalComponent,
+    MovementFormModalComponent,
   ],
   templateUrl: './receptions.component.html',
   styleUrl: './receptions.component.scss',
@@ -63,6 +64,22 @@ export class ReceptionsComponent implements OnInit {
   readonly showModal = signal(false);
   readonly submitSucceeded = signal(false);
   readonly list = new ReceptionsListState(this.stockService, this.destroyRef);
+
+  readonly modalConfig: MovementModalConfig = {
+    modalClass: 'modal--reception',
+    icon: 'archive-outline',
+    idPrefix: 'reception',
+    title: 'Nueva Recepción',
+    warehouseSectionLabel: 'Almacén de destino',
+    locationLabel: 'Ubicación *',
+    locationRequiredAlert: 'Selecciona una ubicación de destino',
+    linesLabel: 'Líneas de recepción',
+    notesPlaceholder: 'Albarán, referencia...',
+    submitLabel: 'Registrar recepción',
+    successTitle: 'Recepción registrada',
+    csvFilename: 'recepcion',
+    csvLocationHeader: 'Ubicación destino',
+  };
 
   readonly canCreate = computed(() => {
     const role = this.auth.currentUser()?.role;
@@ -126,7 +143,7 @@ export class ReceptionsComponent implements OnInit {
     this.submitSucceeded.set(false);
   }
 
-  onSubmit(data: ReceptionSubmitData) {
+  onSubmit(data: MovementSubmitData) {
     this.saving.set(true);
     this.formError.set('');
 
@@ -136,7 +153,7 @@ export class ReceptionsComponent implements OnInit {
         warehouseId: data.warehouseId,
         type: 'INBOUND',
         quantity: line.quantity,
-        toLocationId: data.toLocationId,
+        toLocationId: data.locationId,
         notes: line.notes || undefined,
       };
       return this.stockService.create(dto);

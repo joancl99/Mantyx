@@ -47,7 +47,8 @@
 </ion-content>
 
 @if (showModal()) {
-  <app-create-reception-modal
+  <app-movement-form-modal
+    [config]="modalConfig"
     [saving]="saving()"
     [formError]="formError()"
     [submitSucceeded]="submitSucceeded()"

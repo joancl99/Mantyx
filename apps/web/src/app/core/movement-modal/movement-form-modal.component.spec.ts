@@ -1,13 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
-import type { Product } from '../../../core/models/product.models';
-import type { Warehouse } from '../../../core/models/warehouse.models';
-import { CsvExportService } from '../../../core/services/csv-export.service';
-import { ProductsService } from '../../../core/services/products.service';
-import { ScannerService } from '../../../core/services/scanner.service';
-import { WarehousesService } from '../../../core/services/warehouses.service';
-import { CreateExpeditionModalComponent } from './create-expedition-modal.component';
+import type { Product } from '../models/product.models';
+import type { Warehouse } from '../models/warehouse.models';
+import { CsvExportService } from '../services/csv-export.service';
+import { ProductsService } from '../services/products.service';
+import { ScannerService } from '../services/scanner.service';
+import { WarehousesService } from '../services/warehouses.service';
+import {
+  MovementFormModalComponent,
+  MovementModalConfig,
+} from './movement-form-modal.component';
 
 const product: Product = {
   id: 'product-1',
@@ -33,9 +36,25 @@ const warehouse: Warehouse = {
   _count: { zones: 1 },
 };
 
-describe('CreateExpeditionModalComponent', () => {
-  let fixture: ComponentFixture<CreateExpeditionModalComponent>;
-  let component: CreateExpeditionModalComponent;
+const receptionConfig: MovementModalConfig = {
+  modalClass: 'modal--reception',
+  icon: 'archive-outline',
+  idPrefix: 'reception',
+  title: 'Nueva Recepción',
+  warehouseSectionLabel: 'Almacén de destino',
+  locationLabel: 'Ubicación *',
+  locationRequiredAlert: 'Selecciona una ubicación de destino',
+  linesLabel: 'Líneas de recepción',
+  notesPlaceholder: 'Albarán, referencia...',
+  submitLabel: 'Registrar recepción',
+  successTitle: 'Recepción registrada',
+  csvFilename: 'recepcion',
+  csvLocationHeader: 'Ubicación destino',
+};
+
+describe('MovementFormModalComponent', () => {
+  let fixture: ComponentFixture<MovementFormModalComponent>;
+  let component: MovementFormModalComponent;
   let productsService: { getAll: ReturnType<typeof vi.fn> };
   let warehousesService: { getAll: ReturnType<typeof vi.fn> };
 
@@ -50,7 +69,7 @@ describe('CreateExpeditionModalComponent', () => {
     };
 
     TestBed.configureTestingModule({
-      imports: [CreateExpeditionModalComponent],
+      imports: [MovementFormModalComponent],
       providers: [
         { provide: ProductsService, useValue: productsService },
         { provide: WarehousesService, useValue: warehousesService },
@@ -59,7 +78,8 @@ describe('CreateExpeditionModalComponent', () => {
       ],
     });
 
-    fixture = TestBed.createComponent(CreateExpeditionModalComponent);
+    fixture = TestBed.createComponent(MovementFormModalComponent);
+    fixture.componentRef.setInput('config', receptionConfig);
     fixture.componentRef.setInput('saving', false);
     fixture.componentRef.setInput('formError', '');
     component = fixture.componentInstance;
@@ -74,7 +94,7 @@ describe('CreateExpeditionModalComponent', () => {
     expect(component.warehouses()).toEqual([warehouse]);
   });
 
-  it('does not submit without a source location', () => {
+  it('does not submit without a location', () => {
     const emit = vi.spyOn(component.submitForm, 'emit');
     component.selectedWarehouseId = 'warehouse-1';
     component.lines = [{ productId: 'product-1', quantity: 2, notes: '' }];
@@ -85,18 +105,20 @@ describe('CreateExpeditionModalComponent', () => {
     expect(emit).not.toHaveBeenCalled();
   });
 
-  it('emits expedition data when the form is valid', () => {
+  it('emits a generic movement payload when the form is valid', () => {
     const emit = vi.spyOn(component.submitForm, 'emit');
     component.selectedWarehouseId = 'warehouse-1';
     component.selectedLocationId = 'location-1';
-    component.lines = [{ productId: 'product-1', quantity: 2, notes: 'Order' }];
+    component.lines = [
+      { productId: 'product-1', quantity: 2, notes: 'Restock' },
+    ];
 
     component.submit();
 
     expect(emit).toHaveBeenCalledWith({
       warehouseId: 'warehouse-1',
-      fromLocationId: 'location-1',
-      lines: [{ productId: 'product-1', quantity: 2, notes: 'Order' }],
+      locationId: 'location-1',
+      lines: [{ productId: 'product-1', quantity: 2, notes: 'Restock' }],
     });
   });
 });

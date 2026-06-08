@@ -5,7 +5,8 @@
   (keydown.escape)="closeModal.emit()"
 >
   <div
-    class="modal modal--reception"
+    class="modal"
+    [ngClass]="config().modalClass"
     role="presentation"
     (click)="$event.stopPropagation()"
   >
@@ -14,7 +15,7 @@
         <div class="success-icon">
           <ion-icon name="checkmark-circle-outline" />
         </div>
-        <h2 class="success-title">Recepción registrada</h2>
+        <h2 class="success-title">{{ config().successTitle }}</h2>
         <p class="success-sub">
           {{ lastSubmittedData?.lines?.length }} línea{{
             lastSubmittedData?.lines?.length === 1 ? '' : 's'
@@ -33,9 +34,9 @@
       <div class="modal-header">
         <div class="modal-header-left">
           <div class="modal-icon">
-            <ion-icon name="archive-outline" />
+            <ion-icon [name]="config().icon" />
           </div>
-          <h2 class="modal-title">Nueva Recepción</h2>
+          <h2 class="modal-title">{{ config().title }}</h2>
         </div>
         <button class="modal-close" (click)="closeModal.emit()">
           <ion-icon name="close-outline" />
@@ -43,19 +44,21 @@
       </div>
 
       <div class="modal-body">
-        <!-- Destination section -->
+        <!-- Warehouse + location section -->
         <div class="section">
-          <p class="section-label">Almacén de destino</p>
+          <p class="section-label">{{ config().warehouseSectionLabel }}</p>
 
           <div
             class="form-field"
             [class.has-error]="submitted && !selectedWarehouseId"
           >
-            <label class="form-label" for="reception-warehouse"
+            <label
+              class="form-label"
+              [attr.for]="config().idPrefix + '-warehouse'"
               >Almacén *</label
             >
             <select
-              id="reception-warehouse"
+              [id]="config().idPrefix + '-warehouse'"
               class="form-input"
               [(ngModel)]="selectedWarehouseId"
               (ngModelChange)="onWarehouseChange($event)"
@@ -73,9 +76,13 @@
           @if (zones().length > 0) {
             <div class="location-cascade">
               <div class="form-field">
-                <label class="form-label" for="reception-zone">Zona</label>
+                <label
+                  class="form-label"
+                  [attr.for]="config().idPrefix + '-zone'"
+                  >Zona</label
+                >
                 <select
-                  id="reception-zone"
+                  [id]="config().idPrefix + '-zone'"
                   class="form-input"
                   [(ngModel)]="selectedZoneId"
                   (ngModelChange)="onZoneChange($event)"
@@ -89,11 +96,13 @@
 
               @if (aisles().length > 0) {
                 <div class="form-field">
-                  <label class="form-label" for="reception-aisle"
+                  <label
+                    class="form-label"
+                    [attr.for]="config().idPrefix + '-aisle'"
                     >Pasillo</label
                   >
                   <select
-                    id="reception-aisle"
+                    [id]="config().idPrefix + '-aisle'"
                     class="form-input"
                     [(ngModel)]="selectedAisleId"
                     (ngModelChange)="onAisleChange($event)"
@@ -111,11 +120,13 @@
                   class="form-field"
                   [class.has-error]="submitted && !selectedLocationId"
                 >
-                  <label class="form-label" for="reception-location"
-                    >Ubicación *</label
+                  <label
+                    class="form-label"
+                    [attr.for]="config().idPrefix + '-location'"
+                    >{{ config().locationLabel }}</label
                   >
                   <select
-                    id="reception-location"
+                    [id]="config().idPrefix + '-location'"
                     class="form-input"
                     [(ngModel)]="selectedLocationId"
                   >
@@ -136,7 +147,7 @@
         <!-- Lines section -->
         <div class="section">
           <div class="section-header">
-            <p class="section-label">Líneas de recepción</p>
+            <p class="section-label">{{ config().linesLabel }}</p>
             <button type="button" class="btn-add-line" (click)="addLine()">
               <ion-icon name="add-outline" />
               Añadir línea
@@ -156,12 +167,14 @@
                     class="form-field"
                     [class.has-error]="submitted && !line.productId"
                   >
-                    <label class="form-label" [for]="'reception-product-' + i"
+                    <label
+                      class="form-label"
+                      [attr.for]="config().idPrefix + '-product-' + i"
                       >Producto *</label
                     >
                     <div class="input-with-scan">
                       <select
-                        [id]="'reception-product-' + i"
+                        [id]="config().idPrefix + '-product-' + i"
                         class="form-input"
                         [(ngModel)]="line.productId"
                       >
@@ -190,11 +203,13 @@
                     class="form-field"
                     [class.has-error]="submitted && line.quantity < 1"
                   >
-                    <label class="form-label" [for]="'reception-quantity-' + i"
+                    <label
+                      class="form-label"
+                      [attr.for]="config().idPrefix + '-quantity-' + i"
                       >Cantidad *</label
                     >
                     <input
-                      [id]="'reception-quantity-' + i"
+                      [id]="config().idPrefix + '-quantity-' + i"
                       class="form-input"
                       type="number"
                       min="1"
@@ -207,15 +222,17 @@
                   </div>
 
                   <div class="form-field">
-                    <label class="form-label" [for]="'reception-notes-' + i"
+                    <label
+                      class="form-label"
+                      [attr.for]="config().idPrefix + '-notes-' + i"
                       >Notas</label
                     >
                     <input
-                      [id]="'reception-notes-' + i"
+                      [id]="config().idPrefix + '-notes-' + i"
                       class="form-input"
                       type="text"
                       [(ngModel)]="line.notes"
-                      placeholder="Albarán, referencia..."
+                      [placeholder]="config().notesPlaceholder"
                     />
                   </div>
                 </div>
@@ -243,7 +260,7 @@
         } @else if (submitted && selectedWarehouseId && !selectedLocationId) {
           <div class="form-alert">
             <ion-icon name="alert-circle-outline" />
-            Selecciona una ubicación de destino
+            {{ config().locationRequiredAlert }}
           </div>
         }
       </div>
@@ -261,7 +278,7 @@
           @if (saving()) {
             <ion-spinner name="crescent" />
           } @else {
-            Registrar recepción
+            {{ config().submitLabel }}
           }
         </button>
       </div>

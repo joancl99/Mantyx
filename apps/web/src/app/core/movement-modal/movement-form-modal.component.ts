@@ -9,6 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import {
@@ -19,55 +20,78 @@ import {
   checkmarkCircleOutline,
   closeOutline,
   downloadOutline,
+  sendOutline,
   trashOutline,
 } from 'ionicons/icons';
-import { Product } from '../../../core/models/product.models';
-import {
-  Aisle,
-  Location,
-  Warehouse,
-  Zone,
-} from '../../../core/models/warehouse.models';
-import { CsvExportService } from '../../../core/services/csv-export.service';
-import { ProductsService } from '../../../core/services/products.service';
-import { ScannerService } from '../../../core/services/scanner.service';
-import { WarehousesService } from '../../../core/services/warehouses.service';
+import { Product } from '../models/product.models';
+import { Aisle, Location, Warehouse, Zone } from '../models/warehouse.models';
+import { CsvExportService } from '../services/csv-export.service';
+import { ProductsService } from '../services/products.service';
+import { ScannerService } from '../services/scanner.service';
+import { WarehousesService } from '../services/warehouses.service';
 
-export interface ReceptionLine {
+export interface MovementLine {
   productId: string;
   quantity: number;
   notes: string;
 }
 
-export interface ReceptionSubmitData {
+export interface MovementSubmitData {
   warehouseId: string;
-  toLocationId: string | undefined;
-  lines: ReceptionLine[];
+  /** Source (OUTBOUND) or destination (INBOUND) location — the parent maps it. */
+  locationId: string | undefined;
+  lines: MovementLine[];
+}
+
+/**
+ * Per-direction presentation for {@link MovementFormModalComponent}. Receptions
+ * (INBOUND) and expeditions (OUTBOUND) share the whole form; only labels, the
+ * theme modifier class, the header icon and the CSV wording differ.
+ */
+export interface MovementModalConfig {
+  /** Modifier class on `.modal` carrying the green (reception) / red (expedition) theme. */
+  modalClass: 'modal--reception' | 'modal--expedition';
+  /** Header ion-icon name, e.g. `archive-outline` / `send-outline`. */
+  icon: string;
+  /** Prefix for the form control ids, e.g. `reception` / `expedition`. */
+  idPrefix: string;
+  title: string;
+  warehouseSectionLabel: string;
+  locationLabel: string;
+  locationRequiredAlert: string;
+  linesLabel: string;
+  notesPlaceholder: string;
+  submitLabel: string;
+  successTitle: string;
+  /** CSV export base filename and the source/destination column header. */
+  csvFilename: string;
+  csvLocationHeader: string;
 }
 
 @Component({
-  selector: 'app-create-reception-modal',
+  selector: 'app-movement-form-modal',
   standalone: true,
-  imports: [FormsModule],
-  templateUrl: './create-reception-modal.component.html',
-  styleUrl: './create-reception-modal.component.scss',
+  imports: [FormsModule, NgClass],
+  templateUrl: './movement-form-modal.component.html',
+  styleUrl: './movement-form-modal.component.scss',
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class CreateReceptionModalComponent implements OnInit {
+export class MovementFormModalComponent implements OnInit {
   private readonly warehousesService = inject(WarehousesService);
   private readonly productsService = inject(ProductsService);
   private readonly scannerService = inject(ScannerService);
   private readonly csvExport = inject(CsvExportService);
   private readonly destroyRef = inject(DestroyRef);
 
+  readonly config = input.required<MovementModalConfig>();
   readonly saving = input.required<boolean>();
   readonly formError = input.required<string>();
   readonly submitSucceeded = input<boolean>(false);
 
   readonly closeModal = output<void>();
-  readonly submitForm = output<ReceptionSubmitData>();
+  readonly submitForm = output<MovementSubmitData>();
 
-  lastSubmittedData: ReceptionSubmitData | null = null;
+  lastSubmittedData: MovementSubmitData | null = null;
 
   // ── Async data ──────────────────────────────────────────────────────────────
   readonly products = signal<Product[]>([]);
@@ -83,7 +107,7 @@ export class CreateReceptionModalComponent implements OnInit {
   selectedLocationId = '';
 
   // ── Lines (plain array for ngModel two-way binding) ─────────────────────────
-  lines: ReceptionLine[] = [{ productId: '', quantity: 1, notes: '' }];
+  lines: MovementLine[] = [{ productId: '', quantity: 1, notes: '' }];
   submitted = false;
 
   constructor() {
@@ -95,6 +119,7 @@ export class CreateReceptionModalComponent implements OnInit {
       checkmarkCircleOutline,
       closeOutline,
       downloadOutline,
+      sendOutline,
       trashOutline,
     });
   }
@@ -155,7 +180,7 @@ export class CreateReceptionModalComponent implements OnInit {
     this.lines = this.lines.filter((_, i) => i !== index);
   }
 
-  isLineValid(line: ReceptionLine): boolean {
+  isLineValid(line: MovementLine): boolean {
     return !!line.productId && line.quantity >= 1;
   }
 
@@ -168,7 +193,7 @@ export class CreateReceptionModalComponent implements OnInit {
     );
   }
 
-  scanLine(line: ReceptionLine) {
+  scanLine(line: MovementLine) {
     this.scannerService
       .scan()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -186,9 +211,9 @@ export class CreateReceptionModalComponent implements OnInit {
   submit() {
     this.submitted = true;
     if (!this.isFormValid()) return;
-    const data: ReceptionSubmitData = {
+    const data: MovementSubmitData = {
       warehouseId: this.selectedWarehouseId,
-      toLocationId: this.selectedLocationId || undefined,
+      locationId: this.selectedLocationId || undefined,
       lines: this.lines,
     };
     this.lastSubmittedData = data;
@@ -196,23 +221,20 @@ export class CreateReceptionModalComponent implements OnInit {
   }
 
   exportCsv() {
-    if (!this.lastSubmittedData) return;
-    const warehouse = this.warehouses().find(
-      (w) => w.id === this.lastSubmittedData!.warehouseId,
-    );
-    const location = this.locations().find(
-      (l) => l.id === this.lastSubmittedData!.toLocationId,
-    );
+    const data = this.lastSubmittedData;
+    if (!data) return;
+    const warehouse = this.warehouses().find((w) => w.id === data.warehouseId);
+    const location = this.locations().find((l) => l.id === data.locationId);
     const headers = [
       'Producto',
       'SKU',
       'Barcode',
       'Cantidad',
       'Almacén',
-      'Ubicación destino',
+      this.config().csvLocationHeader,
       'Notas',
     ];
-    const rows = this.lastSubmittedData.lines.map((line) => {
+    const rows = data.lines.map((line) => {
       const product = this.products().find((p) => p.id === line.productId);
       return [
         product?.name ?? '',
@@ -224,6 +246,6 @@ export class CreateReceptionModalComponent implements OnInit {
         line.notes ?? '',
       ];
     });
-    this.csvExport.export('recepcion', headers, rows);
+    this.csvExport.export(this.config().csvFilename, headers, rows);
   }
 }
