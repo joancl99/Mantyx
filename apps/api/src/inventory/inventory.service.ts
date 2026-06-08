@@ -71,7 +71,11 @@ export class InventoryService {
     return { data: items, total, page, limit };
   }
 
-  async create(companyId: string, userId: string, dto: CreateInventoryCountDto) {
+  async create(
+    companyId: string,
+    userId: string,
+    dto: CreateInventoryCountDto,
+  ) {
     await this.findWarehouse(dto.warehouseId, companyId);
 
     return this.prisma.inventoryCount.create({
@@ -96,7 +100,9 @@ export class InventoryService {
   async start(id: string, companyId: string) {
     const count = await this.findCount(id, companyId);
     if (count.status !== InventoryCountStatus.DRAFT) {
-      throw new BadRequestException('Only draft inventory counts can be started');
+      throw new BadRequestException(
+        'Only draft inventory counts can be started',
+      );
     }
 
     return this.prisma.inventoryCount.update({
@@ -109,25 +115,34 @@ export class InventoryService {
   async complete(id: string, companyId: string) {
     const count = await this.findCount(id, companyId);
     if (count.status !== InventoryCountStatus.IN_PROGRESS) {
-      throw new BadRequestException('Only in-progress inventory counts can be completed');
+      throw new BadRequestException(
+        'Only in-progress inventory counts can be completed',
+      );
     }
 
     const lines = await this.prisma.inventoryCountLine.findMany({
       where: { inventoryCountId: id },
     });
     if (lines.length === 0) {
-      throw new BadRequestException('Inventory count must have at least one line');
+      throw new BadRequestException(
+        'Inventory count must have at least one line',
+      );
     }
-    if (lines.some((line) => line.countedQty === null)) {
-      throw new BadRequestException('All lines must have counted quantities');
-    }
+    // Narrow `countedQty` to a number here so the difference math below needs no
+    // non-null assertion: any uncounted line aborts before the transaction.
+    const differences = lines.map((line) => {
+      if (line.countedQty === null) {
+        throw new BadRequestException('All lines must have counted quantities');
+      }
+      return { id: line.id, difference: line.countedQty - line.expectedQty };
+    });
 
     return this.prisma.$transaction(async (tx) => {
       await Promise.all(
-        lines.map((line) =>
+        differences.map((line) =>
           tx.inventoryCountLine.update({
             where: { id: line.id },
-            data: { difference: line.countedQty! - line.expectedQty },
+            data: { difference: line.difference },
           }),
         ),
       );
@@ -145,7 +160,10 @@ export class InventoryService {
 
       return tx.inventoryCount.update({
         where: { id },
-        data: { status: InventoryCountStatus.COMPLETED, completedAt: new Date() },
+        data: {
+          status: InventoryCountStatus.COMPLETED,
+          completedAt: new Date(),
+        },
         include: inventoryDetailInclude,
       });
     });
@@ -162,7 +180,9 @@ export class InventoryService {
       throw new ConflictException('Location is already included in this count');
     }
 
-    const expectedQty = dto.expectedQty ?? (await this.getLocationExpectedQty(dto.locationId, companyId));
+    const expectedQty =
+      dto.expectedQty ??
+      (await this.getLocationExpectedQty(dto.locationId, companyId));
 
     try {
       return await this.prisma.inventoryCountLine.create({
@@ -171,7 +191,9 @@ export class InventoryService {
       });
     } catch (error) {
       if (this.isUniqueConstraintError(error)) {
-        throw new ConflictException('Location is already included in this count');
+        throw new ConflictException(
+          'Location is already included in this count',
+        );
       }
       throw error;
     }
@@ -196,7 +218,9 @@ export class InventoryService {
   async removeLine(id: string, lineId: string, companyId: string) {
     const count = await this.findCount(id, companyId);
     if (count.status !== InventoryCountStatus.DRAFT) {
-      throw new BadRequestException('Only draft inventory count lines can be removed');
+      throw new BadRequestException(
+        'Only draft inventory count lines can be removed',
+      );
     }
     await this.findLine(lineId, id);
     await this.prisma.inventoryCountLine.delete({ where: { id: lineId } });
@@ -230,14 +254,19 @@ export class InventoryService {
     return warehouse;
   }
 
-  private async findLocation(locationId: string, warehouseId: string, companyId: string) {
+  private async findLocation(
+    locationId: string,
+    warehouseId: string,
+    companyId: string,
+  ) {
     const location = await this.prisma.location.findFirst({
       where: {
         id: locationId,
         aisle: { zone: { warehouse: { id: warehouseId, companyId } } },
       },
     });
-    if (!location) throw new NotFoundException(`Location ${locationId} not found`);
+    if (!location)
+      throw new NotFoundException(`Location ${locationId} not found`);
     return location;
   }
 
@@ -245,7 +274,8 @@ export class InventoryService {
     const line = await this.prisma.inventoryCountLine.findFirst({
       where: { id: lineId, inventoryCountId },
     });
-    if (!line) throw new NotFoundException(`Inventory count line ${lineId} not found`);
+    if (!line)
+      throw new NotFoundException(`Inventory count line ${lineId} not found`);
     return line;
   }
 
@@ -258,6 +288,9 @@ export class InventoryService {
   }
 
   private isUniqueConstraintError(error: unknown): boolean {
-    return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
+    return (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    );
   }
 }

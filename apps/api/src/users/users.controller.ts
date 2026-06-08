@@ -13,9 +13,8 @@ import {
   MinLength,
 } from 'class-validator';
 import { Role } from '@prisma/client';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { CompanyId } from '../auth/decorators/company-id.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { JwtPayload } from '../auth/types/jwt-payload.interface';
 import { UsersService } from './users.service';
 
 // An ADMIN provisions worker accounts only — never other ADMINs or the
@@ -70,32 +69,32 @@ export class UsersController {
   @Get()
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'List all users in the company (ADMIN only)' })
-  findAll(@CurrentUser() user: JwtPayload) {
-    return this.users.findAllByCompany(user.companyId!);
+  findAll(@CompanyId() companyId: string) {
+    return this.users.findAllByCompany(companyId);
   }
 
   @Post()
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Create a user in the company (ADMIN only)' })
-  create(@CurrentUser() user: JwtPayload, @Body() dto: CreateUserDto) {
-    return this.users.createCompanyUser(user.companyId!, dto);
+  create(@CompanyId() companyId: string, @Body() dto: CreateUserDto) {
+    return this.users.createCompanyUser(companyId, dto);
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Update a user name/email/role (ADMIN only)' })
   update(
-    @CurrentUser() user: JwtPayload,
+    @CompanyId() companyId: string,
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
   ) {
-    return this.users.updateCompanyUser(user.companyId!, id, dto);
+    return this.users.updateCompanyUser(companyId, id, dto);
   }
 
   @Patch(':id/toggle')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Toggle user active/inactive (ADMIN only)' })
-  toggle(@CurrentUser() user: JwtPayload, @Param('id') id: string) {
-    return this.users.toggleActive(user.companyId!, id);
+  toggle(@CompanyId() companyId: string, @Param('id') id: string) {
+    return this.users.toggleActive(companyId, id);
   }
 }

@@ -17,8 +17,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { CompanyId } from '../auth/decorators/company-id.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { JwtPayload } from '../auth/types/jwt-payload.interface';
 import { CreateMovementDto } from './dto/create-movement.dto';
 import { MovementQueryDto } from './dto/movement-query.dto';
 import { StockService } from './stock.service';
@@ -34,45 +34,47 @@ export class StockController {
   @ApiOperation({ summary: 'Record a stock movement' })
   @ApiResponse({ status: 201 })
   createMovement(
-    @CurrentUser() user: JwtPayload,
+    @CompanyId() companyId: string,
+    @CurrentUser('sub') userId: string,
     @Body() dto: CreateMovementDto,
   ) {
-    return this.stock.createMovement(dto, user.sub, user.companyId!);
+    return this.stock.createMovement(dto, userId, companyId);
   }
 
   @Get('movements')
   @ApiOperation({ summary: 'List stock movements with filters and pagination' })
-  findAll(@CurrentUser() user: JwtPayload, @Query() query: MovementQueryDto) {
-    return this.stock.findAll(user.companyId!, query);
+  findAll(@CompanyId() companyId: string, @Query() query: MovementQueryDto) {
+    return this.stock.findAll(companyId, query);
   }
 
   @Get('movements/:id')
   @ApiOperation({ summary: 'Get a stock movement by id' })
   findOne(
-    @CurrentUser() user: JwtPayload,
+    @CompanyId() companyId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.stock.findOne(id, user.companyId!);
+    return this.stock.findOne(id, companyId);
   }
 
   @Get('overview')
   @ApiOperation({ summary: 'Current stock levels for all products' })
   getOverview(
-    @CurrentUser() user: JwtPayload,
+    @CompanyId() companyId: string,
     @Query('search') search?: string,
-    @Query('lowStock', new ParseBoolPipe({ optional: true })) lowStock?: boolean,
+    @Query('lowStock', new ParseBoolPipe({ optional: true }))
+    lowStock?: boolean,
     @Query('page', new ParseIntPipe({ optional: true })) page?: number,
     @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
   ) {
-    return this.stock.getOverview(user.companyId!, { search, lowStock, page, limit });
+    return this.stock.getOverview(companyId, { search, lowStock, page, limit });
   }
 
   @Get('by-product/:productId')
   @ApiOperation({ summary: 'Get total stock and entries by product' })
   getStockByProduct(
-    @CurrentUser() user: JwtPayload,
+    @CompanyId() companyId: string,
     @Param('productId', ParseUUIDPipe) productId: string,
   ) {
-    return this.stock.getStockByProduct(productId, user.companyId!);
+    return this.stock.getStockByProduct(productId, companyId);
   }
 }
