@@ -70,7 +70,8 @@ Frontend areas currently present:
 - Inventory counts: list, filters, creation modal, detail, line editing, start/complete actions, completed read-only state. Scan-to-fill location: a "Escanear" button in the line form scans a location QR/barcode, resolves it via `GET /warehouses/:warehouseId/locations/search?code=`, and autofills the zone→aisle→location cascade.
 - Receptions: full INBOUND flow — warehouse + cascading location selector (zone→aisle→location), multi-line form, scan-to-fill product, `forkJoin` submit.
 - Expeditions: full OUTBOUND flow — same pattern as Receptions but OUTBOUND, with source location and backend stock guard.
-- Barcode/QR scanner: `ScannerService` with platform detection; ML Kit on native, ZXing overlay on web. Integrated in FAB, Reception modal, and Expedition modal.
+- Receptions and Expeditions share a single config-driven modal `core/movement-modal/MovementFormModalComponent` (driven by a `MovementModalConfig`: labels, theme modifier class, header icon, id prefix, CSV wording). It emits a generic `MovementSubmitData` (`{ warehouseId, locationId, lines }`); each page maps `locationId` to `toLocationId`/`fromLocationId` by direction. Green (reception) / red (expedition) theming lives under `.modal--reception`/`.modal--expedition` modifiers in the shared stylesheet.
+- Barcode/QR scanner: `ScannerService` with platform detection; ML Kit on native, ZXing overlay on web. Integrated in FAB and the shared movement modal (receptions/expeditions).
 - CSV export: `CsvExportService` (BOM + RFC-4180, timestamped filename). Export button in Stock, Movements, Receptions, Expeditions pages. Reception/Expedition modals transition to success state with "Exportar albarán CSV" button.
 - Product images: `PATCH /products/:id/image` (Multer, diskStorage, jpg/png/webp ≤5 MB). Files saved to `uploads/products/`, served as static assets under `/uploads`. Image picker with live preview in product form modal.
 - Realtime alerts: `SocketService` connects on shell init, subscribes to `low-stock` Socket.io events, shows Ionic warning toast. `LowStockAlert` model aligned with backend payload fields.
@@ -96,7 +97,7 @@ Frontend areas currently present:
 - `core/services` should remain HTTP/service focused; shared model/DTO types should live in `core/models` or feature-local `models`.
 - `ScannerService` (`core/services/scanner.service.ts`) exposes `scan(): Observable<ScanResult | null>` and `showOverlay = signal(false)`.
 - `ScannerOverlayComponent` (`core/scanner/`) renders a ZXing camera overlay on web; the shell hosts it with `@if (scannerService.showOverlay())`. The overlay backdrop is an accessible button to satisfy Angular template lint rules.
-- Reception and Expedition modals are smart (inject `WarehousesService` + `ProductsService` + `ScannerService`) and use `CUSTOM_ELEMENTS_SCHEMA` for Ionic custom elements in component tests.
+- The shared `MovementFormModalComponent` (used by Receptions and Expeditions) is smart (injects `WarehousesService` + `ProductsService` + `ScannerService` + `CsvExportService`) and uses `CUSTOM_ELEMENTS_SCHEMA` for Ionic custom elements in component tests.
 - Scan-to-fill matches scanned `rawValue` against the already-loaded `products()` signal by `barcode` or `sku` — no extra API call needed.
 - `StockLocationEntry` and `StockByProductResponse` are typed interfaces in `core/models/stock.models.ts`.
 
