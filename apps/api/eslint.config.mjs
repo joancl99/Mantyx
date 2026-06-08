@@ -29,6 +29,10 @@ export default [
             'rxjs',
             'reflect-metadata',
             'multer',
+            // Test-only deep-mock helper, imported solely from *.spec.ts. Lives
+            // in the workspace root devDependencies and must NOT ship in the
+            // pruned production install, so it stays out of apps/api/package.json.
+            'jest-mock-extended',
           ],
         },
       ],

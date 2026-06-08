@@ -1,19 +1,20 @@
 import { UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
+import { mockDeep } from 'jest-mock-extended';
+import { RedisService } from '../redis/redis.service';
+import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
 import { denylistKey } from './token-denylist';
 import { JwtPayload } from './types/jwt-payload.interface';
 
 function setup() {
-  const redis = {
-    set: jest.fn(),
-    del: jest.fn(),
-    get: jest.fn(),
-    increment: jest.fn(),
-  } as any;
-  const users = { findByEmail: jest.fn() } as any;
-  const jwt = {} as any;
-  const config = { getOrThrow: jest.fn().mockReturnValue('secret') } as any;
+  const redis = mockDeep<RedisService>();
+  const users = mockDeep<UsersService>();
+  const jwt = mockDeep<JwtService>();
+  const config = mockDeep<ConfigService>();
+  config.getOrThrow.mockReturnValue('secret');
   const service = new AuthService(users, jwt, redis, config);
   return { redis, users, service };
 }

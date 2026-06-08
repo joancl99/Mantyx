@@ -1,15 +1,19 @@
 import { UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Role } from '@prisma/client';
-import { JwtStrategy } from './jwt.strategy';
+import { mockDeep } from 'jest-mock-extended';
+import { RedisService } from '../../redis/redis.service';
+import { UsersService } from '../../users/users.service';
+import { row } from '../../testing/prisma-mock';
 import { denylistKey } from '../token-denylist';
 import { JwtPayload } from '../types/jwt-payload.interface';
+import { JwtStrategy } from './jwt.strategy';
 
 function setup() {
-  const redis = { get: jest.fn() } as any;
-  const users = { findById: jest.fn() } as any;
-  const config = {
-    getOrThrow: jest.fn().mockReturnValue('access-secret'),
-  } as any;
+  const redis = mockDeep<RedisService>();
+  const users = mockDeep<UsersService>();
+  const config = mockDeep<ConfigService>();
+  config.getOrThrow.mockReturnValue('access-secret');
   const strategy = new JwtStrategy(config, redis, users);
   return { redis, users, strategy };
 }
@@ -51,7 +55,7 @@ describe('JwtStrategy', () => {
   it('rejects a token whose user has been deactivated', async () => {
     const { redis, users, strategy } = setup();
     redis.get.mockResolvedValue(null);
-    users.findById.mockResolvedValue({ id: 'user-1', isActive: false });
+    users.findById.mockResolvedValue(row({ id: 'user-1', isActive: false }));
 
     await expect(strategy.validate(payload)).rejects.toBeInstanceOf(
       UnauthorizedException,
@@ -61,14 +65,16 @@ describe('JwtStrategy', () => {
   it('returns the live user role/company, not the stale token claims', async () => {
     const { redis, users, strategy } = setup();
     redis.get.mockResolvedValue(null);
-    users.findById.mockResolvedValue({
-      id: 'user-1',
-      email: 'new@example.com',
-      name: 'New Name',
-      role: Role.ADMIN,
-      companyId: 'company-2',
-      isActive: true,
-    });
+    users.findById.mockResolvedValue(
+      row({
+        id: 'user-1',
+        email: 'new@example.com',
+        name: 'New Name',
+        role: Role.ADMIN,
+        companyId: 'company-2',
+        isActive: true,
+      }),
+    );
 
     await expect(strategy.validate(payload)).resolves.toEqual({
       sub: 'user-1',

@@ -4,29 +4,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { createPrismaMock, PrismaMock, row } from '../testing/prisma-mock';
 import { ProductsService } from './products.service';
 
-function createPrismaMock(): any {
-  return {
-    product: {
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-      count: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-    },
-    category: { findFirst: jest.fn() },
-    brand: { findFirst: jest.fn() },
-  };
-}
-
 describe('ProductsService', () => {
-  let prisma: ReturnType<typeof createPrismaMock>;
+  let prisma: PrismaMock;
   let service: ProductsService;
 
   beforeEach(() => {
     prisma = createPrismaMock();
-    service = new ProductsService(prisma as never);
+    service = new ProductsService(prisma);
   });
 
   it('scopes product detail by company and active state', async () => {
@@ -91,7 +78,7 @@ describe('ProductsService', () => {
   });
 
   it('rejects updating a product with a brand outside the company', async () => {
-    prisma.product.findFirst.mockResolvedValue({ id: 'product-1' });
+    prisma.product.findFirst.mockResolvedValue(row({ id: 'product-1' }));
     prisma.brand.findFirst.mockResolvedValue(null);
 
     await expect(
@@ -106,7 +93,7 @@ describe('ProductsService', () => {
   });
 
   it('maps duplicate SKU creation to conflict', async () => {
-    prisma.category.findFirst.mockResolvedValue({ id: 'category-1' });
+    prisma.category.findFirst.mockResolvedValue(row({ id: 'category-1' }));
     prisma.product.create.mockRejectedValue(
       new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
         code: 'P2002',
@@ -125,11 +112,10 @@ describe('ProductsService', () => {
   });
 
   it('soft deletes only after finding an active company product', async () => {
-    prisma.product.findFirst.mockResolvedValue({ id: 'product-1' });
-    prisma.product.update.mockResolvedValue({
-      id: 'product-1',
-      isActive: false,
-    });
+    prisma.product.findFirst.mockResolvedValue(row({ id: 'product-1' }));
+    prisma.product.update.mockResolvedValue(
+      row({ id: 'product-1', isActive: false }),
+    );
 
     await expect(
       service.remove('product-1', 'company-1'),

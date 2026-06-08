@@ -1,47 +1,18 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AuditAction, MovementType } from '@prisma/client';
+import { createPrismaMock, PrismaMock, row } from '../testing/prisma-mock';
 import { StockService } from './stock.service';
 
-function createPrismaMock(): any {
-  const prisma: any = {
-    product: {
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-    },
-    warehouse: { findFirst: jest.fn() },
-    location: { findFirst: jest.fn() },
-    stockEntry: {
-      aggregate: jest.fn(),
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-      update: jest.fn(),
-      upsert: jest.fn(),
-    },
-    stockMovement: {
-      create: jest.fn(),
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-      count: jest.fn(),
-    },
-    auditLog: { create: jest.fn() },
-    $transaction: jest.fn(async (callback: (tx: any) => unknown) =>
-      callback(prisma),
-    ),
-  };
-
-  return prisma;
-}
-
 describe('StockService', () => {
-  let prisma: ReturnType<typeof createPrismaMock>;
+  let prisma: PrismaMock;
   let alerts: { emitLowStock: jest.Mock };
   let service: StockService;
 
   beforeEach(() => {
     prisma = createPrismaMock();
     alerts = { emitLowStock: jest.fn() };
-    service = new StockService(prisma as never, alerts as never);
-    prisma.location.findFirst.mockResolvedValue({ id: 'location-1' });
+    service = new StockService(prisma, alerts as never);
+    prisma.location.findFirst.mockResolvedValue(row({ id: 'location-1' }));
   });
 
   it('scopes movement detail by company through warehouse ownership', async () => {
@@ -58,18 +29,16 @@ describe('StockService', () => {
   });
 
   it('rejects outbound movement when source location has insufficient stock', async () => {
-    prisma.product.findFirst.mockResolvedValue({
-      id: 'product-1',
-      name: 'Widget',
-      sku: 'W-1',
-      minStock: 2,
-    });
-    prisma.warehouse.findFirst.mockResolvedValue({ id: 'warehouse-1' });
-    prisma.stockEntry.aggregate.mockResolvedValue({ _sum: { quantity: 10 } });
-    prisma.stockEntry.findFirst.mockResolvedValue({
-      id: 'entry-1',
-      quantity: 3,
-    });
+    prisma.product.findFirst.mockResolvedValue(
+      row({ id: 'product-1', name: 'Widget', sku: 'W-1', minStock: 2 }),
+    );
+    prisma.warehouse.findFirst.mockResolvedValue(row({ id: 'warehouse-1' }));
+    prisma.stockEntry.aggregate.mockResolvedValue(
+      row({ _sum: { quantity: 10 } }),
+    );
+    prisma.stockEntry.findFirst.mockResolvedValue(
+      row({ id: 'entry-1', quantity: 3 }),
+    );
 
     await expect(
       service.createMovement(
@@ -90,14 +59,13 @@ describe('StockService', () => {
   });
 
   it('rejects inbound movement without a destination location', async () => {
-    prisma.product.findFirst.mockResolvedValue({
-      id: 'product-1',
-      name: 'Widget',
-      sku: 'W-1',
-      minStock: 2,
-    });
-    prisma.warehouse.findFirst.mockResolvedValue({ id: 'warehouse-1' });
-    prisma.stockEntry.aggregate.mockResolvedValue({ _sum: { quantity: 10 } });
+    prisma.product.findFirst.mockResolvedValue(
+      row({ id: 'product-1', name: 'Widget', sku: 'W-1', minStock: 2 }),
+    );
+    prisma.warehouse.findFirst.mockResolvedValue(row({ id: 'warehouse-1' }));
+    prisma.stockEntry.aggregate.mockResolvedValue(
+      row({ _sum: { quantity: 10 } }),
+    );
 
     await expect(
       service.createMovement(
@@ -118,14 +86,13 @@ describe('StockService', () => {
   });
 
   it('rejects outbound movement without a source location', async () => {
-    prisma.product.findFirst.mockResolvedValue({
-      id: 'product-1',
-      name: 'Widget',
-      sku: 'W-1',
-      minStock: 2,
-    });
-    prisma.warehouse.findFirst.mockResolvedValue({ id: 'warehouse-1' });
-    prisma.stockEntry.aggregate.mockResolvedValue({ _sum: { quantity: 10 } });
+    prisma.product.findFirst.mockResolvedValue(
+      row({ id: 'product-1', name: 'Widget', sku: 'W-1', minStock: 2 }),
+    );
+    prisma.warehouse.findFirst.mockResolvedValue(row({ id: 'warehouse-1' }));
+    prisma.stockEntry.aggregate.mockResolvedValue(
+      row({ _sum: { quantity: 10 } }),
+    );
 
     await expect(
       service.createMovement(
@@ -146,13 +113,10 @@ describe('StockService', () => {
   });
 
   it('rejects movement when location is outside the warehouse scope', async () => {
-    prisma.product.findFirst.mockResolvedValue({
-      id: 'product-1',
-      name: 'Widget',
-      sku: 'W-1',
-      minStock: 2,
-    });
-    prisma.warehouse.findFirst.mockResolvedValue({ id: 'warehouse-1' });
+    prisma.product.findFirst.mockResolvedValue(
+      row({ id: 'product-1', name: 'Widget', sku: 'W-1', minStock: 2 }),
+    );
+    prisma.warehouse.findFirst.mockResolvedValue(row({ id: 'warehouse-1' }));
     prisma.location.findFirst.mockResolvedValue(null);
 
     await expect(
@@ -181,18 +145,16 @@ describe('StockService', () => {
   });
 
   it('rejects transfer when source location has insufficient stock', async () => {
-    prisma.product.findFirst.mockResolvedValue({
-      id: 'product-1',
-      name: 'Widget',
-      sku: 'W-1',
-      minStock: 2,
-    });
-    prisma.warehouse.findFirst.mockResolvedValue({ id: 'warehouse-1' });
-    prisma.stockEntry.aggregate.mockResolvedValue({ _sum: { quantity: 10 } });
-    prisma.stockEntry.findFirst.mockResolvedValue({
-      id: 'entry-1',
-      quantity: 1,
-    });
+    prisma.product.findFirst.mockResolvedValue(
+      row({ id: 'product-1', name: 'Widget', sku: 'W-1', minStock: 2 }),
+    );
+    prisma.warehouse.findFirst.mockResolvedValue(row({ id: 'warehouse-1' }));
+    prisma.stockEntry.aggregate.mockResolvedValue(
+      row({ _sum: { quantity: 10 } }),
+    );
+    prisma.stockEntry.findFirst.mockResolvedValue(
+      row({ id: 'entry-1', quantity: 1 }),
+    );
 
     await expect(
       service.createMovement(
@@ -215,15 +177,12 @@ describe('StockService', () => {
   });
 
   it('validates both transfer locations against the warehouse scope', async () => {
-    prisma.product.findFirst.mockResolvedValue({
-      id: 'product-1',
-      name: 'Widget',
-      sku: 'W-1',
-      minStock: 2,
-    });
-    prisma.warehouse.findFirst.mockResolvedValue({ id: 'warehouse-1' });
+    prisma.product.findFirst.mockResolvedValue(
+      row({ id: 'product-1', name: 'Widget', sku: 'W-1', minStock: 2 }),
+    );
+    prisma.warehouse.findFirst.mockResolvedValue(row({ id: 'warehouse-1' }));
     prisma.location.findFirst
-      .mockResolvedValueOnce({ id: 'location-1' })
+      .mockResolvedValueOnce(row({ id: 'location-1' }))
       .mockResolvedValueOnce(null);
 
     await expect(
@@ -268,14 +227,14 @@ describe('StockService', () => {
       minStock: 15,
     };
     const movement = { id: 'movement-1', productId: product.id };
-    prisma.product.findFirst.mockResolvedValue(product);
-    prisma.warehouse.findFirst.mockResolvedValue({ id: 'warehouse-1' });
+    prisma.product.findFirst.mockResolvedValue(row(product));
+    prisma.warehouse.findFirst.mockResolvedValue(row({ id: 'warehouse-1' }));
     prisma.stockEntry.aggregate
-      .mockResolvedValueOnce({ _sum: { quantity: 5 } })
-      .mockResolvedValueOnce({ _sum: { quantity: 8 } });
-    prisma.stockEntry.upsert.mockResolvedValue({});
-    prisma.stockMovement.create.mockResolvedValue(movement);
-    prisma.auditLog.create.mockResolvedValue({});
+      .mockResolvedValueOnce(row({ _sum: { quantity: 5 } }))
+      .mockResolvedValueOnce(row({ _sum: { quantity: 8 } }));
+    prisma.stockEntry.upsert.mockResolvedValue(row({}));
+    prisma.stockMovement.create.mockResolvedValue(row(movement));
+    prisma.auditLog.create.mockResolvedValue(row({}));
 
     await expect(
       service.createMovement(
@@ -317,22 +276,24 @@ describe('StockService', () => {
   });
 
   it('filters stock overview after calculating product totals', async () => {
-    prisma.product.findMany.mockResolvedValue([
-      {
-        id: 'product-1',
-        name: 'Low',
-        sku: 'LOW',
-        minStock: 5,
-        stockEntries: [{ quantity: 2 }, { quantity: 3 }],
-      },
-      {
-        id: 'product-2',
-        name: 'Healthy',
-        sku: 'OK',
-        minStock: 5,
-        stockEntries: [{ quantity: 6 }],
-      },
-    ]);
+    prisma.product.findMany.mockResolvedValue(
+      row([
+        {
+          id: 'product-1',
+          name: 'Low',
+          sku: 'LOW',
+          minStock: 5,
+          stockEntries: [{ quantity: 2 }, { quantity: 3 }],
+        },
+        {
+          id: 'product-2',
+          name: 'Healthy',
+          sku: 'OK',
+          minStock: 5,
+          stockEntries: [{ quantity: 6 }],
+        },
+      ]),
+    );
 
     await expect(
       service.getOverview('company-1', { lowStock: true }),

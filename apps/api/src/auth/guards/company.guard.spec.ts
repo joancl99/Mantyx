@@ -1,12 +1,12 @@
-import { ForbiddenException } from '@nestjs/common';
+import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { CompanyGuard } from './company.guard';
 
-function context(user: unknown): any {
+function context(user: unknown): ExecutionContext {
   return {
     getHandler: () => ({}),
     getClass: () => ({}),
     switchToHttp: () => ({ getRequest: () => ({ user }) }),
-  };
+  } as unknown as ExecutionContext;
 }
 
 /** reflector.getAllAndOverride is called for IS_PUBLIC then ALLOW_NO_COMPANY. */

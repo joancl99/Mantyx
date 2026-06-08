@@ -1,50 +1,19 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { createPrismaMock, PrismaMock, row } from '../testing/prisma-mock';
 import { WarehousesService } from './warehouses.service';
 
-function createPrismaMock(): any {
-  return {
-    warehouse: {
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-    },
-    zone: {
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-    aisle: {
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-    location: {
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-  };
-}
-
 describe('WarehousesService', () => {
-  let prisma: ReturnType<typeof createPrismaMock>;
+  let prisma: PrismaMock;
   let service: WarehousesService;
 
   beforeEach(() => {
     prisma = createPrismaMock();
-    service = new WarehousesService(prisma as never);
+    service = new WarehousesService(prisma);
   });
 
   it('scopes warehouse list by company', async () => {
-    prisma.warehouse.findMany.mockResolvedValue([{ id: 'warehouse-1' }]);
+    prisma.warehouse.findMany.mockResolvedValue([row({ id: 'warehouse-1' })]);
 
     await expect(service.findAll('company-1')).resolves.toEqual([
       { id: 'warehouse-1' },
@@ -81,11 +50,10 @@ describe('WarehousesService', () => {
   });
 
   it('requires zone and aisle to belong to the requested hierarchy before creating a location', async () => {
-    prisma.warehouse.findFirst.mockResolvedValue({
-      id: 'warehouse-1',
-      isActive: true,
-    });
-    prisma.zone.findFirst.mockResolvedValue({ id: 'zone-1' });
+    prisma.warehouse.findFirst.mockResolvedValue(
+      row({ id: 'warehouse-1', isActive: true }),
+    );
+    prisma.zone.findFirst.mockResolvedValue(row({ id: 'zone-1' }));
     prisma.aisle.findFirst.mockResolvedValue(null);
 
     await expect(
@@ -105,13 +73,17 @@ describe('WarehousesService', () => {
   });
 
   it('maps duplicate location creation to conflict', async () => {
-    prisma.warehouse.findFirst.mockResolvedValue({
-      id: 'warehouse-1',
-      isActive: true,
-    });
-    prisma.zone.findFirst.mockResolvedValue({ id: 'zone-1' });
-    prisma.aisle.findFirst.mockResolvedValue({ id: 'aisle-1' });
-    prisma.location.create.mockRejectedValue({ code: 'P2002' });
+    prisma.warehouse.findFirst.mockResolvedValue(
+      row({ id: 'warehouse-1', isActive: true }),
+    );
+    prisma.zone.findFirst.mockResolvedValue(row({ id: 'zone-1' }));
+    prisma.aisle.findFirst.mockResolvedValue(row({ id: 'aisle-1' }));
+    prisma.location.create.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+        code: 'P2002',
+        clientVersion: 'test',
+      }),
+    );
 
     await expect(
       service.createLocation(
@@ -125,14 +97,21 @@ describe('WarehousesService', () => {
   });
 
   it('maps deleting a location with stock to conflict', async () => {
-    prisma.warehouse.findFirst.mockResolvedValue({
-      id: 'warehouse-1',
-      isActive: true,
-    });
-    prisma.zone.findFirst.mockResolvedValue({ id: 'zone-1' });
-    prisma.aisle.findFirst.mockResolvedValue({ id: 'aisle-1' });
-    prisma.location.findFirst.mockResolvedValue({ id: 'location-1' });
-    prisma.location.delete.mockRejectedValue({ code: 'P2003' });
+    prisma.warehouse.findFirst.mockResolvedValue(
+      row({ id: 'warehouse-1', isActive: true }),
+    );
+    prisma.zone.findFirst.mockResolvedValue(row({ id: 'zone-1' }));
+    prisma.aisle.findFirst.mockResolvedValue(row({ id: 'aisle-1' }));
+    prisma.location.findFirst.mockResolvedValue(row({ id: 'location-1' }));
+    prisma.location.delete.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError(
+        'Foreign key constraint failed',
+        {
+          code: 'P2003',
+          clientVersion: 'test',
+        },
+      ),
+    );
 
     await expect(
       service.deleteLocation(
@@ -146,15 +125,16 @@ describe('WarehousesService', () => {
   });
 
   it('resolves the full hierarchy when finding a location by code', async () => {
-    prisma.warehouse.findFirst.mockResolvedValue({
-      id: 'warehouse-1',
-      isActive: true,
-    });
-    prisma.location.findFirst.mockResolvedValue({
-      id: 'location-1',
-      code: 'A-01-01',
-      aisle: { id: 'aisle-1', zone: { id: 'zone-1' } },
-    });
+    prisma.warehouse.findFirst.mockResolvedValue(
+      row({ id: 'warehouse-1', isActive: true }),
+    );
+    prisma.location.findFirst.mockResolvedValue(
+      row({
+        id: 'location-1',
+        code: 'A-01-01',
+        aisle: { id: 'aisle-1', zone: { id: 'zone-1' } },
+      }),
+    );
 
     await expect(
       service.findLocationByCode('warehouse-1', 'company-1', 'A-01-01'),
@@ -188,10 +168,9 @@ describe('WarehousesService', () => {
   });
 
   it('throws when no location matches the scanned code', async () => {
-    prisma.warehouse.findFirst.mockResolvedValue({
-      id: 'warehouse-1',
-      isActive: true,
-    });
+    prisma.warehouse.findFirst.mockResolvedValue(
+      row({ id: 'warehouse-1', isActive: true }),
+    );
     prisma.location.findFirst.mockResolvedValue(null);
 
     await expect(

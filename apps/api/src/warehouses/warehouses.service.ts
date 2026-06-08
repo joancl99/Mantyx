@@ -60,10 +60,7 @@ export class WarehousesService {
         select: WH_SELECT,
       });
     } catch (e) {
-      if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === 'P2002'
-      ) {
+      if (this.isPrismaError(e, 'P2002')) {
         throw new ConflictException(
           `Ya existe un almacén con el nombre "${dto.name}"`,
         );
@@ -90,10 +87,7 @@ export class WarehousesService {
         select: WH_SELECT,
       });
     } catch (e) {
-      if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === 'P2002'
-      ) {
+      if (this.isPrismaError(e, 'P2002')) {
         throw new ConflictException(
           `Ya existe un almacén con el nombre "${dto.name}"`,
         );
@@ -128,8 +122,8 @@ export class WarehousesService {
         data: { name, warehouseId },
         select: ZONE_SELECT,
       });
-    } catch (e: any) {
-      if (e.code === 'P2002')
+    } catch (e) {
+      if (this.isPrismaError(e, 'P2002'))
         throw new ConflictException(`Ya existe una zona "${name}"`);
       throw e;
     }
@@ -149,8 +143,8 @@ export class WarehousesService {
         data: { name },
         select: ZONE_SELECT,
       });
-    } catch (e: any) {
-      if (e.code === 'P2002')
+    } catch (e) {
+      if (this.isPrismaError(e, 'P2002'))
         throw new ConflictException(`Ya existe una zona "${name}"`);
       throw e;
     }
@@ -161,8 +155,8 @@ export class WarehousesService {
     await this.findZoneInWh(zoneId, warehouseId);
     try {
       await this.prisma.zone.delete({ where: { id: zoneId } });
-    } catch (e: any) {
-      if (e.code === 'P2003')
+    } catch (e) {
+      if (this.isPrismaError(e, 'P2003'))
         throw new ConflictException(
           'No se puede eliminar: la zona tiene pasillos',
         );
@@ -195,8 +189,8 @@ export class WarehousesService {
         data: { name, zoneId },
         select: AISLE_SELECT,
       });
-    } catch (e: any) {
-      if (e.code === 'P2002')
+    } catch (e) {
+      if (this.isPrismaError(e, 'P2002'))
         throw new ConflictException(`Ya existe un pasillo "${name}"`);
       throw e;
     }
@@ -218,8 +212,8 @@ export class WarehousesService {
         data: { name },
         select: AISLE_SELECT,
       });
-    } catch (e: any) {
-      if (e.code === 'P2002')
+    } catch (e) {
+      if (this.isPrismaError(e, 'P2002'))
         throw new ConflictException(`Ya existe un pasillo "${name}"`);
       throw e;
     }
@@ -236,8 +230,8 @@ export class WarehousesService {
     await this.findAisleInZone(aisleId, zoneId);
     try {
       await this.prisma.aisle.delete({ where: { id: aisleId } });
-    } catch (e: any) {
-      if (e.code === 'P2003')
+    } catch (e) {
+      if (this.isPrismaError(e, 'P2003'))
         throw new ConflictException(
           'No se puede eliminar: el pasillo tiene ubicaciones',
         );
@@ -278,8 +272,8 @@ export class WarehousesService {
         data: { code, aisleId },
         select: LOC_SELECT,
       });
-    } catch (e: any) {
-      if (e.code === 'P2002')
+    } catch (e) {
+      if (this.isPrismaError(e, 'P2002'))
         throw new ConflictException(`Ya existe una ubicación "${code}"`);
       throw e;
     }
@@ -303,8 +297,8 @@ export class WarehousesService {
         data: { code },
         select: LOC_SELECT,
       });
-    } catch (e: any) {
-      if (e.code === 'P2002')
+    } catch (e) {
+      if (this.isPrismaError(e, 'P2002'))
         throw new ConflictException(`Ya existe una ubicación "${code}"`);
       throw e;
     }
@@ -323,8 +317,8 @@ export class WarehousesService {
     await this.findLocationInAisle(locationId, aisleId);
     try {
       await this.prisma.location.delete({ where: { id: locationId } });
-    } catch (e: any) {
-      if (e.code === 'P2003')
+    } catch (e) {
+      if (this.isPrismaError(e, 'P2003'))
         throw new ConflictException(
           'No se puede eliminar: hay stock en esta ubicación',
         );
@@ -364,6 +358,11 @@ export class WarehousesService {
   }
 
   // ── Private helpers ───────────────────────────────────────────────────────────
+  /** True when `e` is a Prisma known-request error with the given code (e.g. P2002 unique, P2003 FK). */
+  private isPrismaError(e: unknown, code: string): boolean {
+    return e instanceof Prisma.PrismaClientKnownRequestError && e.code === code;
+  }
+
   private async findWarehouse(id: string, companyId: string) {
     const wh = await this.prisma.warehouse.findFirst({
       where: { id, companyId },
