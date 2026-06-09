@@ -79,11 +79,7 @@ export class StockService {
         newStock = previousStock + quantity;
         await tx.stockEntry.upsert({
           where: {
-            productId_variantId_locationId: {
-              productId,
-              variantId: null as unknown as string,
-              locationId: toLocationId,
-            },
+            productId_locationId: { productId, locationId: toLocationId },
           },
           create: { productId, locationId: toLocationId, quantity },
           update: { quantity: { increment: quantity } },
@@ -118,11 +114,7 @@ export class StockService {
         );
         await tx.stockEntry.upsert({
           where: {
-            productId_variantId_locationId: {
-              productId,
-              variantId: null as unknown as string,
-              locationId: toLocationId,
-            },
+            productId_locationId: { productId, locationId: toLocationId },
           },
           create: { productId, locationId: toLocationId, quantity },
           update: { quantity: { increment: quantity } },
@@ -138,11 +130,7 @@ export class StockService {
         newStock = previousStock - currentQty + quantity;
         await tx.stockEntry.upsert({
           where: {
-            productId_variantId_locationId: {
-              productId,
-              variantId: null as unknown as string,
-              locationId: toLocationId,
-            },
+            productId_locationId: { productId, locationId: toLocationId },
           },
           create: { productId, locationId: toLocationId, quantity },
           update: { quantity },
