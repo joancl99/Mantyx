@@ -70,9 +70,11 @@ export class StockService {
 
       let newStock = previousStock;
 
-      if (type === MovementType.INBOUND) {
+      if (type === MovementType.INBOUND || type === MovementType.RETURN) {
+        // A RETURN is goods coming back into the warehouse — same stock
+        // effect as an INBOUND, kept as a distinct type for traceability.
         if (!toLocationId) {
-          throw new BadRequestException('INBOUND requires toLocationId');
+          throw new BadRequestException(`${type} requires toLocationId`);
         }
         newStock = previousStock + quantity;
         await tx.stockEntry.upsert({
@@ -151,7 +153,7 @@ export class StockService {
           create: { productId, locationId: toLocationId, quantity },
           update: { quantity: { increment: quantity } },
         });
-      } else {
+      } else if (type === MovementType.ADJUSTMENT) {
         // ADJUSTMENT — set absolute stock at a location
         if (!toLocationId)
           throw new BadRequestException('ADJUSTMENT requires toLocationId');
@@ -171,6 +173,10 @@ export class StockService {
           create: { productId, locationId: toLocationId, quantity },
           update: { quantity },
         });
+      } else {
+        // Unreachable while every MovementType has a branch above — guards
+        // against a new enum value silently recording a no-op movement.
+        throw new BadRequestException(`Unsupported movement type: ${type}`);
       }
 
       const [movement] = await Promise.all([
@@ -215,7 +221,7 @@ export class StockService {
     });
     const totalStock = agg._sum.quantity ?? 0;
     if (totalStock <= product.minStock) {
-      this.alerts.emitLowStock({
+      this.alerts.emitLowStock(companyId, {
         productId: product.id,
         name: product.name,
         sku: product.sku,

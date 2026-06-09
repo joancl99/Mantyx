@@ -17,8 +17,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Role } from '@prisma/client';
 import { CompanyId } from '../auth/decorators/company-id.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateMovementDto } from './dto/create-movement.dto';
 import { MovementQueryDto } from './dto/movement-query.dto';
 import { StockService } from './stock.service';
@@ -30,8 +32,11 @@ export class StockController {
   constructor(private readonly stock: StockService) {}
 
   @Post('movements')
+  @Roles(Role.ADMIN, Role.MANAGER, Role.OPERATOR)
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Record a stock movement' })
+  @ApiOperation({
+    summary: 'Record a stock movement (ADMIN, MANAGER, OPERATOR)',
+  })
   @ApiResponse({ status: 201 })
   createMovement(
     @CompanyId() companyId: string,

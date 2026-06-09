@@ -266,13 +266,81 @@ describe('StockService', () => {
         entityType: 'StockMovement',
       }),
     });
-    expect(alerts.emitLowStock).toHaveBeenCalledWith({
+    expect(alerts.emitLowStock).toHaveBeenCalledWith('company-1', {
       productId: product.id,
       name: product.name,
       sku: product.sku,
       stock: 8,
       minStock: product.minStock,
     });
+  });
+
+  it('records a return as an inbound-style increment, never an absolute set', async () => {
+    const movement = { id: 'movement-1', productId: 'product-1' };
+    prisma.product.findFirst.mockResolvedValue(
+      row({ id: 'product-1', name: 'Widget', sku: 'W-1', minStock: 0 }),
+    );
+    prisma.warehouse.findFirst.mockResolvedValue(row({ id: 'warehouse-1' }));
+    prisma.stockEntry.aggregate
+      .mockResolvedValueOnce(row({ _sum: { quantity: 100 } }))
+      .mockResolvedValueOnce(row({ _sum: { quantity: 105 } }));
+    prisma.stockEntry.upsert.mockResolvedValue(row({}));
+    prisma.stockMovement.create.mockResolvedValue(row(movement));
+    prisma.auditLog.create.mockResolvedValue(row({}));
+
+    await expect(
+      service.createMovement(
+        {
+          productId: 'product-1',
+          warehouseId: 'warehouse-1',
+          type: MovementType.RETURN,
+          quantity: 5,
+          toLocationId: 'location-1',
+        },
+        'user-1',
+        'company-1',
+      ),
+    ).resolves.toBe(movement);
+
+    expect(prisma.stockEntry.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: { quantity: { increment: 5 } },
+      }),
+    );
+    expect(prisma.stockMovement.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        type: MovementType.RETURN,
+        previousStock: 100,
+        newStock: 105,
+      }),
+      include: expect.any(Object),
+    });
+  });
+
+  it('rejects a return without a destination location', async () => {
+    prisma.product.findFirst.mockResolvedValue(
+      row({ id: 'product-1', name: 'Widget', sku: 'W-1', minStock: 0 }),
+    );
+    prisma.warehouse.findFirst.mockResolvedValue(row({ id: 'warehouse-1' }));
+    prisma.stockEntry.aggregate.mockResolvedValue(
+      row({ _sum: { quantity: 10 } }),
+    );
+
+    await expect(
+      service.createMovement(
+        {
+          productId: 'product-1',
+          warehouseId: 'warehouse-1',
+          type: MovementType.RETURN,
+          quantity: 5,
+        },
+        'user-1',
+        'company-1',
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
+
+    expect(prisma.stockEntry.upsert).not.toHaveBeenCalled();
+    expect(prisma.stockMovement.create).not.toHaveBeenCalled();
   });
 
   it('filters stock overview after calculating product totals', async () => {
