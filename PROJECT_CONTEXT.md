@@ -232,5 +232,6 @@ Required native permissions (add after `cap add`):
 
 - Remote: `https://github.com/joancl99/Mantyx.git`.
 - Main branch: `main`.
-- Before merging to `main`, run the same explicit quality gate as CI: format check, lint, tests, builds, and `api-e2e`.
+- **Three-branch promotion flow `dev → pre → main`** (development → pre-prod/staging → production). All work lands on `dev`; promoting to `pre`/`main` is done only on request via chained `--no-ff` merges (`merge: promote dev to pre`, then `merge: promote pre to main`), each pushed in turn. After promoting, the three branches sit at content parity (matching tree hashes — only the merge commits differ). CI runs only on `main`, so validate a change with a PR `dev → main` before promoting if in doubt.
+- Before merging to `main`, run the same explicit quality gate as CI: `pnpm run db:generate`, then format check, lint, tests, builds, and `api-e2e`.
 - Do not leave `nxCloudId` in `nx.json` unless the workspace is connected to Nx Cloud.
