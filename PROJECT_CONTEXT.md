@@ -133,14 +133,16 @@ Onboarding is invite-based (no public self-registration):
 - CI (`.github/workflows/ci.yml`) runs **only on push/PR to `main`** (not on `dev`/`pre`). After install it runs `pnpm exec prisma generate --schema=apps/api/prisma/schema.prisma` before any tsc-based task — required because the schema is at a non-default path so `@prisma/client`'s install hook can't auto-generate the client, and the API test/build need the generated enums/types. After a fresh clone, run `pnpm run db:generate` locally for the same reason. To validate a change against CI without landing it on `main`, open a PR `dev → main`.
 - Lint is clean: `api` is warning-free (the `@CompanyId()` decorator removed all 50 `no-non-null-assertion` warnings) and `web` is warning-free (the 45 `no-non-null-assertion` warnings + last stray `any` were cleared).
 
-Remaining work (next session first — both agreed with the product owner on 2026-06-09):
+Remaining work (next session first — all four agreed with the product owner on 2026-06-09, in this order):
 
 1. **Movements page → TRANSFER-only creation flow (next session).** Product decision: Movements exists to move stock between locations, never to add/subtract it (Receptions/Expeditions own inbound/outbound). The current "Nuevo movimiento" modal is broken — it never sends `fromLocationId`/`toLocationId` and the backend requires them, so every submit returns 400. Agreed UX: pick product → origin from the product's stock entries (`GET /stock/by-product/:id`, shows location + available qty, implies the warehouse) → destination via zone→aisle→location cascade in the same warehouse → quantity (max = origin qty) + notes → submit `type: 'TRANSFER'` with `warehouseId` derived from the origin entry. Remove the broken `MOVEMENT_FORM_TYPES`; backend should also reject `fromLocationId === toLocationId`.
 2. **Auditoría page for ADMIN (next session).** `AuditLog` is write-only today (movements + inventory completion only; no read endpoint; `AuditAction.LOGIN/LOGOUT/CREATE/DELETE` unused). Build a global `AuditModule` (`AuditService.log()` must never break the business operation), `GET /audit` (`@Roles(ADMIN)`, company-scoped, action/entityType filters + pagination — the `(companyId, createdAt)` index already exists), broaden writes to auth LOGIN/LOGOUT and products/users CREATE/UPDATE/DELETE (never store passwords in `changes`), and an `admin-audit-panel` + `admin-audit-state.ts` inside Administración (ADMIN view), following the existing panel/state pattern.
 
+3. **OnPush for the smart container pages (next session).** The 22 presentational children already declare it; extend `ChangeDetectionStrategy.OnPush` to the container pages. They are signal-based but each needs individual verification (reactive forms, Ionic overlays) — change + manual smoke per page.
+4. **Socket reconnect with a fresh token (next session).** After a server-side disconnect, socket.io retries with the stale `auth.token` from the original handshake; `SocketService` must feed reconnect attempts the current access token so realtime alerts survive token expiry.
+
 Then:
 
-- Optional minors from the 2026-06-09 audit: OnPush for smart container pages (children done); socket reconnect with a fresh token (after a server disconnect socket.io retries with the same stale `auth.token`).
 - Optional: cancel support for `CANCELLED` inventory counts.
 - Expand API e2e beyond health: auth login/refresh, tenant-scoped product CRUD, stock movement guards, and inventory lifecycle.
 - Add broader frontend unit tests: scanner service/overlay, CSV export, stock/movements services, products modal image handling, and inventory create/detail behavior.
@@ -151,7 +153,7 @@ Then:
 - All main product areas are implemented: inventory counts (with scan-to-fill location), receptions, expeditions, barcode scanner, CSV export, product images, realtime alerts, and production Docker.
 - The security audit (2026-06-07), the code-quality refactor passes (2026-06-08/09), and the full-project audit pass (2026-06-09, 4 commits on `dev`) are complete: auth/session hardening, `@CompanyId()` decorator, unified movement modal, extracted admin states/modals, RBAC on stock movements, authenticated per-tenant WS gateway, RETURN semantics, atomic stock decrements, sane throttling, shared frontend refresh, 13 DB indexes, SQL-side overview/dashboard aggregates, OnPush presentational children, and the dead `users.refreshToken`/`ProductVariant` schema removed.
 - Quality baseline is in place: 65 API + 10 web unit tests, in-process API e2e, and explicit CI quality gates — all green.
-- Next session: the two agreed features above (TRANSFER-only movements modal, Auditoría page for ADMIN). After that: e2e coverage of real business flows and broader frontend unit tests.
+- Next session: the four agreed items above, in order — TRANSFER-only movements modal, Auditoría page for ADMIN, OnPush on the smart container pages, and socket reconnect with a fresh token. After that: e2e coverage of real business flows and broader frontend unit tests.
 
 ## Visual Direction
 

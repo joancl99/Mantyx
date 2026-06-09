@@ -104,12 +104,13 @@ Frontend areas currently present:
 
 ## Next Session Plan (agreed 2026-06-09)
 
-Two features were decided with the user and must be built next, in this order:
+Four items were decided with the user and must be built next, in this order (the two features first, then the two minors):
 
 1. **Movements page → TRANSFER-only creation flow.** Product decision: the Movements page exists to MOVE stock between locations, never to add/subtract it (Receptions/Expeditions own inbound/outbound). The current "Nuevo movimiento" modal is broken anyway — it never sends `fromLocationId`/`toLocationId` and the backend requires them, so every submit 400s. Agreed UX: pick product → origin from the product's stock entries (`GET /stock/by-product/:id`, shows location + available qty, implies the warehouse) → destination via zone→aisle→location cascade within the same warehouse → quantity (max = origin entry qty) + notes → submit `type: 'TRANSFER'` with `warehouseId` derived from the origin entry. Remove the broken `MOVEMENT_FORM_TYPES` (INBOUND/OUTBOUND/RETURN) from the form (keep `MOVEMENT_TYPE_CONFIG` for list/filter labels). Backend: reject `fromLocationId === toLocationId` for TRANSFER + test.
 2. **Auditoría page for ADMIN.** `AuditLog` is currently write-only (only movements + inventory completion write it; no read endpoint). Build: global `AuditModule` with an `AuditService.log()` that never breaks the business op; `GET /audit` (`@Roles(ADMIN)`, company-scoped, filters by action/entityType + pagination — the `(companyId, createdAt)` index already exists); broaden writes to LOGIN/LOGOUT (auth) and CREATE/UPDATE/DELETE (products, users — never store passwords in `changes`); frontend `core/models/audit.models.ts` + `core/services/audit.service.ts` + feature-local `admin-audit-state.ts` + `admin-audit-panel` child component inside Administración (ADMIN view), following the existing panel/state pattern. This gives the unused `AuditAction.LOGIN/LOGOUT/CREATE/DELETE` enum values their use.
 
-Optional minors (not committed to, surfaced by the 2026-06-09 audit): OnPush for the smart container pages (children are done), and socket reconnect with a fresh token (after a server-side disconnect socket.io retries with the same stale `auth.token`).
+3. **OnPush for the smart container pages.** The 22 presentational children already declare it; extend `ChangeDetectionStrategy.OnPush` to the container pages (dashboard, products, stock, movements, inventory, receptions, expeditions, warehouses, management, admin, login, shell). They are signal-based, but each must be verified individually (reactive forms, Ionic overlays) — change + manual smoke per page.
+4. **Socket reconnect with a fresh token.** After a server-side disconnect, socket.io retries with the same stale `auth.token` from the original handshake. Update `SocketService` so reconnect attempts read the current access token (e.g. set `socket.auth` in a `reconnect_attempt`/`io.on('reconnect_attempt')` handler from `AuthService.accessToken()`), so an expired token doesn't strand the realtime alerts after a refresh.
 
 Remaining frontend work:
 

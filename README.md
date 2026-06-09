@@ -399,10 +399,11 @@ Representative endpoints:
 - [x] Full-project audit pass (2026-06-09): RBAC on stock movements, authenticated WS gateway with per-tenant rooms, RETURN-as-increment fix, atomic stock decrements, single-default throttler, shared in-flight frontend refresh, 13 database indexes, SQL-side overview/dashboard aggregates, OnPush presentational components, and dead schema removed (`users.refreshToken`, `ProductVariant`).
 - [ ] **Next session** — Movements page becomes a TRANSFER-only flow: pick product → origin from its stock entries (location + qty) → destination cascade in the same warehouse → quantity capped at the origin stock. The current modal never sends locations and always 400s; movements are for moving stock, never adding/subtracting it (Receptions/Expeditions own that).
 - [ ] **Next session** — Auditoría page for ADMIN: `GET /audit` (company-scoped, filtered, paginated), broaden audit writes to login/logout and product/user CRUD, and an audit panel inside Administración. `AuditLog` is write-only today.
+- [ ] **Next session** — OnPush on the smart container pages (the 22 presentational children already declare it; each page needs individual verification).
+- [ ] **Next session** — Socket reconnect with a fresh access token: after a server-side disconnect, socket.io retries with the stale handshake token; `SocketService` must feed reconnect attempts the current one.
 - [ ] Expand API e2e coverage beyond health: auth, tenant-scoped products, stock movements, inventory lifecycle.
 - [ ] Broaden frontend unit tests: scanner, CSV export, services, products modal, inventory flows.
 - [ ] Cypress or Playwright browser e2e coverage for full user journeys.
-- [ ] Optional minors: OnPush for smart container pages; socket reconnect with a fresh access token after a server-side disconnect.
 
 ## License
 
