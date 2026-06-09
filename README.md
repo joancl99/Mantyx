@@ -39,7 +39,7 @@ Mantyx helps companies manage products, stock, movements, warehouses, locations,
 
 ### Implemented Backend Modules
 
-- Auth: register, login, refresh, logout, JWT guards, RBAC, throttling.
+- Auth: login, refresh, logout, JWT guards, RBAC, throttling (no public registration — onboarding is invite-based). Hardened: access-token `jti` denylist on logout, httpOnly refresh cookie keyed per device session, per-account login lockout, and live user re-validation on every request.
 - Companies: platform-level company management for `SUPERADMIN`.
 - Users: tenant user management.
 - Categories and brands: tenant-scoped catalog setup.
@@ -53,8 +53,8 @@ Mantyx helps companies manage products, stock, movements, warehouses, locations,
 
 ### Implemented Frontend Areas
 
-- Auth pages: login and register.
-- Authenticated Ionic shell with side menu and global scanner FAB.
+- Auth pages: login only (no register — invite-based onboarding). The login shows the Mantyx logo on a white brand plate; the access token is kept in memory and the session is restored on load via a silent refresh.
+- Authenticated Ionic shell with side menu (Mantyx wordmark in the header) and global scanner FAB.
 - Dashboard.
 - Products.
 - Stock (overview with search and paginated list).
@@ -67,11 +67,13 @@ Mantyx helps companies manage products, stock, movements, warehouses, locations,
 - Inventory counts: list, filters, creation modal, detail, line editing, start/complete actions, and completed read-only state.
 - **Receptions**: full INBOUND flow — warehouse + cascading location (zone → aisle → location), multi-line form, scan-to-fill product. Modal transitions to success state with albarán CSV export.
 - **Expeditions**: full OUTBOUND flow — same pattern, source location, backend stock guard. Same modal success state with albarán CSV export.
-- **Barcode/QR scanner**: platform-aware `ScannerService` — ML Kit on native, ZXing overlay on browser. Integrated in FAB, Reception, and Expedition modals.
+- Receptions and Expeditions share a single config-driven modal (`core/movement-modal/MovementFormModalComponent`); each page maps the location to `toLocationId`/`fromLocationId` by direction, with green (reception) / red (expedition) theming.
+- **Barcode/QR scanner**: platform-aware `ScannerService` — ML Kit on native, ZXing overlay on browser. Integrated in the FAB, the shared movement modal, and the inventory line form (scan-to-fill location).
 - **CSV export**: `CsvExportService` with BOM prefix (Excel-compatible), RFC-4180 escaping, and timestamped filename. Export button in every list page (Stock, Movements, Receptions, Expeditions) using active filters.
 - **Product images**: upload via `PATCH /products/:id/image` (Multer, jpg/png/webp ≤5 MB). Stored on disk, served as static assets. Image picker with live preview in the product form modal.
 - **Realtime low-stock alerts**: `SocketService` connects on login, listens to Socket.io `low-stock` events, and shows a dismissible Ionic warning toast in the shell.
 - **Frontend route authorization**: shell routes use role metadata and `roleGuard` to keep restricted pages aligned with the menu permissions.
+- **Branding**: brand assets in `apps/web/public/brand/` (full logo, mantis symbol, wordmark). Login shows the full logo and the side menu the wordmark, each on a white plate so the dark wordmark stays legible on the dark theme; the favicon (`favicon.ico` + PNG sizes + apple-touch-icon) is generated from the mantis symbol.
 
 ## Multi-Tenancy And Roles
 
@@ -85,11 +87,11 @@ Mantyx is a multi-tenant SaaS. Most business records are scoped by `companyId`.
 | `OPERATOR`   | Warehouse operations.                                                  |
 | `VIEWER`     | Read-only.                                                             |
 
-Fresh database bootstrap requirement:
+Onboarding is invite-based (no public self-registration):
 
-1. Create a `Company` in Prisma Studio or with a seed/script.
-2. Assign the initial non-SUPERADMIN `User.companyId`.
-3. Log in again so the JWT contains the new `companyId`.
+1. The first `SUPERADMIN` is created manually (Prisma Studio / SQL) with `companyId = null`.
+2. The `SUPERADMIN` creates each company together with its initial `ADMIN` in one transactional step (`POST /companies`).
+3. Each `ADMIN` provisions their own workers (`MANAGER`/`OPERATOR`/`VIEWER`) from the Administración page.
 
 ## Monorepo Structure
 
@@ -118,7 +120,7 @@ Mantyx/
 │   ├── api-e2e/                     # Backend e2e project
 │   └── web/                         # Angular + Ionic frontend
 │       └── src/app/
-│           ├── auth/                # Login/register
+│           ├── auth/                # Login (invite-based, no register)
 │           ├── core/
 │           │   ├── models/          # Shared frontend model/DTO interfaces
 │           │   ├── scanner/         # ScannerOverlayComponent (ZXing web overlay)
@@ -134,8 +136,7 @@ Mantyx/
 │           │   ├── stock/
 │           │   └── warehouses/
 │           └── shell/               # Authenticated Ionic shell/menu
-├── libs/
-│   └── shared/                      # Shared TypeScript types
+│       └── public/                  # Static assets (brand/ logos, favicons)
 ├── docker/
 │   └── docker-compose.yml           # Local infrastructure
 ├── capacitor.config.ts              # Capacitor native config
@@ -169,7 +170,7 @@ Use this flow after cloning the repository, after dependency/tooling changes, or
 
 ```bash
 pnpm install
-pnpm prisma generate --schema=apps/api/prisma/schema.prisma
+pnpm run db:generate
 pnpm nx build api --configuration=development
 pnpm nx build web --configuration=production
 ```
@@ -220,7 +221,7 @@ Use this flow when the project is already installed and the database already exi
 
 ```bash
 pnpm run docker:up
-pnpm prisma generate --schema=apps/api/prisma/schema.prisma
+pnpm run db:generate
 ```
 
 ### Start The Applications
@@ -296,6 +297,7 @@ Required native permissions after `cap add`:
 | `pnpm run start:web`                      | Start the Angular web app              |
 | `pnpm run build:api`                      | Build the API for production           |
 | `pnpm run build:web`                      | Build the web app for production       |
+| `pnpm run db:generate`                    | Generate the Prisma client             |
 | `pnpm run test`                           | Run tests across configured projects   |
 | `pnpm nx test api`                        | Run API unit tests                     |
 | `pnpm nx test web`                        | Run Angular/Vitest frontend tests      |
@@ -310,26 +312,24 @@ Required native permissions after `cap add`:
 Use these commands to verify the project before committing or opening a PR. This mirrors the current CI quality gate:
 
 ```bash
+pnpm run db:generate        # generate the Prisma client (needed by api test/build)
 pnpm nx format:check --base=origin/main
 pnpm nx run api:eslint:lint
 pnpm nx lint web
-pnpm nx run types:eslint:lint
 pnpm nx run api-e2e:eslint:lint
 pnpm nx test api
 pnpm nx test web
-pnpm nx test types
 pnpm nx build api
 pnpm nx build web
-pnpm nx build types
 pnpm nx e2e api-e2e
 ```
 
 Current test baseline:
 
-- API unit tests cover inventory, products, stock, and warehouses service behavior.
-- Frontend unit tests cover route smoke behavior, `roleGuard`, and Reception/Expedition modal data loading + submit validation.
+- API unit suite: 53 tests across 8 suites — inventory, products, stock, warehouses, plus auth/security (logout denylist, login lockout, per-session refresh, JWT strategy, CompanyGuard 403, upload magic bytes). Specs use `jest-mock-extended` with zero `any`.
+- Frontend unit suite: 7 tests — route smoke behavior, `roleGuard`, and the shared `MovementFormModalComponent` data loading + submit validation.
 - API e2e runs a deterministic in-process Nest app for `/api/health`; it does not require `api:serve` or a fixed port.
-- Lint passes with existing warnings, mostly historical non-null assertions and `any` usage.
+- Lint is clean: both `api` and `web` are warning-free (no `no-non-null-assertion` warnings).
 
 ## Development Rules
 
@@ -348,18 +348,18 @@ Swagger is available at `http://localhost:3000/api/docs` when the API is running
 
 Representative endpoints:
 
-| Area       | Endpoint Examples                                                                                    |
-| ---------- | ---------------------------------------------------------------------------------------------------- |
-| Auth       | `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout` |
-| Companies  | `GET /api/companies`, `POST /api/companies`, `PATCH /api/companies/:id/toggle-status`                |
-| Users      | Tenant user management under `/api/users`                                                            |
-| Products   | CRUD and search/filter under `/api/products`                                                         |
-| Categories | Tenant category endpoints under `/api/categories`                                                    |
-| Brands     | Tenant brand endpoints under `/api/brands`                                                           |
-| Stock      | Movement endpoints under `/api/stock`                                                                |
-| Warehouses | Warehouse, zone, aisle, and location endpoints under `/api/warehouses`                               |
-| Inventory  | Inventory count endpoints under `/api/inventory`                                                     |
-| Dashboard  | KPI and alert endpoints under `/api/dashboard`                                                       |
+| Area       | Endpoint Examples                                                                                             |
+| ---------- | ------------------------------------------------------------------------------------------------------------- |
+| Auth       | `POST /api/auth/login`, `POST /api/auth/refresh`, `POST /api/auth/logout` (no public register — invite-based) |
+| Companies  | `GET /api/companies`, `POST /api/companies`, `PATCH /api/companies/:id/toggle-status`                         |
+| Users      | Tenant user management under `/api/users`                                                                     |
+| Products   | CRUD and search/filter under `/api/products`                                                                  |
+| Categories | Tenant category endpoints under `/api/categories`                                                             |
+| Brands     | Tenant brand endpoints under `/api/brands`                                                                    |
+| Stock      | Movement endpoints under `/api/stock`                                                                         |
+| Warehouses | Warehouse, zone, aisle, and location endpoints under `/api/warehouses`                                        |
+| Inventory  | Inventory count endpoints under `/api/inventory`                                                              |
+| Dashboard  | KPI and alert endpoints under `/api/dashboard`                                                                |
 
 ## Roadmap
 
@@ -389,10 +389,12 @@ Representative endpoints:
 - [x] Product image upload — Multer diskStorage, image picker with live preview.
 - [x] CSV export flows (Stock, Movements, Receptions, Expeditions + albarán modal).
 - [x] Realtime low-stock alerts — Socket.io gateway connected to shell with Ionic toast.
-- [x] Production Docker images — 3-stage pruned Dockerfile.api (Node 24) + nginx-slim Dockerfile.web + docker-compose.prod.yml, hardened to 0 critical/high CVEs.
-- [x] Frontend route guard and Reception/Expedition modal unit tests.
+- [x] Production Docker images — 3-stage pruned Dockerfile.api (Node 24) + nginx-slim Dockerfile.web + docker-compose.prod.yml (web 0 critical/0 high, api 0 critical/1 high CVEs).
+- [x] Frontend route guard and shared movement-modal unit tests.
 - [x] API e2e health check that runs in-process without `api:serve`.
-- [x] CI quality gate with explicit format, lint, test, build, and e2e steps.
+- [x] CI quality gate with explicit format, lint, test, build, and e2e steps (plus a `prisma generate` step).
+- [x] Security audit fully addressed and a code-quality refactor pass (`@CompanyId()` decorator, unified movement modal, admin state classes + extracted modal components, dead `types` project removed, `api`/`web` lint warning-free).
+- [x] Mantyx brand logos in login and side menu + favicon from the mantis symbol.
 - [ ] Expand API e2e coverage beyond health: auth, tenant-scoped products, stock movements, inventory lifecycle.
 - [ ] Broaden frontend unit tests: scanner, CSV export, services, products modal, inventory flows.
 - [ ] Cypress or Playwright browser e2e coverage for full user journeys.
