@@ -31,7 +31,7 @@ import { JwtPayload, JwtRefreshPayload } from './types/jwt-payload.interface';
 
 @ApiTags('Auth')
 @Controller('auth')
-@Throttle({ auth: { limit: 10, ttl: 60000 } })
+@Throttle({ default: { limit: 10, ttl: 60000 } })
 export class AuthController {
   private readonly isProd: boolean;
 

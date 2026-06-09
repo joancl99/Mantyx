@@ -98,50 +98,24 @@ export class StockService {
           );
         }
         newStock = previousStock - quantity;
-        const sourceEntry = await tx.stockEntry.findFirst({
-          where: { productId, locationId: fromLocationId },
-        });
-        const sourceStock = sourceEntry?.quantity ?? 0;
-        if (sourceStock < quantity) {
-          throw new BadRequestException(
-            `Insufficient stock at source location: available ${sourceStock}, requested ${quantity}`,
-          );
-        }
-        await tx.stockEntry.update({
-          where: {
-            productId_variantId_locationId: {
-              productId,
-              variantId: null as unknown as string,
-              locationId: fromLocationId,
-            },
-          },
-          data: { quantity: { decrement: quantity } },
-        });
+        await this.decrementSourceStock(
+          tx,
+          productId,
+          fromLocationId,
+          quantity,
+        );
       } else if (type === MovementType.TRANSFER) {
         if (!fromLocationId || !toLocationId) {
           throw new BadRequestException(
             'TRANSFER requires fromLocationId and toLocationId',
           );
         }
-        const sourceEntry = await tx.stockEntry.findFirst({
-          where: { productId, locationId: fromLocationId },
-        });
-        const sourceStock = sourceEntry?.quantity ?? 0;
-        if (sourceStock < quantity) {
-          throw new BadRequestException(
-            `Insufficient stock at source location: available ${sourceStock}, requested ${quantity}`,
-          );
-        }
-        await tx.stockEntry.update({
-          where: {
-            productId_variantId_locationId: {
-              productId,
-              variantId: null as unknown as string,
-              locationId: fromLocationId,
-            },
-          },
-          data: { quantity: { decrement: quantity } },
-        });
+        await this.decrementSourceStock(
+          tx,
+          productId,
+          fromLocationId,
+          quantity,
+        );
         await tx.stockEntry.upsert({
           where: {
             productId_variantId_locationId: {
@@ -362,6 +336,33 @@ export class StockService {
 
     const total = entries.reduce((sum, e) => sum + e.quantity, 0);
     return { product, total, entries };
+  }
+
+  /**
+   * Decrements stock at the source location with the availability guard in
+   * the same UPDATE statement, so two concurrent movements cannot both pass
+   * a separate check and drive the entry negative.
+   */
+  private async decrementSourceStock(
+    tx: Prisma.TransactionClient,
+    productId: string,
+    locationId: string,
+    quantity: number,
+  ) {
+    const result = await tx.stockEntry.updateMany({
+      where: { productId, locationId, quantity: { gte: quantity } },
+      data: { quantity: { decrement: quantity } },
+    });
+    if (result.count === 0) {
+      // Re-read only to build an informative message — the decision above
+      // was already made atomically.
+      const entry = await tx.stockEntry.findFirst({
+        where: { productId, locationId },
+      });
+      throw new BadRequestException(
+        `Insufficient stock at source location: available ${entry?.quantity ?? 0}, requested ${quantity}`,
+      );
+    }
   }
 
   private async findMovementLocation(

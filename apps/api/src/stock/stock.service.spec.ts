@@ -36,6 +36,8 @@ describe('StockService', () => {
     prisma.stockEntry.aggregate.mockResolvedValue(
       row({ _sum: { quantity: 10 } }),
     );
+    // The guarded decrement matches no row — not enough stock at the source.
+    prisma.stockEntry.updateMany.mockResolvedValue({ count: 0 });
     prisma.stockEntry.findFirst.mockResolvedValue(
       row({ id: 'entry-1', quantity: 3 }),
     );
@@ -54,8 +56,48 @@ describe('StockService', () => {
       ),
     ).rejects.toBeInstanceOf(BadRequestException);
 
-    expect(prisma.stockEntry.update).not.toHaveBeenCalled();
     expect(prisma.stockMovement.create).not.toHaveBeenCalled();
+  });
+
+  it('decrements outbound source stock with the availability guard in the same update', async () => {
+    const movement = { id: 'movement-1', productId: 'product-1' };
+    prisma.product.findFirst.mockResolvedValue(
+      row({ id: 'product-1', name: 'Widget', sku: 'W-1', minStock: 0 }),
+    );
+    prisma.warehouse.findFirst.mockResolvedValue(row({ id: 'warehouse-1' }));
+    prisma.stockEntry.aggregate
+      .mockResolvedValueOnce(row({ _sum: { quantity: 10 } }))
+      .mockResolvedValueOnce(row({ _sum: { quantity: 5 } }));
+    prisma.stockEntry.updateMany.mockResolvedValue({ count: 1 });
+    prisma.stockMovement.create.mockResolvedValue(row(movement));
+    prisma.auditLog.create.mockResolvedValue(row({}));
+
+    await expect(
+      service.createMovement(
+        {
+          productId: 'product-1',
+          warehouseId: 'warehouse-1',
+          type: MovementType.OUTBOUND,
+          quantity: 5,
+          fromLocationId: 'location-1',
+        },
+        'user-1',
+        'company-1',
+      ),
+    ).resolves.toBe(movement);
+
+    expect(prisma.stockEntry.updateMany).toHaveBeenCalledWith({
+      where: {
+        productId: 'product-1',
+        locationId: 'location-1',
+        quantity: { gte: 5 },
+      },
+      data: { quantity: { decrement: 5 } },
+    });
+    expect(prisma.stockMovement.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ previousStock: 10, newStock: 5 }),
+      include: expect.any(Object),
+    });
   });
 
   it('rejects inbound movement without a destination location', async () => {
@@ -152,6 +194,8 @@ describe('StockService', () => {
     prisma.stockEntry.aggregate.mockResolvedValue(
       row({ _sum: { quantity: 10 } }),
     );
+    // The guarded decrement matches no row — not enough stock at the source.
+    prisma.stockEntry.updateMany.mockResolvedValue({ count: 0 });
     prisma.stockEntry.findFirst.mockResolvedValue(
       row({ id: 'entry-1', quantity: 1 }),
     );
@@ -171,7 +215,6 @@ describe('StockService', () => {
       ),
     ).rejects.toBeInstanceOf(BadRequestException);
 
-    expect(prisma.stockEntry.update).not.toHaveBeenCalled();
     expect(prisma.stockEntry.upsert).not.toHaveBeenCalled();
     expect(prisma.stockMovement.create).not.toHaveBeenCalled();
   });

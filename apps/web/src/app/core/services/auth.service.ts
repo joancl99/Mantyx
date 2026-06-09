@@ -1,7 +1,8 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { catchError, map, of, tap } from 'rxjs';
+import { catchError, finalize, map, of, shareReplay, tap } from 'rxjs';
+import type { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthResponse, AuthUser, RefreshResponse } from '../models/auth.models';
 
@@ -40,8 +41,16 @@ export class AuthService {
       .pipe(tap((res) => this._storeSession(res)));
   }
 
-  refresh() {
-    return this.http
+  /**
+   * Single in-flight refresh shared by all callers. The API rotates the
+   * refresh cookie on every call, so if several requests hit a 401 at once
+   * and each fired its own refresh, all but the first would present an
+   * already-rotated cookie and get the whole session torn down.
+   */
+  private _refreshInFlight$: Observable<string> | null = null;
+
+  refresh(): Observable<string> {
+    this._refreshInFlight$ ??= this.http
       .post<RefreshResponse>(
         `${environment.apiUrl}/auth/refresh`,
         {},
@@ -53,7 +62,10 @@ export class AuthService {
           this._user.set(this._parseTokenUser(res.accessToken));
         }),
         map((res) => res.accessToken),
+        finalize(() => (this._refreshInFlight$ = null)),
+        shareReplay(1),
       );
+    return this._refreshInFlight$;
   }
 
   /**
