@@ -13,7 +13,6 @@ import {
   lockClosedOutline,
   eyeOutline,
   eyeOffOutline,
-  cubeSharp,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -50,7 +49,6 @@ export class LoginComponent {
       lockClosedOutline,
       eyeOutline,
       eyeOffOutline,
-      cubeSharp,
     });
   }
 

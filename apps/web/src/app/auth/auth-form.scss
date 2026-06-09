@@ -24,28 +24,19 @@ ion-content {
   margin-bottom: 32px;
 }
 
-.logo-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background: var(--wh-accent);
+.brand-plate {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
+  padding: 16px 22px;
+  margin-bottom: 18px;
+  background: #ffffff;
+  border-radius: 16px;
 
-  ion-icon {
-    font-size: 28px;
-    color: var(--wh-bg);
+  img {
+    display: block;
+    width: 200px;
+    max-width: 100%;
+    height: auto;
   }
-}
-
-.app-name {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--wh-text);
-  margin: 0 0 6px;
-  letter-spacing: -0.4px;
 }
 
 .app-subtitle {
@@ -118,9 +109,13 @@ ion-content {
   align-items: center;
   color: var(--wh-text-muted);
 
-  ion-icon { font-size: 18px; }
+  ion-icon {
+    font-size: 18px;
+  }
 
-  &:hover { color: var(--wh-text); }
+  &:hover {
+    color: var(--wh-text);
+  }
 }
 
 .field-error {
@@ -152,15 +147,22 @@ ion-content {
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s ease, opacity 0.15s ease;
+  transition:
+    background 0.15s ease,
+    opacity 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 48px;
   margin-bottom: 24px;
 
-  &:hover:not(:disabled) { background: var(--wh-accent-hover); }
-  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &:hover:not(:disabled) {
+    background: var(--wh-accent-hover);
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 
   ion-spinner {
     --color: var(--wh-bg);
@@ -180,6 +182,8 @@ ion-content {
     font-weight: 600;
     text-decoration: none;
 
-    &:hover { text-decoration: underline; }
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
