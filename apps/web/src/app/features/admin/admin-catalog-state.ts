@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 
-export interface NamedCatalogItem {
+interface NamedCatalogItem {
   id: string;
   name: string;
 }
