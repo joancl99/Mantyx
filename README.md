@@ -44,11 +44,12 @@ Mantyx helps companies manage products, stock, movements, warehouses, locations,
 - Users: tenant user management.
 - Categories and brands: tenant-scoped catalog setup.
 - Products: CRUD, search (name/SKU/barcode), filters, pagination, soft delete.
-- Stock and movements: inbound, outbound, transfer, adjustment, movement history, source-location stock guards, and warehouse/company location validation.
+- Stock and movements: inbound, outbound, transfer, adjustment, return, movement history, atomic source-location stock guards (no negative stock under concurrency), and warehouse/company location validation. Role-gated creation (VIEWER is read-only). Overview pagination and low-stock filtering run in SQL.
 - Warehouses: warehouses, zones, aisles, and locations.
 - Inventory counts: list/detail, creation, start, completion, and line add/update/delete.
-- Dashboard: KPIs, alerts, and latest movements.
-- Realtime alerts: low-stock Socket.io gateway.
+- Dashboard: KPIs, alerts, and latest movements — low/no-stock counters and the alert list are SQL aggregates.
+- Realtime alerts: authenticated low-stock Socket.io gateway — JWT verified at the handshake and alerts emitted only to the owning company's room (tenant-isolated).
+- Performance: explicit Postgres indexes on every hot lookup path (movements, stock by location, inventory counts, users, catalog, audit logs).
 - Infrastructure: Prisma module, Redis module, global exception filter, Swagger bootstrap.
 
 ### Implemented Frontend Areas
@@ -326,8 +327,8 @@ pnpm nx e2e api-e2e
 
 Current test baseline:
 
-- API unit suite: 53 tests across 8 suites — inventory, products, stock, warehouses, plus auth/security (logout denylist, login lockout, per-session refresh, JWT strategy, CompanyGuard 403, upload magic bytes). Specs use `jest-mock-extended` with zero `any`.
-- Frontend unit suite: 7 tests — route smoke behavior, `roleGuard`, and the shared `MovementFormModalComponent` data loading + submit validation.
+- API unit suite: 65 tests across 10 suites — inventory, products, stock, dashboard, warehouses, plus auth/security (logout denylist, login lockout, per-session refresh, JWT strategy, CompanyGuard 403, upload magic bytes, WS gateway handshake auth + tenant rooms). Specs use `jest-mock-extended` with zero `any`.
+- Frontend unit suite: 10 tests — route smoke behavior, `roleGuard`, the shared `MovementFormModalComponent` data loading + submit validation, and the shared in-flight auth refresh.
 - API e2e runs a deterministic in-process Nest app for `/api/health`; it does not require `api:serve` or a fixed port.
 - Lint is clean: both `api` and `web` are warning-free (no `no-non-null-assertion` warnings).
 
@@ -395,10 +396,13 @@ Representative endpoints:
 - [x] CI quality gate with explicit format, lint, test, build, and e2e steps (plus a `prisma generate` step).
 - [x] Security audit fully addressed and a code-quality refactor pass (`@CompanyId()` decorator, unified movement modal, admin state classes + extracted modal components, dead `types` project removed, `api`/`web` lint warning-free).
 - [x] Mantyx brand logos in login and side menu + favicon from the mantis symbol.
+- [x] Full-project audit pass (2026-06-09): RBAC on stock movements, authenticated WS gateway with per-tenant rooms, RETURN-as-increment fix, atomic stock decrements, single-default throttler, shared in-flight frontend refresh, 13 database indexes, SQL-side overview/dashboard aggregates, OnPush presentational components, and dead schema removed (`users.refreshToken`, `ProductVariant`).
+- [ ] **Next session** — Movements page becomes a TRANSFER-only flow: pick product → origin from its stock entries (location + qty) → destination cascade in the same warehouse → quantity capped at the origin stock. The current modal never sends locations and always 400s; movements are for moving stock, never adding/subtracting it (Receptions/Expeditions own that).
+- [ ] **Next session** — Auditoría page for ADMIN: `GET /audit` (company-scoped, filtered, paginated), broaden audit writes to login/logout and product/user CRUD, and an audit panel inside Administración. `AuditLog` is write-only today.
 - [ ] Expand API e2e coverage beyond health: auth, tenant-scoped products, stock movements, inventory lifecycle.
 - [ ] Broaden frontend unit tests: scanner, CSV export, services, products modal, inventory flows.
 - [ ] Cypress or Playwright browser e2e coverage for full user journeys.
-- [ ] Optional: reduce existing lint warnings and consider `--max-warnings=0` once cleaned up.
+- [ ] Optional minors: OnPush for smart container pages; socket reconnect with a fresh access token after a server-side disconnect.
 
 ## License
 
