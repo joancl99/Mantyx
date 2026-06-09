@@ -1,0 +1,53 @@
+# ── Stage 1: Builder ──────────────────────────────────────────────────────────
+FROM node:24-alpine AS builder
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@11.5.0 --activate
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY . .
+RUN pnpm exec prisma generate --schema=apps/api/prisma/schema.prisma
+# `nx prune` builds the API and emits a pruned + frozen production manifest pair
+# (dist/apps/api/package.json + pnpm-lock.yaml) derived from the root lockfile,
+# so the runtime install pins the exact same transitive versions (reproducible)
+# and carries only the API's real deps (apps/api/package.json — no Angular/etc.).
+RUN pnpm nx prune api
+
+# ── Stage 2: Production dependencies ──────────────────────────────────────────
+# Install ONLY the API's runtime deps from the pruned, frozen lockfile.
+FROM node:24-alpine AS prod-deps
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@11.5.0 --activate
+
+COPY --from=builder /app/dist/apps/api/package.json ./package.json
+COPY --from=builder /app/dist/apps/api/pnpm-lock.yaml ./pnpm-lock.yaml
+# node-linker=hoisted flattens node_modules so the bundle can require transitive
+# deps (rxjs, reflect-metadata); the workspace file approves native build scripts
+# (bcrypt, prisma engines) for pnpm 11.
+COPY docker/prod-deps.npmrc ./.npmrc
+COPY docker/prod-deps.pnpm-workspace.yaml ./pnpm-workspace.yaml
+RUN pnpm install --frozen-lockfile --prod
+
+COPY apps/api/prisma ./apps/api/prisma
+RUN pnpm exec prisma generate --schema=apps/api/prisma/schema.prisma
+
+# ── Stage 3: Runner ───────────────────────────────────────────────────────────
+FROM node:24-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=builder /app/dist/apps/api ./dist/apps/api
+COPY --from=prod-deps /app/apps/api/prisma ./apps/api/prisma
+
+RUN mkdir -p uploads/products
+
+COPY docker/api-entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
+EXPOSE 3000
+ENTRYPOINT ["./entrypoint.sh"]

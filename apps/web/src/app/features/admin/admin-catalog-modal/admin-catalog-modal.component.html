@@ -1,0 +1,59 @@
+<div
+  class="modal-backdrop"
+  tabindex="0"
+  (click)="state().closeModal()"
+  (keydown.escape)="state().closeModal()"
+>
+  <div
+    class="modal modal--sm"
+    role="presentation"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="modal-header">
+      <h2 class="modal-title">
+        {{ state().modalMode() === 'create' ? createTitle() : editTitle() }}
+      </h2>
+      <button class="modal-close" (click)="state().closeModal()">
+        <ion-icon name="close-outline" />
+      </button>
+    </div>
+    <div class="modal-body">
+      <div
+        class="form-field"
+        [class.has-error]="state().submitted() && state().form.invalid"
+      >
+        <label class="form-label" [for]="inputId()">Nombre *</label>
+        <input
+          [id]="inputId()"
+          class="form-input"
+          [formControl]="state().form"
+          [placeholder]="placeholder()"
+        />
+        @if (state().submitted() && state().form.hasError('required')) {
+          <span class="form-error">Campo obligatorio</span>
+        }
+      </div>
+      @if (state().formError()) {
+        <div class="form-alert">
+          <ion-icon name="alert-circle-outline" />{{ state().formError() }}
+        </div>
+      }
+      <div class="modal-footer">
+        <button type="button" class="btn-ghost" (click)="state().closeModal()">
+          Cancelar
+        </button>
+        <button
+          class="btn-primary"
+          [disabled]="state().saving()"
+          (click)="state().submitForm()"
+        >
+          @if (state().saving()) {
+            <ion-spinner name="crescent" />
+          } @else {
+            {{ state().modalMode() === 'create' ? 'Crear' : 'Guardar' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

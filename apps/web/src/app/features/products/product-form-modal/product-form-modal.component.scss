@@ -1,3 +1,108 @@
 :host {
   display: contents;
 }
+
+// ── Image picker ───────────────────────────────────────────────────────────────
+.image-picker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.image-input {
+  display: none;
+}
+
+.image-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 110px;
+  border: 2px dashed var(--wh-border);
+  border-radius: 12px;
+  color: var(--wh-text-muted);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+
+  ion-icon {
+    font-size: 28px;
+  }
+  span {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  &:hover {
+    border-color: var(--wh-accent);
+    background: rgba(245, 158, 11, 0.04);
+    color: var(--wh-accent);
+  }
+}
+
+.image-hint {
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  color: var(--wh-text-muted) !important;
+}
+
+.image-preview {
+  position: relative;
+  width: 100%;
+  max-width: 240px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--wh-border);
+
+  img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+.image-clear {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  ion-icon {
+    font-size: 14px;
+  }
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.8);
+  }
+}
+
+.image-change-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--wh-accent);
+  cursor: pointer;
+  ion-icon {
+    font-size: 14px;
+  }
+
+  &:hover {
+    opacity: 0.8;
+  }
+}

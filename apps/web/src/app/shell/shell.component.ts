@@ -1,4 +1,5 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LowerCasePipe } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import {
@@ -9,12 +10,13 @@ import {
   IonMenuToggle,
   IonFab,
   IonFabButton,
+  ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   homeOutline,
   cubeOutline,
-  layersOutline,
+  analyticsOutline,
   swapHorizontalOutline,
   clipboardOutline,
   businessOutline,
@@ -24,8 +26,14 @@ import {
   cubeSharp,
   barcodeOutline,
   shieldCheckmarkOutline,
+  downloadOutline,
+  sendOutline,
+  warningOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../core/services/auth.service';
+import { ScannerService } from '../core/services/scanner.service';
+import { SocketService } from '../core/services/socket.service';
+import { ScannerOverlayComponent } from '../core/scanner/scanner-overlay.component';
 import { UserRole } from '../core/models/user.models';
 
 interface NavItem {
@@ -60,7 +68,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     label: 'Stock',
-    icon: 'layers-outline',
+    icon: 'analytics-outline',
     route: '/app/stock',
     roles: ALL_ROLES,
   },
@@ -74,6 +82,18 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Inventario',
     icon: 'clipboard-outline',
     route: '/app/inventory',
+    roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'],
+  },
+  {
+    label: 'Recepciones',
+    icon: 'download-outline',
+    route: '/app/receptions',
+    roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'],
+  },
+  {
+    label: 'Expediciones',
+    icon: 'send-outline',
+    route: '/app/expeditions',
     roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'],
   },
   {
@@ -110,12 +130,17 @@ const NAV_ITEMS: NavItem[] = [
     IonMenuToggle,
     IonFab,
     IonFabButton,
+    ScannerOverlayComponent,
   ],
   templateUrl: './shell.component.html',
   styleUrl: './shell.component.scss',
 })
-export class ShellComponent {
-  private authService = inject(AuthService);
+export class ShellComponent implements OnInit {
+  private readonly authService = inject(AuthService);
+  private readonly socketService = inject(SocketService);
+  private readonly toastCtrl = inject(ToastController);
+  private readonly destroyRef = inject(DestroyRef);
+  readonly scannerService = inject(ScannerService);
   readonly currentUser = this.authService.currentUser;
 
   readonly navItems = computed(() => {
@@ -128,7 +153,7 @@ export class ShellComponent {
     addIcons({
       homeOutline,
       cubeOutline,
-      layersOutline,
+      analyticsOutline,
       swapHorizontalOutline,
       clipboardOutline,
       businessOutline,
@@ -138,14 +163,44 @@ export class ShellComponent {
       cubeSharp,
       barcodeOutline,
       shieldCheckmarkOutline,
+      downloadOutline,
+      sendOutline,
+      warningOutline,
     });
   }
 
+  ngOnInit() {
+    const token = this.authService.accessToken();
+    if (token) this.socketService.connect(token);
+
+    this.socketService.lowStockAlerts$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((alert) => this.showLowStockToast(alert));
+  }
+
+  private async showLowStockToast(alert: {
+    name: string;
+    sku: string;
+    stock: number;
+    minStock: number;
+  }) {
+    const toast = await this.toastCtrl.create({
+      message: `Stock bajo: ${alert.name} (${alert.sku}) — ${alert.stock}/${alert.minStock}`,
+      duration: 5000,
+      position: 'top',
+      color: 'warning',
+      icon: 'warning-outline',
+      buttons: [{ role: 'cancel', text: '✕' }],
+    });
+    await toast.present();
+  }
+
   logout() {
+    this.socketService.disconnect();
     this.authService.logout().subscribe();
   }
 
   openScanner() {
-    // Scanner global — se implementará cuando integremos Capacitor BarcodeScanner
+    this.scannerService.scan().subscribe();
   }
 }

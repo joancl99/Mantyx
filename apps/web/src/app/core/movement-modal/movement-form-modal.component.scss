@@ -1,0 +1,205 @@
+// Shared layout for the reception (INBOUND) and expedition (OUTBOUND) modals.
+// Structure is common; the accent colour is themed per direction at the bottom
+// via the `.modal--reception` / `.modal--expedition` modifier on the root.
+
+.modal--reception,
+.modal--expedition {
+  max-width: 640px;
+}
+
+.modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--wh-bg);
+  border: 1px solid var(--wh-border);
+  border-radius: 12px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--wh-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.location-cascade {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+.lines-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.line-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  background: var(--wh-surface);
+  border: 1px solid var(--wh-border);
+  border-radius: 10px;
+  transition: border-color 0.15s;
+
+  &.line-error {
+    border-color: var(--wh-danger);
+  }
+}
+
+.line-number {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 23px;
+}
+
+.line-fields {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 90px 1fr;
+  gap: 10px;
+}
+
+.btn-add-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  ion-icon {
+    font-size: 14px;
+  }
+}
+
+.btn-remove-line {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: transparent;
+  border: 1px solid var(--wh-border);
+  color: var(--wh-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  margin-top: 23px;
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--wh-danger);
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+  ion-icon {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .line-fields {
+    grid-template-columns: 1fr;
+  }
+  .location-cascade {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Reception (INBOUND) theme — green icon, amber accents ─────────────────────
+.modal--reception {
+  .modal-icon {
+    background: rgba(34, 197, 94, 0.12);
+    color: #22c55e;
+  }
+
+  .line-number {
+    background: rgba(245, 158, 11, 0.12);
+    color: var(--wh-accent);
+  }
+
+  .btn-add-line {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--wh-accent);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+
+    &:hover {
+      background: rgba(245, 158, 11, 0.18);
+    }
+  }
+}
+
+// ── Expedition (OUTBOUND) theme — red icon, accents and submit button ─────────
+.modal--expedition {
+  .modal-icon {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--wh-danger);
+  }
+
+  .line-number {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--wh-danger);
+  }
+
+  .btn-add-line {
+    background: rgba(239, 68, 68, 0.08);
+    color: var(--wh-danger);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.14);
+    }
+  }
+
+  .btn-primary {
+    background: var(--wh-danger);
+    color: #fff;
+
+    ion-spinner {
+      --color: #fff;
+    }
+  }
+}

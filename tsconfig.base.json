@@ -12,9 +12,6 @@
     "noUnusedLocals": true,
     "skipLibCheck": true,
     "target": "es2022",
-    "lib": ["es2022", "dom"],
-    "paths": {
-      "@mantyx/types": ["./libs/shared/src/index.ts"]
-    }
+    "lib": ["es2022", "dom"]
   }
 }

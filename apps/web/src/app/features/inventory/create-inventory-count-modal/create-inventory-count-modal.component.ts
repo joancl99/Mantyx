@@ -19,7 +19,7 @@ export class CreateInventoryCountModalComponent {
   readonly saving = input.required<boolean>();
   readonly formError = input.required<string>();
 
-  readonly close = output<void>();
+  readonly closeModal = output<void>();
   readonly submitForm = output<void>();
 
   constructor() {

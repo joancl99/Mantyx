@@ -1,0 +1,10 @@
+// Layout and visuals come from the shared modal/form classes in styles/_shared.scss.
+// Only the initial-admin section heading is specific to this modal.
+.section-label {
+  margin: 4px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--wh-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

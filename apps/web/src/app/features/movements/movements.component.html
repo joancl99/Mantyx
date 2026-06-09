@@ -7,19 +7,24 @@
 
 <ion-content [scrollY]="true" [fullscreen]="true">
   <div class="movements-page">
-
     <!-- Header -->
     <header class="page-header">
       <div class="page-header__left">
         <h1 class="page-title">Movimientos</h1>
         <span class="page-subtitle">{{ list.totalLabel() }}</span>
       </div>
-      @if (canCreate()) {
-        <button class="btn-primary" (click)="openCreate()">
-          <ion-icon name="add-outline" />
-          Nuevo movimiento
+      <div class="page-header__actions">
+        <button class="btn-export" (click)="exportCsv()">
+          <ion-icon name="download-outline" />
+          Exportar CSV
         </button>
-      }
+        @if (canCreate()) {
+          <button class="btn-primary" (click)="openCreate()">
+            <ion-icon name="add-outline" />
+            Nuevo movimiento
+          </button>
+        }
+      </div>
     </header>
 
     <app-movement-filters
@@ -41,7 +46,6 @@
       [totalPages]="list.totalPages()"
       (pageChanged)="list.goToPage($event)"
     />
-
   </div>
 </ion-content>
 

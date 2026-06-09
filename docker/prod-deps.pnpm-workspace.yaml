@@ -1,0 +1,9 @@
+# Build-script approval for the pruned API runtime install (mirrors the root
+# pnpm-workspace.yaml allowBuilds). pnpm 11 errors on un-approved build scripts.
+allowBuilds:
+  '@nestjs/core': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@scarf/scarf': false
+  bcrypt: true
+  prisma: true

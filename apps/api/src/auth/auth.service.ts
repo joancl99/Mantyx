@@ -1,5 +1,7 @@
 import {
   ForbiddenException,
+  HttpException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -7,14 +9,22 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 import { RedisService } from '../redis/redis.service';
 import { UsersService } from '../users/users.service';
 import { AuthTokensDto } from './dto/auth-tokens.dto';
 import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
+import { refreshKey } from './session-key';
+import { denylistKey } from './token-denylist';
 import { JwtPayload } from './types/jwt-payload.interface';
 
 const REFRESH_TTL = 7 * 24 * 60 * 60; // 7 days in seconds
+
+// Per-account login lockout: after this many consecutive failures the account
+// is locked for the window. Complements the per-IP throttle, stopping slow /
+// distributed brute force against a single account.
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOGIN_LOCK_SECONDS = 15 * 60; // 15 minutes
 
 @Injectable()
 export class AuthService {
@@ -35,25 +45,39 @@ export class AuthService {
     this.refreshExpiry = config.getOrThrow('JWT_REFRESH_EXPIRES_IN');
   }
 
-  async register(dto: RegisterDto): Promise<AuthTokensDto> {
-    const user = await this.users.create(dto.email, dto.name, dto.password);
-    return this.issueTokens(user);
-  }
-
   async login(dto: LoginDto): Promise<AuthTokensDto> {
-    const user = await this.users.findByEmail(dto.email);
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+    const lockKey = `login-fail:${dto.email.trim().toLowerCase()}`;
 
-    const match = await bcrypt.compare(dto.password, user.password);
-    if (!match) throw new UnauthorizedException('Invalid credentials');
+    const attempts = Number((await this.redis.get(lockKey)) ?? 0);
+    if (attempts >= MAX_LOGIN_ATTEMPTS) {
+      throw new HttpException(
+        'Demasiados intentos fallidos. Inténtalo de nuevo en unos minutos.',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const user = await this.users.findByEmail(dto.email);
+    const valid = user && (await bcrypt.compare(dto.password, user.password));
+    if (!valid) {
+      await this.redis.increment(lockKey, LOGIN_LOCK_SECONDS);
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
     if (!user.isActive) throw new ForbiddenException('Account is deactivated');
 
+    // Successful credentials — reset the failure counter.
+    await this.redis.del(lockKey);
     return this.issueTokens(user);
   }
 
-  async refresh(userId: string, refreshToken: string): Promise<AuthTokensDto> {
-    const stored = await this.redis.get(`refresh:${userId}`);
+  async refresh(
+    userId: string,
+    sessionId: string | undefined,
+    refreshToken: string,
+  ): Promise<AuthTokensDto> {
+    if (!sessionId) throw new ForbiddenException('Session expired');
+
+    const stored = await this.redis.get(refreshKey(userId, sessionId));
     if (!stored) throw new ForbiddenException('Session expired');
 
     const match = await bcrypt.compare(refreshToken, stored);
@@ -62,20 +86,45 @@ export class AuthService {
     const user = await this.users.findById(userId);
     if (!user || !user.isActive) throw new ForbiddenException('Access denied');
 
-    return this.issueTokens(user);
+    // Rotate the token within the same session so other devices stay logged in.
+    return this.issueTokens(user, sessionId);
   }
 
-  async logout(userId: string): Promise<void> {
-    await this.redis.del(`refresh:${userId}`);
+  async logout(user: JwtPayload): Promise<void> {
+    // Revoke only the session this request belongs to — other devices keep
+    // their sessions. Old tokens predating per-session keys carry no `sid`.
+    if (user.sid) {
+      await this.redis.del(refreshKey(user.sub, user.sid));
+    }
+
+    // Revoke the access token used for this request so it cannot be reused
+    // before its natural expiry. TTL = remaining lifetime of the token.
+    if (user.jti && user.exp) {
+      const ttl = user.exp - Math.floor(Date.now() / 1000);
+      if (ttl > 0) {
+        await this.redis.set(denylistKey(user.jti), '1', ttl);
+      }
+    }
   }
 
-  private async issueTokens(user: User): Promise<AuthTokensDto> {
+  /**
+   * Issues a fresh access/refresh token pair. On login `sessionId` is omitted
+   * and a new session is created; on refresh the caller passes the existing
+   * `sessionId` so rotation stays within the same device session.
+   */
+  private async issueTokens(
+    user: User,
+    sessionId: string = randomUUID(),
+  ): Promise<AuthTokensDto> {
+    const jti = randomUUID();
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
       companyId: user.companyId,
+      jti,
+      sid: sessionId,
     };
 
     const signOpts = (secret: string, expiresIn: string) => ({
@@ -102,7 +151,7 @@ export class AuthService {
     ]);
 
     const hashed = await bcrypt.hash(refreshToken, 10);
-    await this.redis.set(`refresh:${user.id}`, hashed, REFRESH_TTL);
+    await this.redis.set(refreshKey(user.id, sessionId), hashed, REFRESH_TTL);
 
     return {
       accessToken,

@@ -46,10 +46,21 @@
   white-space: nowrap;
   transition: opacity 0.15s;
 
-  &:hover { opacity: 0.88; }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-  ion-icon { font-size: 16px; }
-  ion-spinner { --color: var(--wh-bg); width: 16px; height: 16px; }
+  &:hover {
+    opacity: 0.88;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  ion-icon {
+    font-size: 16px;
+  }
+  ion-spinner {
+    --color: var(--wh-bg);
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .btn-ghost {
@@ -63,7 +74,10 @@
   cursor: pointer;
   transition: background 0.15s;
 
-  &:hover { background: var(--wh-surface-hover); color: var(--wh-text); }
+  &:hover {
+    background: var(--wh-surface-hover);
+    color: var(--wh-text);
+  }
 }
 
 .btn-danger {
@@ -80,9 +94,18 @@
   cursor: pointer;
   transition: opacity 0.15s;
 
-  &:hover { opacity: 0.88; }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-  ion-spinner { --color: #fff; width: 16px; height: 16px; }
+  &:hover {
+    opacity: 0.88;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  ion-spinner {
+    --color: #fff;
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .btn-clear {
@@ -104,7 +127,9 @@
     color: var(--wh-danger);
     border-color: rgba(239, 68, 68, 0.3);
   }
-  ion-icon { font-size: 14px; }
+  ion-icon {
+    font-size: 14px;
+  }
 }
 
 .action-btn {
@@ -118,27 +143,38 @@
   align-items: center;
   justify-content: center;
   transition: background 0.15s;
-  ion-icon { font-size: 15px; }
+  ion-icon {
+    font-size: 15px;
+  }
 }
 
 .action-btn--edit {
   color: var(--wh-accent);
-  &:hover { background: rgba(245, 158, 11, 0.15); }
+  &:hover {
+    background: rgba(245, 158, 11, 0.15);
+  }
 }
 
 .action-btn--delete {
   color: var(--wh-danger);
-  &:hover { background: rgba(239, 68, 68, 0.12); }
+  &:hover {
+    background: rgba(239, 68, 68, 0.12);
+  }
 }
 
 .action-btn--deactivate {
   color: var(--wh-text-muted);
-  &:hover { background: rgba(239, 68, 68, 0.1); color: var(--wh-danger); }
+  &:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--wh-danger);
+  }
 }
 
 .action-btn--activate {
   color: #22c55e;
-  &:hover { background: rgba(34, 197, 94, 0.1); }
+  &:hover {
+    background: rgba(34, 197, 94, 0.1);
+  }
 }
 
 // ── Search & Filters ──────────────────────────────────────────────────────────
@@ -176,8 +212,12 @@
   box-sizing: border-box;
   transition: border-color 0.15s;
 
-  &::placeholder { color: var(--wh-text-muted); }
-  &:focus { border-color: var(--wh-accent); }
+  &::placeholder {
+    color: var(--wh-text-muted);
+  }
+  &:focus {
+    border-color: var(--wh-accent);
+  }
 }
 
 .filter-selects {
@@ -198,8 +238,12 @@
   cursor: pointer;
   transition: border-color 0.15s;
 
-  &:focus { border-color: var(--wh-accent); }
-  option { background: var(--wh-surface); }
+  &:focus {
+    border-color: var(--wh-accent);
+  }
+  option {
+    background: var(--wh-surface);
+  }
 }
 
 // ── Loading & empty states ────────────────────────────────────────────────────
@@ -212,7 +256,11 @@
   gap: 12px;
 }
 
-.main-spinner { --color: var(--wh-accent); width: 36px; height: 36px; }
+.main-spinner {
+  --color: var(--wh-accent);
+  width: 36px;
+  height: 36px;
+}
 
 .empty-icon {
   width: 64px;
@@ -222,11 +270,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  ion-icon { font-size: 28px; color: var(--wh-text-muted); }
+  ion-icon {
+    font-size: 28px;
+    color: var(--wh-text-muted);
+  }
 }
 
-.empty-title { font-size: 16px; font-weight: 600; color: var(--wh-text); margin: 0; }
-.empty-sub { font-size: 13px; color: var(--wh-text-muted); margin: 0; }
+.empty-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--wh-text);
+  margin: 0;
+}
+.empty-sub {
+  font-size: 13px;
+  color: var(--wh-text-muted);
+  margin: 0;
+}
 
 // ── Pagination ────────────────────────────────────────────────────────────────
 .pagination {
@@ -250,9 +310,16 @@
   justify-content: center;
   transition: background 0.15s;
 
-  &:hover:not(:disabled) { background: var(--wh-surface-hover); }
-  &:disabled { opacity: 0.4; cursor: not-allowed; }
-  ion-icon { font-size: 16px; }
+  &:hover:not(:disabled) {
+    background: var(--wh-surface-hover);
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  ion-icon {
+    font-size: 16px;
+  }
 }
 
 .page-info {
@@ -286,11 +353,19 @@
   animation: modal-in 0.18s ease;
 }
 
-.modal--sm { max-width: 380px; }
+.modal--sm {
+  max-width: 380px;
+}
 
 @keyframes modal-in {
-  from { opacity: 0; transform: scale(0.96) translateY(8px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .modal-header {
@@ -301,7 +376,12 @@
   border-bottom: 1px solid var(--wh-border);
 }
 
-.modal-title { font-size: 16px; font-weight: 700; color: var(--wh-text); margin: 0; }
+.modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--wh-text);
+  margin: 0;
+}
 
 .modal-close {
   width: 32px;
@@ -317,7 +397,10 @@
   font-size: 20px;
   transition: background 0.15s;
 
-  &:hover { background: var(--wh-surface-hover); color: var(--wh-text); }
+  &:hover {
+    background: var(--wh-surface-hover);
+    color: var(--wh-text);
+  }
 }
 
 .modal-body {
@@ -348,7 +431,9 @@
   flex-direction: column;
   gap: 5px;
 
-  &.has-error .form-input { border-color: var(--wh-danger); }
+  &.has-error .form-input {
+    border-color: var(--wh-danger);
+  }
 }
 
 .form-label {
@@ -371,13 +456,25 @@
   width: 100%;
   box-sizing: border-box;
 
-  &::placeholder { color: var(--wh-text-muted); }
-  &:focus { border-color: var(--wh-accent); }
-  option { background: var(--wh-surface); }
+  &::placeholder {
+    color: var(--wh-text-muted);
+  }
+  &:focus {
+    border-color: var(--wh-accent);
+  }
+  option {
+    background: var(--wh-surface);
+  }
 }
 
-.form-textarea { resize: vertical; min-height: 72px; }
-.form-error { font-size: 11px; color: var(--wh-danger); }
+.form-textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+.form-error {
+  font-size: 11px;
+  color: var(--wh-danger);
+}
 
 .form-alert {
   display: flex;
@@ -390,7 +487,10 @@
   color: var(--wh-danger);
   font-size: 13px;
 
-  ion-icon { font-size: 16px; flex-shrink: 0; }
+  ion-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+  }
 }
 
 .delete-text {
@@ -398,12 +498,139 @@
   color: var(--wh-text-muted);
   margin: 0;
   line-height: 1.5;
-  strong { color: var(--wh-text); }
+  strong {
+    color: var(--wh-text);
+  }
 }
 
 // ── Responsive shared ─────────────────────────────────────────────────────────
 @media (max-width: 600px) {
-  .form-row { grid-template-columns: 1fr; }
-  .filter-selects { width: 100%; }
-  .filter-select { flex: 1; }
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  .filter-selects {
+    width: 100%;
+  }
+  .filter-select {
+    flex: 1;
+  }
+}
+
+// ── Export button ─────────────────────────────────────────────────────────────
+.btn-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--wh-accent);
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+
+  &:hover {
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.7);
+  }
+  ion-icon {
+    font-size: 16px;
+  }
+}
+
+// ── Page header actions ───────────────────────────────────────────────────────
+.page-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+// ── Modal success state ───────────────────────────────────────────────────────
+.modal-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 24px 32px;
+  text-align: center;
+}
+
+.success-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.12);
+  border: 2px solid rgba(34, 197, 94, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  ion-icon {
+    font-size: 32px;
+    color: #22c55e;
+  }
+}
+
+.success-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--wh-text);
+  margin: 0;
+}
+
+.success-sub {
+  font-size: 13px;
+  color: var(--wh-text-muted);
+  margin: 0;
+}
+
+.success-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+// ── Scanner integration ───────────────────────────────────────────────────────
+.input-with-scan {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+
+  .form-input {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.btn-scan {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.08);
+  color: #f59e0b;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+
+  ion-icon {
+    font-size: 18px;
+  }
+
+  &:hover {
+    background: rgba(245, 158, 11, 0.16);
+    border-color: rgba(245, 158, 11, 0.6);
+  }
 }

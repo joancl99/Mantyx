@@ -7,21 +7,26 @@
 
 <ion-content [scrollY]="true" [fullscreen]="true">
   <div class="stock-page">
-
     <!-- Header -->
     <header class="page-header">
       <div class="page-header__left">
         <h1 class="page-title">Stock actual</h1>
         <span class="page-subtitle">{{ totalLabel() }}</span>
       </div>
-      <button
-        class="btn-filter"
-        [class.active]="filterLowStock()"
-        (click)="onToggleLowStock()"
-      >
-        <ion-icon name="warning-outline" />
-        Stock bajo
-      </button>
+      <div class="page-header__actions">
+        <button class="btn-export" (click)="exportCsv()">
+          <ion-icon name="download-outline" />
+          Exportar CSV
+        </button>
+        <button
+          class="btn-filter"
+          [class.active]="filterLowStock()"
+          (click)="onToggleLowStock()"
+        >
+          <ion-icon name="warning-outline" />
+          Stock bajo
+        </button>
+      </div>
     </header>
 
     <!-- Search -->
@@ -44,6 +49,5 @@
       [totalPages]="totalPages()"
       (pageChange)="goToPage($event)"
     />
-
   </div>
 </ion-content>

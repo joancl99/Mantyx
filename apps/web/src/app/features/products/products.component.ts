@@ -7,6 +7,7 @@ import {
   DestroyRef,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { of, switchMap } from 'rxjs';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import {
   IonContent,
@@ -18,9 +19,7 @@ import {
   IonTitle,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import {
-  addOutline,
-} from 'ionicons/icons';
+import { addOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import {
   Brand,
@@ -92,13 +91,25 @@ export class ProductsComponent implements OnInit {
   readonly deleteTarget = signal<Product | null>(null);
 
   readonly form = new FormGroup({
-    name: new FormControl('', Validators.required),
-    sku: new FormControl('', Validators.required),
-    barcode: new FormControl(''),
-    description: new FormControl(''),
-    minStock: new FormControl(0, [Validators.required, Validators.min(0)]),
-    categoryId: new FormControl('', Validators.required),
-    brandId: new FormControl(''),
+    name: new FormControl('', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    sku: new FormControl('', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    barcode: new FormControl('', { nonNullable: true }),
+    description: new FormControl('', { nonNullable: true }),
+    minStock: new FormControl(0, {
+      nonNullable: true,
+      validators: [Validators.required, Validators.min(0)],
+    }),
+    categoryId: new FormControl('', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    brandId: new FormControl('', { nonNullable: true }),
   });
 
   constructor() {
@@ -156,7 +167,7 @@ export class ProductsComponent implements OnInit {
     this.showModal.set(false);
   }
 
-  submitForm() {
+  submitForm(file: File | null) {
     this.submitted.set(true);
     if (this.form.invalid) return;
 
@@ -165,33 +176,43 @@ export class ProductsComponent implements OnInit {
     const raw = this.form.getRawValue();
 
     const dto: CreateProductDto = {
-      name: raw.name!,
-      sku: raw.sku!,
+      name: raw.name,
+      sku: raw.sku,
       barcode: raw.barcode || undefined,
       description: raw.description || undefined,
       minStock: Number(raw.minStock),
-      categoryId: raw.categoryId!,
+      categoryId: raw.categoryId,
       brandId: raw.brandId || undefined,
     };
 
-    const request$ =
-      this.modalMode() === 'create'
-        ? this.productsService.create(dto)
-        : this.productsService.update(this.editingProduct()!.id, dto);
+    const editingProduct = this.editingProduct();
+    const save$ =
+      this.modalMode() === 'edit' && editingProduct !== null
+        ? this.productsService.update(editingProduct.id, dto)
+        : this.productsService.create(dto);
 
-    request$.subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.showModal.set(false);
-        this.list.load();
-      },
-      error: (err) => {
-        this.saving.set(false);
-        this.formError.set(
-          err?.error?.message ?? 'Error al guardar el producto',
-        );
-      },
-    });
+    save$
+      .pipe(
+        switchMap((product) =>
+          file
+            ? this.productsService.uploadImage(product.id, file)
+            : of(product),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.showModal.set(false);
+          this.list.load();
+        },
+        error: (err) => {
+          this.saving.set(false);
+          this.formError.set(
+            err?.error?.message ?? 'Error al guardar el producto',
+          );
+        },
+      });
   }
 
   // ── Delete ──────────────────────────────────────────────────────

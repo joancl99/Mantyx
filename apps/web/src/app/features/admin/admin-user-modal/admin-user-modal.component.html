@@ -1,0 +1,134 @@
+<div
+  class="modal-backdrop"
+  tabindex="0"
+  (click)="state().closeModal()"
+  (keydown.escape)="state().closeModal()"
+>
+  <div class="modal" role="presentation" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">
+        {{
+          state().modalMode() === 'create' ? 'Nuevo usuario' : 'Editar usuario'
+        }}
+      </h2>
+      <button class="modal-close" (click)="state().closeModal()">
+        <ion-icon name="close-outline" />
+      </button>
+    </div>
+    <form
+      [formGroup]="state().form"
+      (ngSubmit)="state().submitForm()"
+      class="modal-body"
+    >
+      <div class="form-row">
+        <div
+          class="form-field"
+          [class.has-error]="
+            state().submitted() && state().form.get('name')?.invalid
+          "
+        >
+          <label class="form-label" for="u-name">Nombre *</label>
+          <input
+            id="u-name"
+            class="form-input"
+            formControlName="name"
+            placeholder="Juan García"
+          />
+          @if (
+            state().submitted() &&
+            state().form.get('name')?.hasError('required')
+          ) {
+            <span class="form-error">Campo obligatorio</span>
+          }
+        </div>
+        <div
+          class="form-field"
+          [class.has-error]="
+            state().submitted() && state().form.get('email')?.invalid
+          "
+        >
+          <label class="form-label" for="u-email">Email *</label>
+          <input
+            id="u-email"
+            class="form-input"
+            formControlName="email"
+            placeholder="juan@empresa.com"
+            type="email"
+          />
+          @if (
+            state().submitted() && state().form.get('email')?.hasError('email')
+          ) {
+            <span class="form-error">Email no válido</span>
+          }
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label class="form-label" for="u-role">Rol *</label>
+          <select id="u-role" class="form-input" formControlName="role">
+            @for (role of state().assignableRoles; track role) {
+              <option [value]="role">{{ state().roleLabel(role) }}</option>
+            }
+          </select>
+        </div>
+        @if (state().modalMode() === 'create') {
+          <div
+            class="form-field"
+            [class.has-error]="
+              state().submitted() && state().form.get('password')?.invalid
+            "
+          >
+            <label class="form-label" for="u-password">Contraseña *</label>
+            <div class="password-wrap">
+              <input
+                id="u-password"
+                class="form-input"
+                formControlName="password"
+                [type]="state().showPassword() ? 'text' : 'password'"
+                placeholder="Mínimo 8 caracteres"
+              />
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="state().showPassword.set(!state().showPassword())"
+              >
+                <ion-icon
+                  [name]="
+                    state().showPassword() ? 'eye-off-outline' : 'eye-outline'
+                  "
+                />
+              </button>
+            </div>
+            @if (
+              state().submitted() &&
+              state().form.get('password')?.hasError('minlength')
+            ) {
+              <span class="form-error">Mínimo 8 caracteres</span>
+            }
+          </div>
+        }
+      </div>
+      @if (state().formError()) {
+        <div class="form-alert">
+          <ion-icon name="alert-circle-outline" />{{ state().formError() }}
+        </div>
+      }
+      <div class="modal-footer">
+        <button type="button" class="btn-ghost" (click)="state().closeModal()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="state().saving()">
+          @if (state().saving()) {
+            <ion-spinner name="crescent" />
+          } @else {
+            {{
+              state().modalMode() === 'create'
+                ? 'Crear usuario'
+                : 'Guardar cambios'
+            }}
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

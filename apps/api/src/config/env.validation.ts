@@ -10,17 +10,14 @@ export const envValidationSchema = Joi.object({
 
   REDIS_URL: Joi.string().required(),
 
-  JWT_ACCESS_SECRET: Joi.string().min(16).required(),
+  // Secrets must be high-entropy random values (e.g. `openssl rand -hex 32`),
+  // not passphrases. 32 chars = 256-bit minimum for HS256.
+  JWT_ACCESS_SECRET: Joi.string().min(32).required(),
   JWT_ACCESS_EXPIRES_IN: Joi.string().default('15m'),
-  JWT_REFRESH_SECRET: Joi.string().min(16).required(),
+  JWT_REFRESH_SECRET: Joi.string().min(32).required(),
   JWT_REFRESH_EXPIRES_IN: Joi.string().default('7d'),
 
-  MINIO_ENDPOINT: Joi.string().default('localhost'),
-  MINIO_PORT: Joi.number().default(9000),
-  MINIO_USE_SSL: Joi.boolean().default(false),
-  MINIO_ACCESS_KEY: Joi.string().required(),
-  MINIO_SECRET_KEY: Joi.string().required(),
-  MINIO_BUCKET: Joi.string().default('warehouse'),
-
-  CORS_ORIGIN: Joi.string().default('http://localhost:4200'),
+  // Single allowed browser origin for CORS (credentials are enabled, so this
+  // must never be `*`). `.uri()` rejects `*` and malformed values.
+  CORS_ORIGIN: Joi.string().uri().default('http://localhost:4200'),
 });
