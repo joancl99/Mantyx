@@ -131,6 +131,7 @@ Remaining frontend work:
 - Theme: dark slate/navy enterprise SaaS.
 - Accent: warm amber `#f59e0b`.
 - Typography: Plus Jakarta Sans.
+- Brand assets live in `apps/web/public/brand/`: `mantyx-logo-full.png` (mantis symbol + wordmark), `mantyx-symbol.png` (mantis only), `mantyx-wordmark.png` ("Mantyx" text only). The logo's wordmark is dark, so on the dark login card and dark side menu it sits on a white rounded "plate"/badge to stay legible. Current usage: **login** shows the full logo on a white plate; the **side menu** shows the wordmark on a white plate; the **favicon** (`apps/web/public/favicon.ico` + `favicon-16x16.png`/`favicon-32x32.png`/`apple-touch-icon.png`, linked in `index.html`) is generated from the green mantis symbol. Logos are plain `<img>` static assets — no ion-icon placeholder (`cube-sharp` was removed).
 - Navigation: Ionic `IonMenu` side drawer for authenticated routes.
 - Auth pages are full-screen and do not show the app menu.
 - Scanner is a global FAB (barcode icon, bottom-right corner), not a regular menu section.
@@ -172,6 +173,7 @@ Approved shell menu (in order):
 - Project skills are managed with `npx autoskills`; rerun it after stack or skill changes. Installed skills are locked in `skills-lock.json`.
 - The workspace declares `packageManager: pnpm@11.5.0`; if `pnpm` is not on PATH, use Corepack (`corepack pnpm ...`) or enable it locally. On Windows, `corepack enable` can require an Administrator shell.
 - Package scripts call local Nx directly and should be run through `pnpm`, for example `pnpm run start:api`.
+- After a fresh clone (before tests/build), generate the Prisma client with `pnpm run db:generate` (= `prisma generate --schema=apps/api/prisma/schema.prisma`). Without it, the API test/build fails with missing `@prisma/client` types — see GitHub And CI.
 - For direct Nx commands, prefer `pnpm nx ...`.
 - Use Nx for build, test, lint, e2e, and affected workflows.
 - Prefix Nx commands with the workspace package manager where practical, for example `pnpm nx build api`.
@@ -203,7 +205,11 @@ Before applying migrations that add unique constraints, check whether existing d
 - Main branch: `main`.
 - Before merging to `main`, run the explicit quality gate used by CI: format check, lint, tests, builds, and `api-e2e`.
 - If the workspace is not connected to Nx Cloud, do not leave `nxCloudId` in `nx.json`; it can break CI authorization.
-- Current CI commands:
+- CI (`.github/workflows/ci.yml`) runs **only on push/PR to `main`** (pushes to `dev`/`pre` do not trigger it). To validate a change against CI without landing it on `main`, open a PR `dev → main` (CI also runs on `pull_request: [main]`).
+- After `pnpm install`, CI runs **`pnpm exec prisma generate --schema=apps/api/prisma/schema.prisma`** before any tsc-based task. This is required: the schema lives at a non-default path, so `@prisma/client`'s install hook can't auto-generate it, and the API test/build suites need the generated enums/types (`Role`, `AuditAction`, `MovementType`, `InventoryCountStatus`, `Prisma.PrismaClientKnownRequestError`). Locally the client exists from running migrations, which masks the gap — run `pnpm run db:generate` after a fresh clone. The Docker API build already generates the client explicitly.
+- Current CI commands (in order):
+  - `pnpm install --frozen-lockfile`
+  - `pnpm exec prisma generate --schema=apps/api/prisma/schema.prisma`
   - `pnpm nx format:check --base=origin/main`
   - `pnpm nx run api:eslint:lint`
   - `pnpm nx lint web`
