@@ -53,17 +53,17 @@ Roles:
 - `OPERATOR`: warehouse operations user.
 - `VIEWER`: read-only user.
 
-Most business data belongs to a `Company` and must be scoped by `companyId`. Platform-level endpoints must be explicitly restricted to `SUPERADMIN`.
+Most business data belongs to a `Company` and must be scoped by `companyId`. Platform-level endpoints must be explicitly restricted to `SUPERADMIN`. The global `CompanyGuard` returns 403 (not 500) if an authenticated user without a `companyId` hits a tenant-scoped route; platform routes are marked `@AllowNoCompany`. Tenant-scoped controllers inject the company via the `@CompanyId()` param decorator (guaranteed-non-null `string`) — there are no `user.companyId!` assertions.
 
-Fresh database bootstrap:
+Onboarding is invite-based (no public self-registration):
 
-1. Create a `Company` in Prisma Studio or with a seed/script.
-2. Assign the initial non-SUPERADMIN user to that company through `User.companyId`.
-3. Log in again so the JWT contains the updated `companyId`.
+1. The first `SUPERADMIN` is created manually (Prisma Studio / SQL) with `companyId = null`.
+2. The `SUPERADMIN` creates each company **together with its initial `ADMIN`** in one transactional step (`POST /companies` takes `adminName`/`adminEmail`/`adminPassword`).
+3. Each `ADMIN` provisions their own workers via the Administración page (`POST /users`), assigning only `MANAGER`/`OPERATOR`/`VIEWER`.
 
 ## Implemented Backend Areas
 
-- Auth: register, login, refresh, logout, JWT strategies, refresh tokens, RBAC, throttling.
+- Auth: login, refresh, logout, JWT strategies, RBAC, throttling (no public registration — onboarding is invite-based). Hardened (security audit 2026-06-07, fully addressed): access token (15m) carries a `jti`; logout stores it in a Redis denylist so it cannot be reused before expiry, and `JwtStrategy` re-fetches the live user every request (deactivation/role/company changes take effect immediately). The refresh token (7d) lives in an httpOnly + Secure + SameSite=strict cookie (never in the body/JS storage) and is keyed per device session at `refresh:<userId>:<sid>` in Redis, so concurrent device sessions coexist and logout/revocation target only the requesting session. Per-account login lockout (5 failures → 15-min Redis lock, 429). Upload magic-byte validation, JWT secret ≥32, Swagger off in prod, CORS URI validation. Strict CSP + security headers in `docker/nginx.conf`.
 - Companies: `SUPERADMIN` company CRUD/toggle-status.
 - Users: tenant user management.
 - Categories: tenant-scoped catalog setup.
@@ -79,7 +79,7 @@ Fresh database bootstrap:
 
 ## Implemented Frontend Areas
 
-- Auth pages: login and register.
+- Auth pages: login only (no register — invite-based onboarding). Access token kept in memory only; the session is restored on load via a `provideAppInitializer` silent refresh.
 - Authenticated shell with Ionic side menu and global scanner FAB (functional).
 - Dashboard.
 - Products.
@@ -90,18 +90,20 @@ Fresh database bootstrap:
 - Admin page with role-specific views:
   - `SUPERADMIN`: global company management.
   - `ADMIN`: tenant users, categories, and brands.
-- Inventory counts: connected to the backend API with list, status filter, creation, detail, line editing, completion, and completed read-only handling.
+- Inventory counts: connected to the backend API with list, status filter, creation, detail, line editing, completion, and completed read-only handling. Scan-to-fill location: a "Escanear" button in the line form scans a location QR/barcode, resolves it via `GET /warehouses/:warehouseId/locations/search?code=`, and autofills the zone → aisle → location cascade.
 - Receptions: full INBOUND flow with warehouse + cascading location (zone → aisle → location), multi-line form, scan-to-fill product by barcode/SKU, `forkJoin` parallel submit. Modal transitions to a success state after submit with an "Exportar albarán CSV" button.
 - Expeditions: full OUTBOUND flow (mirror of Receptions), with source location and backend stock guard on submit error. Same modal success state with albarán CSV export.
-- Barcode/QR scanner: `ScannerService` with platform detection. ML Kit on native Android/iOS via Capacitor. ZXing camera overlay on browser/web. Integrated in the global FAB, Reception modal, and Expedition modal.
+- Receptions and Expeditions share a single config-driven modal `core/movement-modal/MovementFormModalComponent` (driven by a `MovementModalConfig`: labels, theme modifier class, header icon, id prefix, CSV wording). It emits a generic `MovementSubmitData`; each page maps the location to `toLocationId`/`fromLocationId` by direction. Green (reception) / red (expedition) theming via `.modal--reception`/`.modal--expedition` modifiers.
+- Barcode/QR scanner: `ScannerService` with platform detection. ML Kit on native Android/iOS via Capacitor. ZXing camera overlay on browser/web. Integrated in the global FAB, the shared movement modal (receptions/expeditions), and the inventory line form.
 - CSV export: `CsvExportService` (BOM prefix, RFC-4180 escaping, timestamped filename). Export button in every list page (Stock, Movements, Receptions, Expeditions) that exports with the currently active filters at `limit: 9999`.
 - Product images: `PATCH /products/:id/image` (Multer diskStorage, jpg/png/webp ≤5 MB, UUID filename). Stored in `uploads/products/`, served as static assets. Image picker with live FileReader preview in the product form modal.
 - Realtime low-stock alerts: `SocketService` connects on shell init with the current access token, subscribes to `low-stock` Socket.io events, and shows an Ionic warning toast (5 s, dismissible). `LowStockAlert` model aligned with backend `LowStockPayload` field names.
-- Production Docker: `Dockerfile.api` is a 3-stage build on Node 24 Alpine (`builder` → `prod-deps` → `runner`). The builder runs `pnpm nx prune api`, emitting a pruned + frozen manifest pair (`dist/apps/api/package.json` + `pnpm-lock.yaml`) derived from the root lockfile; `prod-deps` installs only the API's runtime deps with `pnpm install --frozen-lockfile --prod` (reproducible, no Angular/Capacitor in the image). The pruned dep list lives in `apps/api/package.json`, kept in sync by the `@nx/dependency-checks` ESLint rule. `Dockerfile.web` builds Angular and serves it with `nginx:stable-alpine-slim`. Both images are hardened to 0 critical / 0 high CVEs; `.dockerignore` excludes `.env*` so local secrets never enter build layers. `docker-compose.prod.yml` orchestrates postgres + redis + api + web with a named volume for uploaded images. Nginx proxies `/api`, `/uploads`, and `/ws` (WebSocket upgrade) to the API container. The API entrypoint runs `prisma migrate deploy` before starting the process. MinIO removed — no longer referenced anywhere.
+- Production Docker: `Dockerfile.api` is a 3-stage build on Node 24 Alpine (`builder` → `prod-deps` → `runner`). The builder runs `pnpm nx prune api`, emitting a pruned + frozen manifest pair (`dist/apps/api/package.json` + `pnpm-lock.yaml`) derived from the root lockfile; `prod-deps` installs only the API's runtime deps with `pnpm install --frozen-lockfile --prod` (reproducible, no Angular/Capacitor in the image). The pruned dep list lives in `apps/api/package.json`, kept in sync by the `@nx/dependency-checks` ESLint rule. `Dockerfile.web` builds Angular and serves it with `nginx:stable-alpine-slim`. Images are hardened (web 0 critical / 0 high, api 0 critical / 1 high CVEs); `.dockerignore` excludes `.env*` so local secrets never enter build layers. `docker-compose.prod.yml` orchestrates postgres + redis + api + web with a named volume for uploaded images. Nginx proxies `/api`, `/uploads`, and `/ws` (WebSocket upgrade) to the API container. The API entrypoint runs `prisma migrate deploy` before starting the process. MinIO removed — no longer referenced anywhere.
 
 ## Current Architecture Notes
 
 - Frontend refactor commits have split large Inventory, Warehouses, Products, Movements, Admin, Receptions, and Expeditions pages into smaller standalone child components.
+- Admin orchestration lives in feature-local state classes (`admin-catalog-state.ts`, `admin-users-state.ts` / `AdminUsersState`, `admin-companies-state.ts` / `AdminCompaniesState`), keeping `admin.component.ts` a thin coordinator (~140 lines). The admin modals are extracted into child components: `admin-user-modal`, `admin-company-modal`, the shared `admin-catalog-modal` (categories/brands, typed against a narrow `CatalogModalState` interface), and the shared `admin-confirm-dialog` (toggle/delete confirmations, content-projected body, `cancelled`/`confirmed` outputs). `admin.component.html` is now just `@if` guards hosting them.
 - Shared frontend model/DTO types live in `apps/web/src/app/core/models` for products, stock/movements, warehouses, users, companies, and dashboard data.
 - `StockLocationEntry` and `StockByProductResponse` are typed interfaces in `core/models/stock.models.ts`.
 - Inventory keeps feature-specific data access and models under `apps/web/src/app/features/inventory/data-access` and `apps/web/src/app/features/inventory/models`.
@@ -113,33 +115,34 @@ Fresh database bootstrap:
 - `apps/web/src/styles/_shared.scss` contains shared page headers, buttons (`.btn-primary`, `.btn-ghost`, `.btn-danger`, `.btn-clear`, `.btn-export`), `.page-header__actions`, filters, modals, modal success state (`.modal-success`, `.success-icon`, `.success-title`, `.success-sub`, `.success-actions`), forms, empty states, pagination, `.input-with-scan`, and `.btn-scan`.
 - `ScannerService` (`core/services/scanner.service.ts`) — `scan()` returns `Observable<ScanResult | null>`, uses `Capacitor.isNativePlatform()` to route to ML Kit or ZXing.
 - `ScannerOverlayComponent` (`core/scanner/`) — ZXing camera overlay with animated crosshair, hosted by the shell. Its backdrop is an accessible button so template lint passes.
-- Reception and Expedition modals are smart: they inject `WarehousesService`, `ProductsService`, and `ScannerService` directly. Scan-to-fill matches the barcode/SKU against the already-loaded products signal with no extra API call. The modals use `CUSTOM_ELEMENTS_SCHEMA` so Ionic custom elements remain test-friendly in Angular/Vitest.
-- Keep `core/services` focused on HTTP/service behavior; shared model/DTO types live under `core/models`.
+- The shared `MovementFormModalComponent` (used by Receptions and Expeditions) is smart: it injects `WarehousesService`, `ProductsService`, `ScannerService`, and `CsvExportService` directly. Scan-to-fill matches the barcode/SKU against the already-loaded products signal with no extra API call. It uses `CUSTOM_ELEMENTS_SCHEMA` so Ionic custom elements remain test-friendly in Angular/Vitest.
+- Keep `core/services` focused on HTTP/service behavior; shared model/DTO types live under `core/models`. There are no `no-non-null-assertion` warnings in `apps/web`: form controls that feed a DTO after an `if (form.invalid) return` guard are `nonNullable: true`, and `editingId()`/`editingProduct()` are captured + narrowed with `mode === 'edit' && id !== null`.
 - Management is a routed operational command center (not a placeholder).
 
 ## Testing And CI Status
 
-- API unit tests cover inventory, products, stock, and warehouses service behavior.
+- API unit suite is 53 tests across 8 suites: inventory, products, stock, and warehouses service behavior plus auth/security (`auth.service.spec.ts` logout denylist + login lockout + per-session refresh, `jwt.strategy.spec.ts`, `company.guard.spec.ts` no-company 403, `image-signature.spec.ts` upload magic bytes).
 - Stock service tests include multi-tenant scoping, source-location stock guards, required source/destination location validation, transfer validation, inbound audit/alert behavior, and overview filtering.
-- Frontend unit tests cover route smoke behavior, `roleGuard`, and Reception/Expedition modal data loading + submit validation.
-- `api-e2e` is configured as a deterministic in-process Nest e2e test for `/api/health`; it listens on a dynamic port and closes itself after the suite. It no longer depends on `api:serve`, `global-setup`, `global-teardown`, or `test-setup`.
-- CI currently runs explicit full quality gates instead of relying on affected-only tasks: format check, lint for `api`, `web`, `types`, and `api-e2e`, tests for `api`, `web`, and `types`, builds for `api`, `web`, and `types`, and `api-e2e`.
-- Lint currently passes with warnings. Existing warnings are mostly historical non-null assertions and `any` in tests/services.
+- API specs use `jest-mock-extended` with the shared helper `apps/api/src/testing/prisma-mock.ts` (`createPrismaMock()` + `row()`), so there is zero `any` in API specs or source. `src/testing/**` is excluded from the app build and the dep is test-only.
+- Frontend unit suite is 7 tests: app route smoke behavior, `roleGuard`, and the shared `MovementFormModalComponent` data loading + submit validation (one spec replacing the old per-page reception/expedition specs).
+- `api-e2e` is a deterministic in-process Nest e2e test for `/api/health`; it listens on a dynamic port and closes itself after the suite. It no longer depends on `api:serve`, `global-setup`, `global-teardown`, or `test-setup`.
+- The unused `types`/`libs/shared` Nx project was removed; the Nx projects are now `api`, `api-e2e`, and `web`. CI runs explicit full quality gates (no affected-only): format check, lint for `api`/`web`/`api-e2e`, tests for `api`/`web`, builds for `api`/`web`, and `api-e2e`.
+- Lint is clean: `api` is warning-free (the `@CompanyId()` decorator removed all 50 `no-non-null-assertion` warnings) and `web` is warning-free (the 45 `no-non-null-assertion` warnings + last stray `any` were cleared).
 
 Remaining work:
 
-- Main second-pass frontend container cleanup is complete for Admin, Warehouses, Inventory, Products, and Movements.
-- Inventory scanner integration (scan location QR to auto-fill location selector) is deferred — requires a backend location-search-by-code endpoint.
+- Second-pass frontend container cleanup is complete for Admin (including modal extraction), Warehouses, Inventory, Products, and Movements.
+- Inventory scanner integration (scan location QR to auto-fill the location selector) is **done** — backed by the `GET /warehouses/:warehouseId/locations/search?code=` endpoint.
 - Optional: cancel support for `CANCELLED` inventory counts.
-- Expand API e2e beyond health: auth login/register/refresh, tenant-scoped product CRUD, stock movement guards, and inventory lifecycle.
+- Expand API e2e beyond health: auth login/refresh, tenant-scoped product CRUD, stock movement guards, and inventory lifecycle.
 - Add broader frontend unit tests: scanner service/overlay, CSV export, stock/movements services, products modal image handling, and inventory create/detail behavior.
 - Consider Cypress or Playwright e2e coverage for browser flows: login, product creation, reception, expedition, inventory count lifecycle, and role-restricted navigation.
-- Reduce existing lint warnings if the project starts enforcing `--max-warnings=0`.
 
 ## Current Priority
 
-- All main product areas are implemented: inventory counts, receptions, expeditions, barcode scanner, CSV export, product images, realtime alerts, and production Docker.
-- Current quality baseline is in place: backend service tests, initial frontend unit tests, in-process API e2e, and explicit CI quality gates.
+- All main product areas are implemented: inventory counts (with scan-to-fill location), receptions, expeditions, barcode scanner, CSV export, product images, realtime alerts, and production Docker.
+- The security audit (2026-06-07) and the code-quality refactor passes (2026-06-08/09) are complete: full auth/session hardening, `@CompanyId()` decorator, unified movement modal, extracted admin state classes and modal child components, the dead `types` project removed, and both `api` and `web` lint warning-free.
+- Quality baseline is in place: 53 API + 7 web unit tests, in-process API e2e, and explicit CI quality gates — all green.
 - Next: extend e2e coverage into real business flows, broaden frontend unit tests, and then polish individual pages.
 
 ## Visual Direction
