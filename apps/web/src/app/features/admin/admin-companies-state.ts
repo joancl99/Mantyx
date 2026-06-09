@@ -31,12 +31,15 @@ export class AdminCompaniesState {
   readonly toggleTarget = signal<CompanyInfo | null>(null);
 
   readonly form = new FormGroup({
-    name: new FormControl('', [Validators.required, Validators.minLength(2)]),
-    taxId: new FormControl(''),
+    name: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(2)],
+    }),
+    taxId: new FormControl('', { nonNullable: true }),
     // Initial ADMIN — only required when creating a company (see setAdminValidators).
-    adminName: new FormControl(''),
-    adminEmail: new FormControl(''),
-    adminPassword: new FormControl(''),
+    adminName: new FormControl('', { nonNullable: true }),
+    adminEmail: new FormControl('', { nonNullable: true }),
+    adminPassword: new FormControl('', { nonNullable: true }),
   });
 
   constructor(
@@ -106,19 +109,20 @@ export class AdminCompaniesState {
     this.saving.set(true);
     this.formError.set('');
     const raw = this.form.getRawValue();
+    const editingId = this.editingId();
 
     const req$ =
-      this.modalMode() === 'create'
-        ? this.service.create({
-            name: raw.name!,
+      this.modalMode() === 'edit' && editingId !== null
+        ? this.service.update(editingId, {
+            name: raw.name,
             taxId: raw.taxId || undefined,
-            adminName: raw.adminName!,
-            adminEmail: raw.adminEmail!,
-            adminPassword: raw.adminPassword!,
           })
-        : this.service.update(this.editingId()!, {
-            name: raw.name!,
+        : this.service.create({
+            name: raw.name,
             taxId: raw.taxId || undefined,
+            adminName: raw.adminName,
+            adminEmail: raw.adminEmail,
+            adminPassword: raw.adminPassword,
           });
 
     req$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

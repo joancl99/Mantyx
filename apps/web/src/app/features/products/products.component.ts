@@ -91,13 +91,25 @@ export class ProductsComponent implements OnInit {
   readonly deleteTarget = signal<Product | null>(null);
 
   readonly form = new FormGroup({
-    name: new FormControl('', Validators.required),
-    sku: new FormControl('', Validators.required),
-    barcode: new FormControl(''),
-    description: new FormControl(''),
-    minStock: new FormControl(0, [Validators.required, Validators.min(0)]),
-    categoryId: new FormControl('', Validators.required),
-    brandId: new FormControl(''),
+    name: new FormControl('', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    sku: new FormControl('', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    barcode: new FormControl('', { nonNullable: true }),
+    description: new FormControl('', { nonNullable: true }),
+    minStock: new FormControl(0, {
+      nonNullable: true,
+      validators: [Validators.required, Validators.min(0)],
+    }),
+    categoryId: new FormControl('', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    brandId: new FormControl('', { nonNullable: true }),
   });
 
   constructor() {
@@ -164,19 +176,20 @@ export class ProductsComponent implements OnInit {
     const raw = this.form.getRawValue();
 
     const dto: CreateProductDto = {
-      name: raw.name!,
-      sku: raw.sku!,
+      name: raw.name,
+      sku: raw.sku,
       barcode: raw.barcode || undefined,
       description: raw.description || undefined,
       minStock: Number(raw.minStock),
-      categoryId: raw.categoryId!,
+      categoryId: raw.categoryId,
       brandId: raw.brandId || undefined,
     };
 
+    const editingProduct = this.editingProduct();
     const save$ =
-      this.modalMode() === 'create'
-        ? this.productsService.create(dto)
-        : this.productsService.update(this.editingProduct()!.id, dto);
+      this.modalMode() === 'edit' && editingProduct !== null
+        ? this.productsService.update(editingProduct.id, dto)
+        : this.productsService.create(dto);
 
     save$
       .pipe(

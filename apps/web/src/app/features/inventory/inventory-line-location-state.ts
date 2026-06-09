@@ -17,9 +17,18 @@ export class InventoryLineLocationState {
   readonly locations = signal<Location[]>([]);
 
   readonly form = new FormGroup({
-    zoneId: new FormControl('', Validators.required),
-    aisleId: new FormControl('', Validators.required),
-    locationId: new FormControl('', Validators.required),
+    zoneId: new FormControl('', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    aisleId: new FormControl('', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    locationId: new FormControl('', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
     expectedQty: new FormControl<number | null>(null, Validators.min(0)),
   });
 
@@ -94,7 +103,7 @@ export class InventoryLineLocationState {
   toDto(): AddInventoryLineDto {
     const raw = this.form.getRawValue();
     return {
-      locationId: raw.locationId!,
+      locationId: raw.locationId,
       expectedQty:
         raw.expectedQty === null ? undefined : Number(raw.expectedQty),
     };

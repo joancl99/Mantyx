@@ -15,7 +15,7 @@ import { alertCircleOutline, closeOutline } from 'ionicons/icons';
  * assignable regardless of its item type.
  */
 export interface CatalogModalState {
-  readonly form: FormControl<string | null>;
+  readonly form: FormControl<string>;
   readonly modalMode: Signal<'create' | 'edit'>;
   readonly submitted: Signal<boolean>;
   readonly formError: Signal<string>;

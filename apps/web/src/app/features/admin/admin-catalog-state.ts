@@ -41,10 +41,10 @@ export class AdminCatalogState<T extends NamedCatalogItem> {
   readonly formError = signal('');
   readonly deleteTarget = signal<T | null>(null);
 
-  readonly form = new FormControl('', [
-    Validators.required,
-    Validators.minLength(1),
-  ]);
+  readonly form = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required, Validators.minLength(1)],
+  });
 
   constructor(
     private readonly service: CatalogService<T>,
@@ -101,11 +101,12 @@ export class AdminCatalogState<T extends NamedCatalogItem> {
     this.saving.set(true);
     this.formError.set('');
 
-    const name = this.form.value!.trim();
+    const name = this.form.value.trim();
+    const editingId = this.editingId();
     const request$ =
-      this.modalMode() === 'create'
-        ? this.service.create(name)
-        : this.service.rename(this.editingId()!, name);
+      this.modalMode() === 'edit' && editingId !== null
+        ? this.service.rename(editingId, name)
+        : this.service.create(name);
 
     request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {

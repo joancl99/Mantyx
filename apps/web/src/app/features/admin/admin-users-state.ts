@@ -57,13 +57,22 @@ export class AdminUsersState {
   readonly toggleTarget = signal<CompanyUser | null>(null);
 
   readonly form = new FormGroup({
-    name: new FormControl('', [Validators.required, Validators.minLength(2)]),
-    email: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [
-      Validators.required,
-      Validators.minLength(8),
-    ]),
-    role: new FormControl<UserRole>('OPERATOR', Validators.required),
+    name: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(2)],
+    }),
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email],
+    }),
+    password: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(8)],
+    }),
+    role: new FormControl<UserRole>('OPERATOR', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
   });
 
   // An ADMIN provisions worker accounts only — never ADMIN/SUPERADMIN.
@@ -133,19 +142,20 @@ export class AdminUsersState {
     this.saving.set(true);
     this.formError.set('');
     const raw = this.form.getRawValue();
+    const editingId = this.editingId();
 
     const req$ =
-      this.modalMode() === 'create'
-        ? this.service.create({
-            name: raw.name!,
-            email: raw.email!,
-            password: raw.password!,
-            role: raw.role!,
+      this.modalMode() === 'edit' && editingId !== null
+        ? this.service.update(editingId, {
+            name: raw.name,
+            email: raw.email,
+            role: raw.role,
           })
-        : this.service.update(this.editingId()!, {
-            name: raw.name!,
-            email: raw.email!,
-            role: raw.role!,
+        : this.service.create({
+            name: raw.name,
+            email: raw.email,
+            password: raw.password,
+            role: raw.role,
           });
 
     req$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

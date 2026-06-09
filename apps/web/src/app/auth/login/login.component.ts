@@ -34,11 +34,14 @@ export class LoginComponent {
   readonly submitted = signal(false);
 
   readonly form = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [
-      Validators.required,
-      Validators.minLength(6),
-    ]),
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email],
+    }),
+    password: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(6)],
+    }),
   });
 
   constructor() {
@@ -52,10 +55,10 @@ export class LoginComponent {
   }
 
   get email() {
-    return this.form.get('email')!;
+    return this.form.controls.email;
   }
   get password() {
-    return this.form.get('password')!;
+    return this.form.controls.password;
   }
 
   togglePassword() {
@@ -71,7 +74,7 @@ export class LoginComponent {
     this.isLoading.set(true);
     const { email, password } = this.form.getRawValue();
 
-    this.authService.login(email!, password!).subscribe({
+    this.authService.login(email, password).subscribe({
       next: () => {
         // SUPERADMIN has no company, so the company-scoped dashboard does not
         // apply — send them straight to the platform admin panel.

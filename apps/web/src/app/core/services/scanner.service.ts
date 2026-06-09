@@ -40,8 +40,8 @@ export class ScannerService {
     ).pipe(
       map(({ barcodes }) => {
         const first = barcodes.find((b) => b.rawValue);
-        if (!first) return null;
-        return { value: first.rawValue!, format: String(first.format) };
+        if (!first?.rawValue) return null;
+        return { value: first.rawValue, format: String(first.format) };
       }),
     );
   }

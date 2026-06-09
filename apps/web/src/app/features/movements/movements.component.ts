@@ -89,11 +89,23 @@ export class MovementsComponent implements OnInit {
   readonly formError = signal('');
 
   readonly form = new FormGroup({
-    productId: new FormControl('', Validators.required),
-    warehouseId: new FormControl('', Validators.required),
-    type: new FormControl<MovementType>('INBOUND', Validators.required),
-    quantity: new FormControl(1, [Validators.required, Validators.min(1)]),
-    notes: new FormControl(''),
+    productId: new FormControl('', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    warehouseId: new FormControl('', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    type: new FormControl<MovementType>('INBOUND', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    quantity: new FormControl(1, {
+      nonNullable: true,
+      validators: [Validators.required, Validators.min(1)],
+    }),
+    notes: new FormControl('', { nonNullable: true }),
   });
 
   constructor() {
@@ -177,9 +189,9 @@ export class MovementsComponent implements OnInit {
     const raw = this.form.getRawValue();
 
     const dto: CreateMovementDto = {
-      productId: raw.productId!,
-      warehouseId: raw.warehouseId!,
-      type: raw.type!,
+      productId: raw.productId,
+      warehouseId: raw.warehouseId,
+      type: raw.type,
       quantity: Number(raw.quantity),
       notes: raw.notes || undefined,
     };

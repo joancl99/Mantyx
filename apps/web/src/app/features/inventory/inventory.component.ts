@@ -92,8 +92,14 @@ export class InventoryComponent implements OnInit {
   });
 
   readonly createForm = new FormGroup({
-    name: new FormControl('', [Validators.required, Validators.minLength(2)]),
-    warehouseId: new FormControl('', Validators.required),
+    name: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(2)],
+    }),
+    warehouseId: new FormControl('', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
   });
 
   constructor() {
@@ -182,7 +188,7 @@ export class InventoryComponent implements OnInit {
     this.formError.set('');
     const raw = this.createForm.getRawValue();
     this.inventoryService
-      .create({ name: raw.name!, warehouseId: raw.warehouseId! })
+      .create({ name: raw.name, warehouseId: raw.warehouseId })
       .subscribe({
         next: (count) => {
           this.saving.set(false);
@@ -307,7 +313,10 @@ export class InventoryComponent implements OnInit {
     this.loadCounts();
   }
 
-  private handleActionError(err: any, fallback: string) {
+  private handleActionError(
+    err: { error?: { message?: string } },
+    fallback: string,
+  ) {
     this.saving.set(false);
     this.formError.set(err?.error?.message ?? fallback);
   }
