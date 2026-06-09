@@ -24,28 +24,19 @@ ion-menu {
   padding: 48px 24px 24px;
 }
 
-.menu-logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: var(--wh-accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.menu-brand-plate {
+  align-self: flex-start;
+  display: inline-flex;
+  padding: 8px 12px;
   margin-bottom: 12px;
+  background: #ffffff;
+  border-radius: 10px;
 
-  ion-icon {
-    font-size: 24px;
-    color: var(--wh-bg);
+  img {
+    display: block;
+    width: 124px;
+    height: auto;
   }
-}
-
-.menu-app-name {
-  display: block;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--wh-text);
-  letter-spacing: -0.3px;
 }
 
 .menu-user-name {
