@@ -1,4 +1,10 @@
-import { Component, computed, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  output,
+} from '@angular/core';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -13,6 +19,7 @@ import { Product } from '../../../core/models/product.models';
 @Component({
   selector: 'app-product-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IonIcon, IonSpinner],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.scss',
@@ -33,7 +40,8 @@ export class ProductListComponent {
   readonly pageChanged = output<number>();
 
   readonly hasFilters = computed(
-    () => !!(this.searchQuery() || this.selectedCategory() || this.selectedBrand()),
+    () =>
+      !!(this.searchQuery() || this.selectedCategory() || this.selectedBrand()),
   );
 
   constructor() {

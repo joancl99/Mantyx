@@ -1,4 +1,9 @@
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -17,6 +22,7 @@ import { MovementTypeConfig } from '../movement-types';
 @Component({
   selector: 'app-create-movement-modal',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, IonIcon, IonSpinner],
   templateUrl: './create-movement-modal.component.html',
   styleUrl: './create-movement-modal.component.scss',
@@ -26,7 +32,8 @@ export class CreateMovementModalComponent {
   readonly products = input.required<Product[]>();
   readonly warehouses = input.required<Warehouse[]>();
   readonly availableTypes = input.required<MovementType[]>();
-  readonly typeConfig = input.required<Record<MovementType, MovementTypeConfig>>();
+  readonly typeConfig =
+    input.required<Record<MovementType, MovementTypeConfig>>();
   readonly submitted = input.required<boolean>();
   readonly saving = input.required<boolean>();
   readonly formError = input.required<string>();

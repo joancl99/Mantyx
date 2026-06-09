@@ -275,6 +275,10 @@ export class StockService {
     const { search, lowStock, page = 1, limit = 30 } = query;
     const skip = (page - 1) * limit;
 
+    if (lowStock) {
+      return this.getLowStockOverview(companyId, search, page, limit, skip);
+    }
+
     const where: Prisma.ProductWhereInput = {
       companyId,
       isActive: true,
@@ -286,19 +290,24 @@ export class StockService {
       }),
     };
 
-    const products = await this.prisma.product.findMany({
-      where,
-      select: {
-        id: true,
-        name: true,
-        sku: true,
-        minStock: true,
-        stockEntries: { select: { quantity: true } },
-      },
-      orderBy: { name: 'asc' },
-    });
+    const [products, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          sku: true,
+          minStock: true,
+          stockEntries: { select: { quantity: true } },
+        },
+        orderBy: { name: 'asc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.product.count({ where }),
+    ]);
 
-    const withStock = products.map((p) => ({
+    const data = products.map((p) => ({
       productId: p.id,
       name: p.name,
       sku: p.sku,
@@ -306,14 +315,66 @@ export class StockService {
       totalStock: p.stockEntries.reduce((sum, e) => sum + e.quantity, 0),
     }));
 
-    const filtered = lowStock
-      ? withStock.filter((p) => p.totalStock <= p.minStock)
-      : withStock;
-
-    const total = filtered.length;
-    const data = filtered.slice(skip, skip + limit);
-
     return { data, total, page, limit };
+  }
+
+  /**
+   * Low stock compares SUM(entries.quantity) against the product's own
+   * minStock column — an aggregate-to-column comparison Prisma cannot
+   * express — so the page and the count both run in SQL instead of loading
+   * every product of the tenant into memory and slicing in JS.
+   */
+  private async getLowStockOverview(
+    companyId: string,
+    search: string | undefined,
+    page: number,
+    limit: number,
+    skip: number,
+  ) {
+    const searchFilter = search
+      ? Prisma.sql`AND (p."name" ILIKE ${`%${search}%`} OR p."sku" ILIKE ${`%${search}%`})`
+      : Prisma.empty;
+
+    const lowStockProducts = Prisma.sql`
+      SELECT p."id", p."name", p."sku", p."minStock",
+             COALESCE(SUM(se."quantity"), 0)::int AS "totalStock"
+      FROM "products" p
+      LEFT JOIN "stock_entries" se ON se."productId" = p."id"
+      WHERE p."companyId" = ${companyId} AND p."isActive" = true
+      ${searchFilter}
+      GROUP BY p."id"
+      HAVING COALESCE(SUM(se."quantity"), 0) <= p."minStock"
+    `;
+
+    const [rows, countRows] = await Promise.all([
+      this.prisma.$queryRaw<
+        Array<{
+          id: string;
+          name: string;
+          sku: string;
+          minStock: number;
+          totalStock: number;
+        }>
+      >(
+        Prisma.sql`${lowStockProducts} ORDER BY p."name" ASC LIMIT ${limit} OFFSET ${skip}`,
+      ),
+      this.prisma.$queryRaw<Array<{ count: number }>>(
+        Prisma.sql`SELECT COUNT(*)::int AS "count" FROM (${lowStockProducts}) AS low_stock`,
+      ),
+    ]);
+
+    return {
+      data: rows.map((r) => ({
+        productId: r.id,
+        name: r.name,
+        sku: r.sku,
+        minStock: r.minStock,
+        totalStock: r.totalStock,
+      })),
+      total: countRows[0]?.count ?? 0,
+      page,
+      limit,
+    };
   }
 
   async getStockByProduct(productId: string, companyId: string) {

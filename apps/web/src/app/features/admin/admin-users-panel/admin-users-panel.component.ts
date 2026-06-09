@@ -1,13 +1,29 @@
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { createOutline, peopleOutline, personAddOutline, powerOutline, searchOutline } from 'ionicons/icons';
-import { CompanyUser, USER_ROLE_LABELS, UserRole } from '../../../core/models/user.models';
+import {
+  createOutline,
+  peopleOutline,
+  personAddOutline,
+  powerOutline,
+  searchOutline,
+} from 'ionicons/icons';
+import {
+  CompanyUser,
+  USER_ROLE_LABELS,
+  UserRole,
+} from '../../../core/models/user.models';
 
 @Component({
   selector: 'app-admin-users-panel',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, IonIcon, IonSpinner],
   templateUrl: './admin-users-panel.component.html',
   styleUrl: './admin-users-panel.component.scss',
@@ -31,7 +47,13 @@ export class AdminUsersPanelComponent {
   readonly toggleUser = output<CompanyUser>();
 
   constructor() {
-    addIcons({ createOutline, peopleOutline, personAddOutline, powerOutline, searchOutline });
+    addIcons({
+      createOutline,
+      peopleOutline,
+      personAddOutline,
+      powerOutline,
+      searchOutline,
+    });
   }
 
   roleLabel(role: UserRole): string {

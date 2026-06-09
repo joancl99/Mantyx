@@ -1,13 +1,25 @@
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { addOutline, createOutline, powerOutline, searchOutline, shieldOutline } from 'ionicons/icons';
+import {
+  addOutline,
+  createOutline,
+  powerOutline,
+  searchOutline,
+  shieldOutline,
+} from 'ionicons/icons';
 import { CompanyInfo } from '../../../core/models/company.models';
 
 @Component({
   selector: 'app-admin-company-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, IonIcon, IonSpinner],
   templateUrl: './admin-company-list.component.html',
   styleUrl: './admin-company-list.component.scss',
@@ -23,15 +35,30 @@ export class AdminCompanyListComponent {
   readonly toggleCompany = output<CompanyInfo>();
 
   constructor() {
-    addIcons({ addOutline, createOutline, powerOutline, searchOutline, shieldOutline });
+    addIcons({
+      addOutline,
+      createOutline,
+      powerOutline,
+      searchOutline,
+      shieldOutline,
+    });
   }
 
   companyStatusLabel(status: string): string {
-    const map: Record<string, string> = { ACTIVE: 'Activa', INACTIVE: 'Inactiva', SUSPENDED: 'Suspendida' };
+    const map: Record<string, string> = {
+      ACTIVE: 'Activa',
+      INACTIVE: 'Inactiva',
+      SUSPENDED: 'Suspendida',
+    };
     return map[status] ?? status;
   }
 
   companyInitials(name: string): string {
-    return name.split(' ').slice(0, 2).map(word => word[0]).join('').toUpperCase();
+    return name
+      .split(' ')
+      .slice(0, 2)
+      .map((word) => word[0])
+      .join('')
+      .toUpperCase();
   }
 }

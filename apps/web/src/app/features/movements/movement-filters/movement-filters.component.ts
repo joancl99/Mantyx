@@ -1,4 +1,9 @@
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
@@ -7,6 +12,7 @@ import { MovementType } from '../../../core/models/stock.models';
 @Component({
   selector: 'app-movement-filters',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IonIcon],
   templateUrl: './movement-filters.component.html',
   styleUrl: './movement-filters.component.scss',

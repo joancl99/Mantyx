@@ -1,10 +1,16 @@
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { IonSpinner } from '@ionic/angular/standalone';
 import { Product } from '../../../core/models/product.models';
 
 @Component({
   selector: 'app-product-delete-modal',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IonSpinner],
   templateUrl: './product-delete-modal.component.html',
   styleUrl: './product-delete-modal.component.scss',

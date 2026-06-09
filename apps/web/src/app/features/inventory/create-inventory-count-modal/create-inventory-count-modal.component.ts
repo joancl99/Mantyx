@@ -1,4 +1,9 @@
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -8,6 +13,7 @@ import { Warehouse } from '../../../core/models/warehouse.models';
 @Component({
   selector: 'app-create-inventory-count-modal',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, IonIcon, IonSpinner],
   templateUrl: './create-inventory-count-modal.component.html',
   styleUrl: './create-inventory-count-modal.component.scss',

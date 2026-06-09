@@ -1,5 +1,11 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  output,
+} from '@angular/core';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -13,6 +19,7 @@ import { StockMovement } from '../../../core/models/stock.models';
 @Component({
   selector: 'app-expedition-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [DatePipe, IonIcon, IonSpinner],
   templateUrl: './expedition-list.component.html',
   styleUrl: './expedition-list.component.scss',
@@ -29,7 +36,7 @@ export class ExpeditionListComponent {
   readonly emptyMessage = computed(() =>
     this.hasActiveFilters()
       ? 'Prueba con otros filtros'
-      : 'Aún no hay expediciones registradas',
+      : 'AÃºn no hay expediciones registradas',
   );
 
   constructor() {
@@ -42,6 +49,6 @@ export class ExpeditionListComponent {
   }
 
   stockDelta(m: StockMovement): string {
-    return `${m.previousStock} → ${m.newStock}`;
+    return `${m.previousStock} â†’ ${m.newStock}`;
   }
 }

@@ -1,5 +1,11 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  output,
+} from '@angular/core';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -13,6 +19,7 @@ import { StockMovement } from '../../../core/models/stock.models';
 @Component({
   selector: 'app-reception-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [DatePipe, IonIcon, IonSpinner],
   templateUrl: './reception-list.component.html',
   styleUrl: './reception-list.component.scss',
@@ -29,7 +36,7 @@ export class ReceptionListComponent {
   readonly emptyMessage = computed(() =>
     this.hasActiveFilters()
       ? 'Prueba con otros filtros'
-      : 'Aún no hay recepciones registradas',
+      : 'AÃºn no hay recepciones registradas',
   );
 
   constructor() {
@@ -42,6 +49,6 @@ export class ReceptionListComponent {
   }
 
   stockDelta(m: StockMovement): string {
-    return `${m.previousStock} → ${m.newStock}`;
+    return `${m.previousStock} â†’ ${m.newStock}`;
   }
 }
