@@ -70,3 +70,7 @@
     <ion-icon name="barcode-outline"></ion-icon>
   </ion-fab-button>
 </ion-fab>
+
+@if (scannerService.showOverlay()) {
+  <app-scanner-overlay />
+}

@@ -1,5 +1,10 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { CompanyStatus } from '@prisma/client';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { CompanyStatus, Role } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
@@ -30,11 +35,36 @@ export class CompaniesService {
     const exists = await this.prisma.company.findFirst({
       where: { OR: [{ name: dto.name }, { slug }] },
     });
-    if (exists) throw new ConflictException(`Ya existe una empresa con ese nombre`);
+    if (exists)
+      throw new ConflictException(`Ya existe una empresa con ese nombre`);
 
-    return this.prisma.company.create({
-      data: { name: dto.name, slug, taxId: dto.taxId },
-      select: COMPANY_SELECT,
+    const emailTaken = await this.prisma.user.findUnique({
+      where: { email: dto.adminEmail },
+    });
+    if (emailTaken) {
+      throw new ConflictException('Ya existe un usuario con ese email');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.adminPassword, 10);
+
+    // Create the company and its initial ADMIN atomically.
+    return this.prisma.$transaction(async (tx) => {
+      const company = await tx.company.create({
+        data: { name: dto.name, slug, taxId: dto.taxId },
+      });
+      await tx.user.create({
+        data: {
+          name: dto.adminName,
+          email: dto.adminEmail,
+          password: hashedPassword,
+          role: Role.ADMIN,
+          companyId: company.id,
+        },
+      });
+      return tx.company.findUnique({
+        where: { id: company.id },
+        select: COMPANY_SELECT,
+      });
     });
   }
 
@@ -44,7 +74,8 @@ export class CompaniesService {
       const conflict = await this.prisma.company.findFirst({
         where: { name: dto.name, NOT: { id } },
       });
-      if (conflict) throw new ConflictException(`Ya existe una empresa con ese nombre`);
+      if (conflict)
+        throw new ConflictException(`Ya existe una empresa con ese nombre`);
     }
     return this.prisma.company.update({
       where: { id },
@@ -56,7 +87,9 @@ export class CompaniesService {
   async toggleStatus(id: string) {
     const company = await this.findOne(id);
     const next: CompanyStatus =
-      company.status === CompanyStatus.ACTIVE ? CompanyStatus.INACTIVE : CompanyStatus.ACTIVE;
+      company.status === CompanyStatus.ACTIVE
+        ? CompanyStatus.INACTIVE
+        : CompanyStatus.ACTIVE;
     return this.prisma.company.update({
       where: { id },
       data: { status: next },

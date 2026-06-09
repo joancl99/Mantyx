@@ -18,9 +18,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
+import { CompanyId } from '../auth/decorators/company-id.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { JwtPayload } from '../auth/types/jwt-payload.interface';
 import { AddInventoryLineDto } from './dto/add-inventory-line.dto';
 import { CreateInventoryCountDto } from './dto/create-inventory-count.dto';
 import { InventoryQueryDto } from './dto/inventory-query.dto';
@@ -34,9 +34,11 @@ export class InventoryController {
   constructor(private readonly inventory: InventoryService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List inventory counts with pagination and filters' })
-  findAll(@CurrentUser() user: JwtPayload, @Query() query: InventoryQueryDto) {
-    return this.inventory.findAll(user.companyId!, query);
+  @ApiOperation({
+    summary: 'List inventory counts with pagination and filters',
+  })
+  findAll(@CompanyId() companyId: string, @Query() query: InventoryQueryDto) {
+    return this.inventory.findAll(companyId, query);
   }
 
   @Post()
@@ -44,37 +46,43 @@ export class InventoryController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create an inventory count' })
   @ApiResponse({ status: 201 })
-  create(@CurrentUser() user: JwtPayload, @Body() dto: CreateInventoryCountDto) {
-    return this.inventory.create(user.companyId!, user.sub, dto);
+  create(
+    @CompanyId() companyId: string,
+    @CurrentUser('sub') userId: string,
+    @Body() dto: CreateInventoryCountDto,
+  ) {
+    return this.inventory.create(companyId, userId, dto);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get inventory count detail with lines' })
   findOne(
-    @CurrentUser() user: JwtPayload,
+    @CompanyId() companyId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.inventory.findOne(id, user.companyId!);
+    return this.inventory.findOne(id, companyId);
   }
 
   @Patch(':id/start')
   @Roles(Role.ADMIN, Role.MANAGER, Role.OPERATOR)
   @ApiOperation({ summary: 'Start a draft inventory count' })
   start(
-    @CurrentUser() user: JwtPayload,
+    @CompanyId() companyId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.inventory.start(id, user.companyId!);
+    return this.inventory.start(id, companyId);
   }
 
   @Patch(':id/complete')
   @Roles(Role.ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: 'Complete an inventory count and calculate differences' })
+  @ApiOperation({
+    summary: 'Complete an inventory count and calculate differences',
+  })
   complete(
-    @CurrentUser() user: JwtPayload,
+    @CompanyId() companyId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.inventory.complete(id, user.companyId!);
+    return this.inventory.complete(id, companyId);
   }
 
   @Post(':id/lines')
@@ -82,23 +90,23 @@ export class InventoryController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Add a location line to an inventory count' })
   addLine(
-    @CurrentUser() user: JwtPayload,
+    @CompanyId() companyId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: AddInventoryLineDto,
   ) {
-    return this.inventory.addLine(id, user.companyId!, dto);
+    return this.inventory.addLine(id, companyId, dto);
   }
 
   @Patch(':id/lines/:lineId')
   @Roles(Role.ADMIN, Role.MANAGER, Role.OPERATOR)
   @ApiOperation({ summary: 'Register counted quantity for a line' })
   updateLine(
-    @CurrentUser() user: JwtPayload,
+    @CompanyId() companyId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Param('lineId', ParseUUIDPipe) lineId: string,
     @Body() dto: UpdateInventoryLineDto,
   ) {
-    return this.inventory.updateLine(id, lineId, user.companyId!, dto);
+    return this.inventory.updateLine(id, lineId, companyId, dto);
   }
 
   @Delete(':id/lines/:lineId')
@@ -106,10 +114,10 @@ export class InventoryController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Remove a line from a draft inventory count' })
   removeLine(
-    @CurrentUser() user: JwtPayload,
+    @CompanyId() companyId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Param('lineId', ParseUUIDPipe) lineId: string,
   ) {
-    return this.inventory.removeLine(id, lineId, user.companyId!);
+    return this.inventory.removeLine(id, lineId, companyId);
   }
 }

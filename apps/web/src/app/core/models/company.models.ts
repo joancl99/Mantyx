@@ -13,4 +13,8 @@ export interface CompanyInfo {
 export interface CreateCompanyDto {
   name: string;
   taxId?: string;
+  // Initial ADMIN account, created together with the company.
+  adminName: string;
+  adminEmail: string;
+  adminPassword: string;
 }

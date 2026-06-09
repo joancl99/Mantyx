@@ -50,8 +50,18 @@ Thumbs.db
 # Agent skills (reinstallable via npx autoskills)
 .agents/
 
+# Local command cheat sheet
+COMMANDS.md
+
 # environment files — never commit secrets
+.env
 apps/api/.env
 *.env.local
 
 __screenshots__/
+
+# Uploaded product images (keep folder structure via .gitkeep)
+uploads/products/*.jpg
+uploads/products/*.jpeg
+uploads/products/*.png
+uploads/products/*.webp

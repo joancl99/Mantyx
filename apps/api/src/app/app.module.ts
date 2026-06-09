@@ -14,6 +14,7 @@ import { UsersModule } from '../users/users.module';
 import { WarehousesModule } from '../warehouses/warehouses.module';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { CompanyGuard } from '../auth/guards/company.guard';
 import { envValidationSchema } from '../config/env.validation';
 import { PrismaModule } from '../prisma/prisma.module';
 import { RedisModule } from '../redis/redis.module';
@@ -50,6 +51,7 @@ import { AppService } from './app.service';
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    { provide: APP_GUARD, useClass: CompanyGuard },
   ],
 })
 export class AppModule {}

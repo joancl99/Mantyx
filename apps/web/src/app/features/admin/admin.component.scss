@@ -29,11 +29,17 @@
   font-weight: 500;
   cursor: pointer;
   margin-bottom: -1px;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
 
-  ion-icon { font-size: 16px; }
+  ion-icon {
+    font-size: 16px;
+  }
 
-  &:hover { color: var(--wh-text); }
+  &:hover {
+    color: var(--wh-text);
+  }
 
   &.active {
     color: var(--wh-accent);
@@ -42,31 +48,9 @@
   }
 }
 
-// ── Password field ────────────────────────────────────────────────────────────
-.password-wrap {
-  position: relative;
-
-  .form-input { padding-right: 40px; width: 100%; }
-}
-
-.password-toggle {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
-  border: none;
-  color: var(--wh-text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  font-size: 16px;
-  padding: 4px;
-
-  &:hover { color: var(--wh-text); }
-}
-
 // ── Responsive ────────────────────────────────────────────────────────────────
 @media (max-width: 720px) {
-  .tab-btn span { display: none; }
+  .tab-btn span {
+    display: none;
+  }
 }

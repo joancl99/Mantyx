@@ -1,6 +1,8 @@
 # Add files here to ignore them from prettier formatting
 /dist
 /coverage
+# Lockfile is machine-generated; pnpm rewrites it on install and prettier must not touch it
+pnpm-lock.yaml
 /.nx/cache
 /.nx/workspace-data
 .nx/self-healing

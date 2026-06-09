@@ -1,0 +1,26 @@
+<div class="filters-bar">
+  <div class="date-range">
+    <input
+      class="filter-input"
+      type="date"
+      [value]="filterDateFrom()"
+      (change)="dateFromChanged.emit($event)"
+      title="Desde"
+    />
+    <span class="date-sep">—</span>
+    <input
+      class="filter-input"
+      type="date"
+      [value]="filterDateTo()"
+      (change)="dateToChanged.emit($event)"
+      title="Hasta"
+    />
+  </div>
+
+  @if (hasActiveFilters()) {
+    <button class="btn-clear" (click)="filtersCleared.emit()">
+      <ion-icon name="close-outline" />
+      Limpiar
+    </button>
+  }
+</div>

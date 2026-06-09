@@ -10,8 +10,7 @@
       "options": {
         "jestConfig": "apps/api-e2e/jest.config.ts",
         "passWithNoTests": true
-      },
-      "dependsOn": ["api:build", "api:serve"]
+      }
     },
     "e2e": {
       "executor": "@nx/jest:jest",
@@ -19,8 +18,7 @@
       "options": {
         "jestConfig": "apps/api-e2e/jest.config.ts",
         "passWithNoTests": true
-      },
-      "dependsOn": ["api:build", "api:serve"]
+      }
     }
   }
 }

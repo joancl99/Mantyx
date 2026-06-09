@@ -36,11 +36,21 @@ jobs:
       - name: Format check
         run: pnpm nx format:check --base=origin/main
 
-      - name: Lint affected
-        run: pnpm nx affected -t lint --base=origin/main --head=HEAD
+      - name: Lint
+        run: |
+          pnpm nx run api:eslint:lint
+          pnpm nx lint web
+          pnpm nx run api-e2e:eslint:lint
 
-      - name: Test affected
-        run: pnpm nx affected -t test --base=origin/main --head=HEAD --configuration=ci
+      - name: Test
+        run: |
+          pnpm nx test api
+          pnpm nx test web
 
-      - name: Build affected
-        run: pnpm nx affected -t build --base=origin/main --head=HEAD --configuration=production
+      - name: Build
+        run: |
+          pnpm nx build api
+          pnpm nx build web
+
+      - name: E2E
+        run: pnpm nx e2e api-e2e

@@ -30,4 +30,12 @@ export interface CreateWarehouseDto {
   address?: string;
 }
 
+export interface LocationLookup {
+  warehouseId: string;
+  zoneId: string;
+  aisleId: string;
+  locationId: string;
+  code: string;
+}
+
 export type WarehouseSubLevel = 'zone' | 'aisle' | 'location';

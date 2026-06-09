@@ -1,21 +1,49 @@
-<div class="modal-backdrop" tabindex="0" (click)="close.emit()" (keydown.escape)="close.emit()">
-  <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+<div
+  class="modal-backdrop"
+  tabindex="0"
+  (click)="closeModal.emit()"
+  (keydown.escape)="closeModal.emit()"
+>
+  <div
+    class="modal modal--sm"
+    role="presentation"
+    (click)="$event.stopPropagation()"
+  >
     <div class="modal-header">
       <h2 class="modal-title">Nuevo conteo</h2>
-      <button class="modal-close" (click)="close.emit()">
+      <button class="modal-close" (click)="closeModal.emit()">
         <ion-icon name="close-outline" />
       </button>
     </div>
 
-    <form class="modal-body" [formGroup]="form()" (ngSubmit)="submitForm.emit()">
-      <div class="form-field" [class.has-error]="submitted() && form().get('name')?.invalid">
+    <form
+      class="modal-body"
+      [formGroup]="form()"
+      (ngSubmit)="submitForm.emit()"
+    >
+      <div
+        class="form-field"
+        [class.has-error]="submitted() && form().get('name')?.invalid"
+      >
         <label class="form-label" for="inventory-name">Nombre *</label>
-        <input id="inventory-name" class="form-input" formControlName="name" placeholder="Conteo mensual" />
+        <input
+          id="inventory-name"
+          class="form-input"
+          formControlName="name"
+          placeholder="Conteo mensual"
+        />
       </div>
 
-      <div class="form-field" [class.has-error]="submitted() && form().get('warehouseId')?.invalid">
+      <div
+        class="form-field"
+        [class.has-error]="submitted() && form().get('warehouseId')?.invalid"
+      >
         <label class="form-label" for="inventory-warehouse">Almacén *</label>
-        <select id="inventory-warehouse" class="form-input" formControlName="warehouseId">
+        <select
+          id="inventory-warehouse"
+          class="form-input"
+          formControlName="warehouseId"
+        >
           <option value="">Seleccionar almacén</option>
           @for (warehouse of warehouses(); track warehouse.id) {
             <option [value]="warehouse.id">{{ warehouse.name }}</option>
@@ -28,7 +56,9 @@
       }
 
       <div class="modal-footer">
-        <button type="button" class="btn-ghost" (click)="close.emit()">Cancelar</button>
+        <button type="button" class="btn-ghost" (click)="closeModal.emit()">
+          Cancelar
+        </button>
         <button type="submit" class="btn-primary" [disabled]="saving()">
           @if (saving()) {
             <ion-spinner name="crescent" />

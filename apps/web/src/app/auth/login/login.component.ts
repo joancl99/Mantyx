@@ -1,15 +1,26 @@
 import { Component, inject, signal } from '@angular/core';
-import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import {
+  ReactiveFormsModule,
+  FormGroup,
+  FormControl,
+  Validators,
+} from '@angular/forms';
+import { Router } from '@angular/router';
 import { IonContent, IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { mailOutline, lockClosedOutline, eyeOutline, eyeOffOutline, cubeSharp } from 'ionicons/icons';
+import {
+  mailOutline,
+  lockClosedOutline,
+  eyeOutline,
+  eyeOffOutline,
+  cubeSharp,
+} from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, IonContent, IonIcon, IonSpinner],
+  imports: [ReactiveFormsModule, IonContent, IonIcon, IonSpinner],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
@@ -23,19 +34,35 @@ export class LoginComponent {
   readonly submitted = signal(false);
 
   readonly form = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [Validators.required, Validators.minLength(6)]),
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email],
+    }),
+    password: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.minLength(6)],
+    }),
   });
 
   constructor() {
-    addIcons({ mailOutline, lockClosedOutline, eyeOutline, eyeOffOutline, cubeSharp });
+    addIcons({
+      mailOutline,
+      lockClosedOutline,
+      eyeOutline,
+      eyeOffOutline,
+      cubeSharp,
+    });
   }
 
-  get email() { return this.form.get('email')!; }
-  get password() { return this.form.get('password')!; }
+  get email() {
+    return this.form.controls.email;
+  }
+  get password() {
+    return this.form.controls.password;
+  }
 
   togglePassword() {
-    this.showPassword.update(v => !v);
+    this.showPassword.update((v) => !v);
   }
 
   onSubmit() {
@@ -47,12 +74,19 @@ export class LoginComponent {
     this.isLoading.set(true);
     const { email, password } = this.form.getRawValue();
 
-    this.authService.login(email!, password!).subscribe({
-      next: () => this.router.navigate(['/app/dashboard']),
+    this.authService.login(email, password).subscribe({
+      next: () => {
+        // SUPERADMIN has no company, so the company-scoped dashboard does not
+        // apply — send them straight to the platform admin panel.
+        const isSuperadmin =
+          this.authService.currentUser()?.role === 'SUPERADMIN';
+        this.router.navigate([isSuperadmin ? '/app/admin' : '/app/dashboard']);
+      },
       error: (err) => {
         this.isLoading.set(false);
         this.errorMessage.set(
-          err?.error?.message ?? 'Credenciales incorrectas. Inténtalo de nuevo.'
+          err?.error?.message ??
+            'Credenciales incorrectas. Inténtalo de nuevo.',
         );
       },
     });

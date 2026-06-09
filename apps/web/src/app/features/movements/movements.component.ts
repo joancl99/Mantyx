@@ -18,13 +18,13 @@ import {
   IonTitle,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import {
-  addOutline,
-} from 'ionicons/icons';
+import { addOutline, downloadOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
+import { CsvExportService } from '../../core/services/csv-export.service';
 import {
   MovementType,
   CreateMovementDto,
+  StockMovement,
 } from '../../core/models/stock.models';
 import { StockService } from '../../core/services/stock.service';
 import { Product } from '../../core/models/product.models';
@@ -58,6 +58,7 @@ import { MOVEMENT_FORM_TYPES, MOVEMENT_TYPE_CONFIG } from './movement-types';
 export class MovementsComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly stockService = inject(StockService);
+  private readonly csvExport = inject(CsvExportService);
   private readonly productsService = inject(ProductsService);
   private readonly warehousesService = inject(WarehousesService);
   private readonly destroyRef = inject(DestroyRef);
@@ -74,7 +75,12 @@ export class MovementsComponent implements OnInit {
   // ── Permissions ──────────────────────────────────────────────────────────
   readonly canCreate = computed(() => {
     const role = this.auth.currentUser()?.role;
-    return role === 'SUPERADMIN' || role === 'ADMIN' || role === 'MANAGER' || role === 'OPERATOR';
+    return (
+      role === 'SUPERADMIN' ||
+      role === 'ADMIN' ||
+      role === 'MANAGER' ||
+      role === 'OPERATOR'
+    );
   });
 
   // ── Modal ────────────────────────────────────────────────────────────────
@@ -83,16 +89,29 @@ export class MovementsComponent implements OnInit {
   readonly formError = signal('');
 
   readonly form = new FormGroup({
-    productId: new FormControl('', Validators.required),
-    warehouseId: new FormControl('', Validators.required),
-    type: new FormControl<MovementType>('INBOUND', Validators.required),
-    quantity: new FormControl(1, [Validators.required, Validators.min(1)]),
-    notes: new FormControl(''),
+    productId: new FormControl('', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    warehouseId: new FormControl('', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    type: new FormControl<MovementType>('INBOUND', {
+      nonNullable: true,
+      validators: Validators.required,
+    }),
+    quantity: new FormControl(1, {
+      nonNullable: true,
+      validators: [Validators.required, Validators.min(1)],
+    }),
+    notes: new FormControl('', { nonNullable: true }),
   });
 
   constructor() {
     addIcons({
       addOutline,
+      downloadOutline,
     });
   }
 
@@ -114,6 +133,42 @@ export class MovementsComponent implements OnInit {
   }
 
   // ── Modal ────────────────────────────────────────────────────────────────
+  exportCsv() {
+    this.stockService
+      .getAll({
+        limit: 9999,
+        type: this.list.filterType() || undefined,
+        dateFrom: this.list.filterDateFrom() || undefined,
+        dateTo: this.list.filterDateTo() || undefined,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res) => {
+        const headers = [
+          'Fecha',
+          'Tipo',
+          'Producto',
+          'SKU',
+          'Cantidad',
+          'Stock anterior',
+          'Stock nuevo',
+          'Almacén',
+          'Notas',
+        ];
+        const rows = res.data.map((m: StockMovement) => [
+          new Date(m.createdAt).toLocaleDateString('es-ES'),
+          m.type,
+          m.product.name,
+          m.product.sku,
+          m.quantity,
+          m.previousStock,
+          m.newStock,
+          m.warehouse.name,
+          m.notes ?? '',
+        ]);
+        this.csvExport.export('movimientos', headers, rows);
+      });
+  }
+
   openCreate() {
     this.form.reset({ type: 'INBOUND', quantity: 1 });
     this.submitted.set(false);
@@ -134,9 +189,9 @@ export class MovementsComponent implements OnInit {
     const raw = this.form.getRawValue();
 
     const dto: CreateMovementDto = {
-      productId: raw.productId!,
-      warehouseId: raw.warehouseId!,
-      type: raw.type!,
+      productId: raw.productId,
+      warehouseId: raw.warehouseId,
+      type: raw.type,
       quantity: Number(raw.quantity),
       notes: raw.notes || undefined,
     };
@@ -153,9 +208,10 @@ export class MovementsComponent implements OnInit {
         },
         error: (err) => {
           this.saving.set(false);
-          this.formError.set(err?.error?.message ?? 'Error al registrar el movimiento');
+          this.formError.set(
+            err?.error?.message ?? 'Error al registrar el movimiento',
+          );
         },
       });
   }
-
 }

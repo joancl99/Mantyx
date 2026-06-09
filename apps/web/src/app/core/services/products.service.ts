@@ -41,4 +41,10 @@ export class ProductsService {
   delete(id: string) {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
+
+  uploadImage(id: string, file: File) {
+    const body = new FormData();
+    body.append('file', file);
+    return this.http.patch<Product>(`${this.base}/${id}/image`, body);
+  }
 }

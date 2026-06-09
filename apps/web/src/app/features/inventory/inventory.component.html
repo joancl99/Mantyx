@@ -54,6 +54,7 @@
         (completeCount)="completeSelected()"
         (zoneChange)="onZoneChange($event)"
         (aisleChange)="onAisleChange($event)"
+        (scanLocation)="scanLocation()"
         (addLine)="submitLine()"
         (updateLine)="updateLine($event)"
         (removeLine)="removeLine($event)"
@@ -69,7 +70,7 @@
     [submitted]="submitted()"
     [saving]="saving()"
     [formError]="formError()"
-    (close)="closeCreate()"
+    (closeModal)="closeCreate()"
     (submitForm)="submitCreate()"
   />
 }

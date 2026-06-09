@@ -1,9 +1,58 @@
 <ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
+    <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
     <ion-title>Expediciones</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content></ion-content>
+
+<ion-content [scrollY]="true" [fullscreen]="true">
+  <div class="expeditions-page">
+    <header class="page-header">
+      <div class="page-header__left">
+        <h1 class="page-title">Expediciones</h1>
+        <span class="page-subtitle">{{ list.totalLabel() }}</span>
+      </div>
+      <div class="page-header__actions">
+        <button class="btn-export" (click)="exportCsv()">
+          <ion-icon name="download-outline" />
+          Exportar CSV
+        </button>
+        @if (canCreate()) {
+          <button class="btn-primary" (click)="openModal()">
+            <ion-icon name="add-outline" />
+            Nueva expedición
+          </button>
+        }
+      </div>
+    </header>
+
+    <app-expedition-filters
+      [filterDateFrom]="list.filterDateFrom()"
+      [filterDateTo]="list.filterDateTo()"
+      [hasActiveFilters]="list.hasActiveFilters()"
+      (dateFromChanged)="list.onDateFromFilter($event)"
+      (dateToChanged)="list.onDateToFilter($event)"
+      (filtersCleared)="list.clearFilters()"
+    />
+
+    <app-expedition-list
+      [expeditions]="list.expeditions()"
+      [loading]="list.loading()"
+      [hasActiveFilters]="list.hasActiveFilters()"
+      [currentPage]="list.currentPage()"
+      [totalPages]="list.totalPages()"
+      (pageChanged)="list.goToPage($event)"
+    />
+  </div>
+</ion-content>
+
+@if (showModal()) {
+  <app-movement-form-modal
+    [config]="modalConfig"
+    [saving]="saving()"
+    [formError]="formError()"
+    [submitSucceeded]="submitSucceeded()"
+    (closeModal)="closeModal()"
+    (submitForm)="onSubmit($event)"
+  />
+}

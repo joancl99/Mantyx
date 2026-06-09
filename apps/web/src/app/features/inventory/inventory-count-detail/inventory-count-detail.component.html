@@ -13,17 +13,27 @@
     <div class="detail-header">
       <div>
         <h2>{{ count()!.name }}</h2>
-        <p>{{ count()!.warehouse.name }} · {{ statusLabel(count()!.status) }}</p>
+        <p>
+          {{ count()!.warehouse.name }} · {{ statusLabel(count()!.status) }}
+        </p>
       </div>
       <div class="detail-actions">
         @if (canStart()) {
-          <button class="btn-ghost" [disabled]="saving()" (click)="startCount.emit()">
+          <button
+            class="btn-ghost"
+            [disabled]="saving()"
+            (click)="startCount.emit()"
+          >
             <ion-icon name="play-outline" />
             Iniciar
           </button>
         }
         @if (canComplete()) {
-          <button class="btn-primary" [disabled]="saving()" (click)="completeCount.emit()">
+          <button
+            class="btn-primary"
+            [disabled]="saving()"
+            (click)="completeCount.emit()"
+          >
             <ion-icon name="checkmark-circle-outline" />
             Completar
           </button>
@@ -36,14 +46,36 @@
     }
 
     @if (!isReadOnly()) {
-      <form class="line-form" [formGroup]="lineForm()" (ngSubmit)="addLine.emit()">
-        <select class="form-input" formControlName="zoneId" (change)="zoneChange.emit($any($event.target).value)">
+      <form
+        class="line-form"
+        [formGroup]="lineForm()"
+        (ngSubmit)="addLine.emit()"
+      >
+        <button
+          class="btn-ghost scan-btn"
+          type="button"
+          [disabled]="saving()"
+          title="Escanear QR de ubicación"
+          (click)="scanLocation.emit()"
+        >
+          <ion-icon name="scan-outline" />
+          Escanear
+        </button>
+        <select
+          class="form-input"
+          formControlName="zoneId"
+          (change)="zoneChange.emit($any($event.target).value)"
+        >
           <option value="">Zona</option>
           @for (zone of zones(); track zone.id) {
             <option [value]="zone.id">{{ zone.name }}</option>
           }
         </select>
-        <select class="form-input" formControlName="aisleId" (change)="aisleChange.emit($any($event.target).value)">
+        <select
+          class="form-input"
+          formControlName="aisleId"
+          (change)="aisleChange.emit($any($event.target).value)"
+        >
           <option value="">Pasillo</option>
           @for (aisle of aisles(); track aisle.id) {
             <option [value]="aisle.id">{{ aisle.name }}</option>
@@ -55,14 +87,22 @@
             <option [value]="location.id">{{ location.code }}</option>
           }
         </select>
-        <input class="form-input qty-input" type="number" min="0" formControlName="expectedQty" placeholder="Esperado auto" />
+        <input
+          class="form-input qty-input"
+          type="number"
+          min="0"
+          formControlName="expectedQty"
+          placeholder="Esperado auto"
+        />
         <button class="btn-primary" type="submit" [disabled]="saving()">
           <ion-icon name="add-outline" />
           Línea
         </button>
       </form>
       @if (lineSubmitted() && lineForm().invalid) {
-        <p class="inline-error">Selecciona zona, pasillo y ubicación válidos.</p>
+        <p class="inline-error">
+          Selecciona zona, pasillo y ubicación válidos.
+        </p>
       }
     }
 
@@ -89,10 +129,18 @@
               [disabled]="isReadOnly()"
               (change)="onCountedQtyChange(line, $event)"
             />
-            <span class="line-number" [class.diff-negative]="(line.difference ?? 0) < 0" [class.diff-positive]="(line.difference ?? 0) > 0">
+            <span
+              class="line-number"
+              [class.diff-negative]="(line.difference ?? 0) < 0"
+              [class.diff-positive]="(line.difference ?? 0) > 0"
+            >
               {{ line.difference === null ? '-' : line.difference }}
             </span>
-            <button class="action-btn action-btn--delete" [disabled]="count()!.status !== 'DRAFT'" (click)="removeLine.emit(line)">
+            <button
+              class="action-btn action-btn--delete"
+              [disabled]="count()!.status !== 'DRAFT'"
+              (click)="removeLine.emit(line)"
+            >
               <ion-icon name="trash-outline" />
             </button>
           </div>

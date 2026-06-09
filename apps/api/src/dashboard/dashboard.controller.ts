@@ -1,7 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { JwtPayload } from '../auth/types/jwt-payload.interface';
+import { CompanyId } from '../auth/decorators/company-id.decorator';
 import { DashboardService } from './dashboard.service';
 
 @ApiTags('Dashboard')
@@ -12,7 +11,7 @@ export class DashboardController {
 
   @Get('stats')
   @ApiOperation({ summary: 'Get dashboard KPIs, alerts and recent movements' })
-  getStats(@CurrentUser() user: JwtPayload) {
-    return this.dashboard.getStats(user.companyId!);
+  getStats(@CompanyId() companyId: string) {
+    return this.dashboard.getStats(companyId);
   }
 }

@@ -1,6 +1,7 @@
 export interface LowStockAlert {
   productId: string;
-  productName: string;
-  currentStock: number;
+  name: string;
+  sku: string;
+  stock: number;
   minStock: number;
 }

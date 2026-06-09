@@ -1,0 +1,19 @@
+node_modules
+dist
+# Never leak local secrets into build layers/cache (kept out, examples allowed)
+.env
+**/.env
+**/.env.*
+!**/.env.example
+.nx/cache
+.nx/workspace-data
+.angular
+.git
+.github
+uploads/products/*.jpg
+uploads/products/*.jpeg
+uploads/products/*.png
+uploads/products/*.webp
+android
+ios
+*.md
