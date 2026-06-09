@@ -3,15 +3,12 @@
     <div class="menu-wrap">
       <!-- Header -->
       <div class="menu-header">
-        <div class="menu-logo">
-          <img src="/brand/mantyx-symbol.png" alt="" />
+        <div class="menu-brand-plate">
+          <img src="/brand/mantyx-wordmark.png" alt="Mantyx" />
         </div>
-        <div class="menu-brand">
-          <span class="menu-app-name">Mantyx</span>
-          @if (currentUser()) {
-            <span class="menu-user-name">{{ currentUser()!.name }}</span>
-          }
-        </div>
+        @if (currentUser()) {
+          <span class="menu-user-name">{{ currentUser()!.name }}</span>
+        }
         @if (currentUser()) {
           <div
             class="menu-role-badge role-{{ currentUser()!.role | lowercase }}"
