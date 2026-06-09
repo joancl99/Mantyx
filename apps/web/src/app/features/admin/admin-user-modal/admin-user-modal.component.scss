@@ -1,0 +1,29 @@
+// Layout and visuals come from the shared modal/form classes in styles/_shared.scss.
+// Only the password reveal control is specific to this modal.
+.password-wrap {
+  position: relative;
+
+  .form-input {
+    padding-right: 40px;
+    width: 100%;
+  }
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--wh-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  padding: 4px;
+
+  &:hover {
+    color: var(--wh-text);
+  }
+}

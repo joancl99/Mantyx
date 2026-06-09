@@ -1,0 +1,142 @@
+<div
+  class="modal-backdrop"
+  tabindex="0"
+  (click)="state().closeModal()"
+  (keydown.escape)="state().closeModal()"
+>
+  <div
+    class="modal modal--sm"
+    role="presentation"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="modal-header">
+      <h2 class="modal-title">
+        {{
+          state().modalMode() === 'create' ? 'Nueva empresa' : 'Editar empresa'
+        }}
+      </h2>
+      <button class="modal-close" (click)="state().closeModal()">
+        <ion-icon name="close-outline" />
+      </button>
+    </div>
+    <form
+      [formGroup]="state().form"
+      (ngSubmit)="state().submitForm()"
+      class="modal-body"
+    >
+      <div
+        class="form-field"
+        [class.has-error]="
+          state().submitted() && state().form.get('name')?.invalid
+        "
+      >
+        <label class="form-label" for="company-name">Nombre *</label>
+        <input
+          id="company-name"
+          class="form-input"
+          formControlName="name"
+          placeholder="Acme Corp"
+        />
+        @if (
+          state().submitted() && state().form.get('name')?.hasError('required')
+        ) {
+          <span class="form-error">Campo obligatorio</span>
+        }
+      </div>
+      <div class="form-field">
+        <label class="form-label" for="company-taxid">CIF / NIF</label>
+        <input
+          id="company-taxid"
+          class="form-input"
+          formControlName="taxId"
+          placeholder="B12345678"
+        />
+      </div>
+
+      @if (state().modalMode() === 'create') {
+        <p class="section-label">Administrador inicial de la empresa</p>
+        <div
+          class="form-field"
+          [class.has-error]="
+            state().submitted() && state().form.get('adminName')?.invalid
+          "
+        >
+          <label class="form-label" for="admin-name">Nombre del admin *</label>
+          <input
+            id="admin-name"
+            class="form-input"
+            formControlName="adminName"
+            placeholder="María López"
+          />
+          @if (state().submitted() && state().form.get('adminName')?.invalid) {
+            <span class="form-error"
+              >Nombre obligatorio (mín. 2 caracteres)</span
+            >
+          }
+        </div>
+        <div
+          class="form-field"
+          [class.has-error]="
+            state().submitted() && state().form.get('adminEmail')?.invalid
+          "
+        >
+          <label class="form-label" for="admin-email">Email del admin *</label>
+          <input
+            id="admin-email"
+            type="email"
+            class="form-input"
+            formControlName="adminEmail"
+            placeholder="admin@acme.com"
+          />
+          @if (state().submitted() && state().form.get('adminEmail')?.invalid) {
+            <span class="form-error">Email válido obligatorio</span>
+          }
+        </div>
+        <div
+          class="form-field"
+          [class.has-error]="
+            state().submitted() && state().form.get('adminPassword')?.invalid
+          "
+        >
+          <label class="form-label" for="admin-password"
+            >Contraseña del admin *</label
+          >
+          <input
+            id="admin-password"
+            type="password"
+            class="form-input"
+            formControlName="adminPassword"
+            placeholder="Mínimo 8 caracteres"
+          />
+          @if (
+            state().submitted() && state().form.get('adminPassword')?.invalid
+          ) {
+            <span class="form-error">Mínimo 8 caracteres</span>
+          }
+        </div>
+      }
+
+      @if (state().formError()) {
+        <div class="form-alert">
+          <ion-icon name="alert-circle-outline" />{{ state().formError() }}
+        </div>
+      }
+      <div class="modal-footer">
+        <button type="button" class="btn-ghost" (click)="state().closeModal()">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="state().saving()">
+          @if (state().saving()) {
+            <ion-spinner name="crescent" />
+          } @else {
+            {{
+              state().modalMode() === 'create'
+                ? 'Crear empresa'
+                : 'Guardar cambios'
+            }}
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

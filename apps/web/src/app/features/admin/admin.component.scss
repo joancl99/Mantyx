@@ -2,15 +2,6 @@
   display: contents;
 }
 
-.section-label {
-  margin: 4px 0 0;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--wh-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
 .admin-page {
   padding: 20px;
   max-width: 900px;
@@ -54,35 +45,6 @@
     color: var(--wh-accent);
     border-bottom-color: var(--wh-accent);
     font-weight: 600;
-  }
-}
-
-// ── Password field ────────────────────────────────────────────────────────────
-.password-wrap {
-  position: relative;
-
-  .form-input {
-    padding-right: 40px;
-    width: 100%;
-  }
-}
-
-.password-toggle {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: transparent;
-  border: none;
-  color: var(--wh-text-muted);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  font-size: 16px;
-  padding: 4px;
-
-  &:hover {
-    color: var(--wh-text);
   }
 }
 

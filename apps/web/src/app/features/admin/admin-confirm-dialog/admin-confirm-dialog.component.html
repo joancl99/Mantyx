@@ -1,0 +1,33 @@
+<div
+  class="modal-backdrop"
+  tabindex="0"
+  (click)="cancelled.emit()"
+  (keydown.escape)="cancelled.emit()"
+>
+  <div
+    class="modal modal--sm"
+    role="presentation"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="modal-header">
+      <h2 class="modal-title">{{ title() }}</h2>
+    </div>
+    <div class="modal-body">
+      <ng-content />
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" (click)="cancelled.emit()">Cancelar</button>
+      <button
+        [class]="danger() ? 'btn-danger' : 'btn-primary'"
+        [disabled]="loading()"
+        (click)="confirmed.emit()"
+      >
+        @if (loading()) {
+          <ion-spinner name="crescent" />
+        } @else {
+          {{ confirmLabel() }}
+        }
+      </button>
+    </div>
+  </div>
+</div>

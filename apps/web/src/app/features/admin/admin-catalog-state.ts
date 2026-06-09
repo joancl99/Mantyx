@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
 
-interface NamedCatalogItem {
+export interface NamedCatalogItem {
   id: string;
   name: string;
 }
@@ -145,7 +145,9 @@ export class AdminCatalogState<T extends NamedCatalogItem> {
         error: (error) => {
           this.deleting.set(false);
           this.deleteTarget.set(null);
-          this.formError.set(error?.error?.message ?? this.messages.deleteError);
+          this.formError.set(
+            error?.error?.message ?? this.messages.deleteError,
+          );
         },
       });
   }

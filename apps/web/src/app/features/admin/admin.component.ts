@@ -6,7 +6,6 @@ import {
   OnInit,
   DestroyRef,
 } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   IonHeader,
   IonToolbar,
@@ -15,24 +14,12 @@ import {
   IonMenuButton,
   IonTitle,
   IonIcon,
-  IonSpinner,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   peopleOutline,
-  personAddOutline,
-  createOutline,
-  powerOutline,
-  closeOutline,
-  alertCircleOutline,
-  searchOutline,
-  shieldOutline,
-  eyeOutline,
-  eyeOffOutline,
   pricetagsOutline,
   storefrontOutline,
-  trashOutline,
-  addOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { UsersService } from '../../core/services/users.service';
@@ -40,10 +27,14 @@ import { Brand, Category } from '../../core/models/product.models';
 import { CategoriesService } from '../../core/services/categories.service';
 import { BrandsService } from '../../core/services/brands.service';
 import { CompaniesService } from '../../core/services/companies.service';
+import { AdminCatalogModalComponent } from './admin-catalog-modal/admin-catalog-modal.component';
 import { AdminCatalogPanelComponent } from './admin-catalog-panel/admin-catalog-panel.component';
 import { AdminCatalogState } from './admin-catalog-state';
 import { AdminCompaniesState } from './admin-companies-state';
 import { AdminCompanyListComponent } from './admin-company-list/admin-company-list.component';
+import { AdminCompanyModalComponent } from './admin-company-modal/admin-company-modal.component';
+import { AdminConfirmDialogComponent } from './admin-confirm-dialog/admin-confirm-dialog.component';
+import { AdminUserModalComponent } from './admin-user-modal/admin-user-modal.component';
 import { AdminUsersPanelComponent } from './admin-users-panel/admin-users-panel.component';
 import { AdminUsersState } from './admin-users-state';
 
@@ -53,8 +44,6 @@ type AdminTab = 'usuarios' | 'categorias' | 'marcas';
   selector: 'app-admin',
   standalone: true,
   imports: [
-    FormsModule,
-    ReactiveFormsModule,
     IonHeader,
     IonToolbar,
     IonContent,
@@ -62,9 +51,12 @@ type AdminTab = 'usuarios' | 'categorias' | 'marcas';
     IonMenuButton,
     IonTitle,
     IonIcon,
-    IonSpinner,
+    AdminCatalogModalComponent,
     AdminCatalogPanelComponent,
     AdminCompanyListComponent,
+    AdminCompanyModalComponent,
+    AdminConfirmDialogComponent,
+    AdminUserModalComponent,
     AdminUsersPanelComponent,
   ],
   templateUrl: './admin.component.html',
@@ -108,22 +100,7 @@ export class AdminComponent implements OnInit {
   );
 
   constructor() {
-    addIcons({
-      peopleOutline,
-      personAddOutline,
-      createOutline,
-      powerOutline,
-      closeOutline,
-      alertCircleOutline,
-      searchOutline,
-      shieldOutline,
-      eyeOutline,
-      eyeOffOutline,
-      pricetagsOutline,
-      storefrontOutline,
-      trashOutline,
-      addOutline,
-    });
+    addIcons({ peopleOutline, pricetagsOutline, storefrontOutline });
   }
 
   ngOnInit() {
