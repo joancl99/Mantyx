@@ -127,6 +127,7 @@ Onboarding is invite-based (no public self-registration):
 - Frontend unit suite is 7 tests: app route smoke behavior, `roleGuard`, and the shared `MovementFormModalComponent` data loading + submit validation (one spec replacing the old per-page reception/expedition specs).
 - `api-e2e` is a deterministic in-process Nest e2e test for `/api/health`; it listens on a dynamic port and closes itself after the suite. It no longer depends on `api:serve`, `global-setup`, `global-teardown`, or `test-setup`.
 - The unused `types`/`libs/shared` Nx project was removed; the Nx projects are now `api`, `api-e2e`, and `web`. CI runs explicit full quality gates (no affected-only): format check, lint for `api`/`web`/`api-e2e`, tests for `api`/`web`, builds for `api`/`web`, and `api-e2e`.
+- CI (`.github/workflows/ci.yml`) runs **only on push/PR to `main`** (not on `dev`/`pre`). After install it runs `pnpm exec prisma generate --schema=apps/api/prisma/schema.prisma` before any tsc-based task — required because the schema is at a non-default path so `@prisma/client`'s install hook can't auto-generate the client, and the API test/build need the generated enums/types. After a fresh clone, run `pnpm run db:generate` locally for the same reason. To validate a change against CI without landing it on `main`, open a PR `dev → main`.
 - Lint is clean: `api` is warning-free (the `@CompanyId()` decorator removed all 50 `no-non-null-assertion` warnings) and `web` is warning-free (the 45 `no-non-null-assertion` warnings + last stray `any` were cleared).
 
 Remaining work:
@@ -150,6 +151,7 @@ Remaining work:
 - Dark slate/navy enterprise SaaS.
 - Warm amber accent: `#f59e0b`.
 - Primary font: Plus Jakarta Sans.
+- Brand assets in `apps/web/public/brand/`: `mantyx-logo-full.png` (symbol + wordmark), `mantyx-symbol.png` (mantis only), `mantyx-wordmark.png` (text only). The wordmark is dark, so on the dark login card and side menu the logo sits on a white rounded "plate"/badge for legibility. Usage: login = full logo on a white plate; side menu = wordmark on a white plate; favicon = the green mantis symbol (`favicon.ico` 16/32/48 + `favicon-16x16.png`/`favicon-32x32.png`/`apple-touch-icon.png`, linked in `index.html`). Logos are plain `<img>` static assets (the `cube-sharp` ion-icon placeholder was removed).
 - Ionic `IonMenu` for authenticated navigation.
 - Scanner is a global FAB (bottom-right, barcode icon), not a menu section.
 - Avoid futuristic, neon, holographic, or 3D effects.
