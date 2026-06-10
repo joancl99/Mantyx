@@ -176,8 +176,7 @@ export class ShellComponent implements OnInit {
   }
 
   ngOnInit() {
-    const token = this.authService.accessToken();
-    if (token) this.socketService.connect(token);
+    if (this.authService.accessToken()) this.socketService.connect();
 
     this.socketService.lowStockAlerts$
       .pipe(takeUntilDestroyed(this.destroyRef))
