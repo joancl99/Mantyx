@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -38,6 +39,7 @@ import { MovementsListState } from './movements-list-state';
 @Component({
   selector: 'app-movements',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonContent,
     IonIcon,

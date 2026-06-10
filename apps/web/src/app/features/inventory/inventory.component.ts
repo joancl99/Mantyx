@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   DestroyRef,
   OnInit,
@@ -38,6 +39,7 @@ import { INVENTORY_STATUS_OPTIONS } from './inventory-status';
 @Component({
   selector: 'app-inventory',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonHeader,
     IonToolbar,

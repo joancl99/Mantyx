@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   DestroyRef,
@@ -38,6 +39,7 @@ import { ReceptionListComponent } from './reception-list/reception-list.componen
 @Component({
   selector: 'app-receptions',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonContent,
     IonHeader,

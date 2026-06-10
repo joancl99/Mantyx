@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -47,6 +48,7 @@ type AdminTab = 'usuarios' | 'categorias' | 'marcas' | 'auditoria';
 @Component({
   selector: 'app-admin',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonHeader,
     IonToolbar,
