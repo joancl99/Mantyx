@@ -12,6 +12,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Role } from '@prisma/client';
 import { CompanyId } from '../auth/decorators/company-id.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateWarehouseDto } from './dto/create-warehouse.dto';
@@ -35,7 +36,7 @@ export class WarehousesController {
   }
 
   @Post()
-  @Roles('ADMIN', 'SUPERADMIN')
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a warehouse' })
   create(@CompanyId() companyId: string, @Body() dto: CreateWarehouseDto) {
@@ -43,7 +44,7 @@ export class WarehousesController {
   }
 
   @Patch(':id')
-  @Roles('ADMIN', 'SUPERADMIN')
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @ApiOperation({ summary: 'Update a warehouse' })
   update(
     @CompanyId() companyId: string,
@@ -54,7 +55,7 @@ export class WarehousesController {
   }
 
   @Patch(':id/toggle-active')
-  @Roles('ADMIN', 'SUPERADMIN')
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @ApiOperation({ summary: 'Toggle warehouse active/inactive' })
   toggleActive(
     @CompanyId() companyId: string,
@@ -74,7 +75,7 @@ export class WarehousesController {
   }
 
   @Post(':warehouseId/zones')
-  @Roles('ADMIN', 'SUPERADMIN', 'MANAGER')
+  @Roles(Role.ADMIN, Role.SUPERADMIN, Role.MANAGER)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a zone' })
   createZone(
@@ -86,7 +87,7 @@ export class WarehousesController {
   }
 
   @Patch(':warehouseId/zones/:zoneId')
-  @Roles('ADMIN', 'SUPERADMIN', 'MANAGER')
+  @Roles(Role.ADMIN, Role.SUPERADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Rename a zone' })
   renameZone(
     @CompanyId() companyId: string,
@@ -98,7 +99,7 @@ export class WarehousesController {
   }
 
   @Delete(':warehouseId/zones/:zoneId')
-  @Roles('ADMIN', 'SUPERADMIN')
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete a zone' })
   deleteZone(
@@ -121,7 +122,7 @@ export class WarehousesController {
   }
 
   @Post(':warehouseId/zones/:zoneId/aisles')
-  @Roles('ADMIN', 'SUPERADMIN', 'MANAGER')
+  @Roles(Role.ADMIN, Role.SUPERADMIN, Role.MANAGER)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create an aisle' })
   createAisle(
@@ -134,7 +135,7 @@ export class WarehousesController {
   }
 
   @Patch(':warehouseId/zones/:zoneId/aisles/:aisleId')
-  @Roles('ADMIN', 'SUPERADMIN', 'MANAGER')
+  @Roles(Role.ADMIN, Role.SUPERADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Rename an aisle' })
   renameAisle(
     @CompanyId() companyId: string,
@@ -147,7 +148,7 @@ export class WarehousesController {
   }
 
   @Delete(':warehouseId/zones/:zoneId/aisles/:aisleId')
-  @Roles('ADMIN', 'SUPERADMIN')
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete an aisle' })
   deleteAisle(
@@ -184,7 +185,7 @@ export class WarehousesController {
   }
 
   @Post(':warehouseId/zones/:zoneId/aisles/:aisleId/locations')
-  @Roles('ADMIN', 'SUPERADMIN', 'MANAGER')
+  @Roles(Role.ADMIN, Role.SUPERADMIN, Role.MANAGER)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Create a location' })
   createLocation(
@@ -198,7 +199,7 @@ export class WarehousesController {
   }
 
   @Patch(':warehouseId/zones/:zoneId/aisles/:aisleId/locations/:locationId')
-  @Roles('ADMIN', 'SUPERADMIN', 'MANAGER')
+  @Roles(Role.ADMIN, Role.SUPERADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Update a location code' })
   renameLocation(
     @CompanyId() companyId: string,
@@ -212,7 +213,7 @@ export class WarehousesController {
   }
 
   @Delete(':warehouseId/zones/:zoneId/aisles/:aisleId/locations/:locationId')
-  @Roles('ADMIN', 'SUPERADMIN')
+  @Roles(Role.ADMIN, Role.SUPERADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete a location' })
   deleteLocation(

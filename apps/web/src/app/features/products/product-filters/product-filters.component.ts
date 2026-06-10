@@ -1,4 +1,9 @@
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { searchOutline } from 'ionicons/icons';
@@ -7,6 +12,7 @@ import { Brand, Category } from '../../../core/models/product.models';
 @Component({
   selector: 'app-product-filters',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IonIcon],
   templateUrl: './product-filters.component.html',
   styleUrl: './product-filters.component.scss',

@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   DestroyRef,
@@ -38,6 +39,7 @@ import { ExpeditionListComponent } from './expedition-list/expedition-list.compo
 @Component({
   selector: 'app-expeditions',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonContent,
     IonHeader,

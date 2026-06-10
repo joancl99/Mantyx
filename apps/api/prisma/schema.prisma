@@ -76,7 +76,6 @@ model User {
   password     String
   name         String
   role         Role     @default(OPERATOR)
-  refreshToken String?
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -89,6 +88,9 @@ model User {
   auditLogs        AuditLog[]
   inventoryCounts  InventoryCount[]
 
+  // Postgres does not index FK columns automatically — tenant user listings
+  // filter by companyId.
+  @@index([companyId])
   @@map("users")
 }
 
@@ -213,37 +215,19 @@ model Product {
   brandId    String?
   brand      Brand?    @relation(fields: [brandId], references: [id])
 
-  variants       ProductVariant[]
   stockEntries   StockEntry[]
   stockMovements StockMovement[]
 
   @@unique([companyId, sku])
+  // Catalog filters scope product listings by category/brand.
+  @@index([categoryId])
+  @@index([brandId])
   @@map("products")
-}
-
-model ProductVariant {
-  id        String   @id @default(uuid())
-  sku       String
-  barcode   String?
-  size      String?
-  color     String?
-  imageUrl  String?
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
-
-  stockEntries StockEntry[]
-
-  @@unique([productId, sku])
-  @@map("product_variants")
 }
 
 // ─── Stock ────────────────────────────────────────────────────────────────────
 
-// Current stock per product (or variant) per location
+// Current stock per product per location
 model StockEntry {
   id        String   @id @default(uuid())
   quantity  Int      @default(0)
@@ -251,12 +235,13 @@ model StockEntry {
 
   productId  String
   product    Product  @relation(fields: [productId], references: [id])
-  variantId  String?
-  variant    ProductVariant? @relation(fields: [variantId], references: [id])
   locationId String
   location   Location @relation(fields: [locationId], references: [id])
 
-  @@unique([productId, variantId, locationId])
+  @@unique([productId, locationId])
+  // The compound unique above only covers productId-prefixed lookups;
+  // movements and location-delete guards query by locationId alone.
+  @@index([locationId])
   @@map("stock_entries")
 }
 
@@ -282,6 +267,11 @@ model StockMovement {
   toLocationId   String?
   toLocation     Location?  @relation("ToLocation", fields: [toLocationId], references: [id])
 
+  // Movement listings scope by warehouse (tenant) ordered by date; filters
+  // narrow by product or user.
+  @@index([warehouseId, createdAt])
+  @@index([productId])
+  @@index([userId])
   @@map("stock_movements")
 }
 
@@ -303,6 +293,8 @@ model InventoryCount {
 
   lines InventoryCountLine[]
 
+  // Count listings scope by warehouse (tenant) ordered by creation date.
+  @@index([warehouseId, createdAt])
   @@map("inventory_counts")
 }
 
@@ -320,6 +312,8 @@ model InventoryCountLine {
   location         Location       @relation(fields: [locationId], references: [id])
 
   @@unique([inventoryCountId, locationId])
+  // Location-delete guards look up lines by location alone.
+  @@index([locationId])
   @@map("inventory_count_lines")
 }
 
@@ -340,5 +334,8 @@ model AuditLog {
   companyId String?
   company   Company? @relation(fields: [companyId], references: [id])
 
+  // Audit trails are read per tenant in reverse-chronological order.
+  @@index([companyId, createdAt])
+  @@index([userId])
   @@map("audit_logs")
 }

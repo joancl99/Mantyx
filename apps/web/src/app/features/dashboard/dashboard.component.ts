@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -30,7 +31,10 @@ import {
   addCircleOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
-import { DashboardAlert, DashboardMovement } from '../../core/models/dashboard.models';
+import {
+  DashboardAlert,
+  DashboardMovement,
+} from '../../core/models/dashboard.models';
 import { DashboardService } from '../../core/services/dashboard.service';
 
 interface QuickAction {
@@ -58,6 +62,7 @@ const QUICK_ACTIONS: QuickAction[] = [
 @Component({
   selector: 'app-dashboard',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonContent,
     IonIcon,

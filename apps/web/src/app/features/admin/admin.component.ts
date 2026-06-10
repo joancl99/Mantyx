@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -19,14 +20,18 @@ import { addIcons } from 'ionicons';
 import {
   peopleOutline,
   pricetagsOutline,
+  shieldCheckmarkOutline,
   storefrontOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
+import { AuditService } from '../../core/services/audit.service';
 import { UsersService } from '../../core/services/users.service';
 import { Brand, Category } from '../../core/models/product.models';
 import { CategoriesService } from '../../core/services/categories.service';
 import { BrandsService } from '../../core/services/brands.service';
 import { CompaniesService } from '../../core/services/companies.service';
+import { AdminAuditPanelComponent } from './admin-audit-panel/admin-audit-panel.component';
+import { AdminAuditState } from './admin-audit-state';
 import { AdminCatalogModalComponent } from './admin-catalog-modal/admin-catalog-modal.component';
 import { AdminCatalogPanelComponent } from './admin-catalog-panel/admin-catalog-panel.component';
 import { AdminCatalogState } from './admin-catalog-state';
@@ -38,11 +43,12 @@ import { AdminUserModalComponent } from './admin-user-modal/admin-user-modal.com
 import { AdminUsersPanelComponent } from './admin-users-panel/admin-users-panel.component';
 import { AdminUsersState } from './admin-users-state';
 
-type AdminTab = 'usuarios' | 'categorias' | 'marcas';
+type AdminTab = 'usuarios' | 'categorias' | 'marcas' | 'auditoria';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonHeader,
     IonToolbar,
@@ -51,6 +57,7 @@ type AdminTab = 'usuarios' | 'categorias' | 'marcas';
     IonMenuButton,
     IonTitle,
     IonIcon,
+    AdminAuditPanelComponent,
     AdminCatalogModalComponent,
     AdminCatalogPanelComponent,
     AdminCompanyListComponent,
@@ -99,8 +106,15 @@ export class AdminComponent implements OnInit {
     },
   );
 
+  readonly audit = new AdminAuditState(inject(AuditService), this.destroyRef);
+
   constructor() {
-    addIcons({ peopleOutline, pricetagsOutline, storefrontOutline });
+    addIcons({
+      peopleOutline,
+      pricetagsOutline,
+      shieldCheckmarkOutline,
+      storefrontOutline,
+    });
   }
 
   ngOnInit() {
@@ -115,5 +129,6 @@ export class AdminComponent implements OnInit {
     this.activeTab.set(tab);
     if (tab === 'categorias') this.categoryCatalog.loadIfEmpty();
     if (tab === 'marcas') this.brandCatalog.loadIfEmpty();
+    if (tab === 'auditoria') this.audit.loadIfEmpty();
   }
 }

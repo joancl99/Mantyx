@@ -70,18 +70,16 @@ export class StockService {
 
       let newStock = previousStock;
 
-      if (type === MovementType.INBOUND) {
+      if (type === MovementType.INBOUND || type === MovementType.RETURN) {
+        // A RETURN is goods coming back into the warehouse — same stock
+        // effect as an INBOUND, kept as a distinct type for traceability.
         if (!toLocationId) {
-          throw new BadRequestException('INBOUND requires toLocationId');
+          throw new BadRequestException(`${type} requires toLocationId`);
         }
         newStock = previousStock + quantity;
         await tx.stockEntry.upsert({
           where: {
-            productId_variantId_locationId: {
-              productId,
-              variantId: null as unknown as string,
-              locationId: toLocationId,
-            },
+            productId_locationId: { productId, locationId: toLocationId },
           },
           create: { productId, locationId: toLocationId, quantity },
           update: { quantity: { increment: quantity } },
@@ -96,62 +94,37 @@ export class StockService {
           );
         }
         newStock = previousStock - quantity;
-        const sourceEntry = await tx.stockEntry.findFirst({
-          where: { productId, locationId: fromLocationId },
-        });
-        const sourceStock = sourceEntry?.quantity ?? 0;
-        if (sourceStock < quantity) {
-          throw new BadRequestException(
-            `Insufficient stock at source location: available ${sourceStock}, requested ${quantity}`,
-          );
-        }
-        await tx.stockEntry.update({
-          where: {
-            productId_variantId_locationId: {
-              productId,
-              variantId: null as unknown as string,
-              locationId: fromLocationId,
-            },
-          },
-          data: { quantity: { decrement: quantity } },
-        });
+        await this.decrementSourceStock(
+          tx,
+          productId,
+          fromLocationId,
+          quantity,
+        );
       } else if (type === MovementType.TRANSFER) {
         if (!fromLocationId || !toLocationId) {
           throw new BadRequestException(
             'TRANSFER requires fromLocationId and toLocationId',
           );
         }
-        const sourceEntry = await tx.stockEntry.findFirst({
-          where: { productId, locationId: fromLocationId },
-        });
-        const sourceStock = sourceEntry?.quantity ?? 0;
-        if (sourceStock < quantity) {
+        if (fromLocationId === toLocationId) {
           throw new BadRequestException(
-            `Insufficient stock at source location: available ${sourceStock}, requested ${quantity}`,
+            'TRANSFER source and destination must differ',
           );
         }
-        await tx.stockEntry.update({
-          where: {
-            productId_variantId_locationId: {
-              productId,
-              variantId: null as unknown as string,
-              locationId: fromLocationId,
-            },
-          },
-          data: { quantity: { decrement: quantity } },
-        });
+        await this.decrementSourceStock(
+          tx,
+          productId,
+          fromLocationId,
+          quantity,
+        );
         await tx.stockEntry.upsert({
           where: {
-            productId_variantId_locationId: {
-              productId,
-              variantId: null as unknown as string,
-              locationId: toLocationId,
-            },
+            productId_locationId: { productId, locationId: toLocationId },
           },
           create: { productId, locationId: toLocationId, quantity },
           update: { quantity: { increment: quantity } },
         });
-      } else {
+      } else if (type === MovementType.ADJUSTMENT) {
         // ADJUSTMENT — set absolute stock at a location
         if (!toLocationId)
           throw new BadRequestException('ADJUSTMENT requires toLocationId');
@@ -162,15 +135,15 @@ export class StockService {
         newStock = previousStock - currentQty + quantity;
         await tx.stockEntry.upsert({
           where: {
-            productId_variantId_locationId: {
-              productId,
-              variantId: null as unknown as string,
-              locationId: toLocationId,
-            },
+            productId_locationId: { productId, locationId: toLocationId },
           },
           create: { productId, locationId: toLocationId, quantity },
           update: { quantity },
         });
+      } else {
+        // Unreachable while every MovementType has a branch above — guards
+        // against a new enum value silently recording a no-op movement.
+        throw new BadRequestException(`Unsupported movement type: ${type}`);
       }
 
       const [movement] = await Promise.all([
@@ -215,7 +188,7 @@ export class StockService {
     });
     const totalStock = agg._sum.quantity ?? 0;
     if (totalStock <= product.minStock) {
-      this.alerts.emitLowStock({
+      this.alerts.emitLowStock(companyId, {
         productId: product.id,
         name: product.name,
         sku: product.sku,
@@ -295,6 +268,10 @@ export class StockService {
     const { search, lowStock, page = 1, limit = 30 } = query;
     const skip = (page - 1) * limit;
 
+    if (lowStock) {
+      return this.getLowStockOverview(companyId, search, page, limit, skip);
+    }
+
     const where: Prisma.ProductWhereInput = {
       companyId,
       isActive: true,
@@ -306,19 +283,24 @@ export class StockService {
       }),
     };
 
-    const products = await this.prisma.product.findMany({
-      where,
-      select: {
-        id: true,
-        name: true,
-        sku: true,
-        minStock: true,
-        stockEntries: { select: { quantity: true } },
-      },
-      orderBy: { name: 'asc' },
-    });
+    const [products, total] = await Promise.all([
+      this.prisma.product.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          sku: true,
+          minStock: true,
+          stockEntries: { select: { quantity: true } },
+        },
+        orderBy: { name: 'asc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.product.count({ where }),
+    ]);
 
-    const withStock = products.map((p) => ({
+    const data = products.map((p) => ({
       productId: p.id,
       name: p.name,
       sku: p.sku,
@@ -326,14 +308,66 @@ export class StockService {
       totalStock: p.stockEntries.reduce((sum, e) => sum + e.quantity, 0),
     }));
 
-    const filtered = lowStock
-      ? withStock.filter((p) => p.totalStock <= p.minStock)
-      : withStock;
-
-    const total = filtered.length;
-    const data = filtered.slice(skip, skip + limit);
-
     return { data, total, page, limit };
+  }
+
+  /**
+   * Low stock compares SUM(entries.quantity) against the product's own
+   * minStock column — an aggregate-to-column comparison Prisma cannot
+   * express — so the page and the count both run in SQL instead of loading
+   * every product of the tenant into memory and slicing in JS.
+   */
+  private async getLowStockOverview(
+    companyId: string,
+    search: string | undefined,
+    page: number,
+    limit: number,
+    skip: number,
+  ) {
+    const searchFilter = search
+      ? Prisma.sql`AND (p."name" ILIKE ${`%${search}%`} OR p."sku" ILIKE ${`%${search}%`})`
+      : Prisma.empty;
+
+    const lowStockProducts = Prisma.sql`
+      SELECT p."id", p."name", p."sku", p."minStock",
+             COALESCE(SUM(se."quantity"), 0)::int AS "totalStock"
+      FROM "products" p
+      LEFT JOIN "stock_entries" se ON se."productId" = p."id"
+      WHERE p."companyId" = ${companyId} AND p."isActive" = true
+      ${searchFilter}
+      GROUP BY p."id"
+      HAVING COALESCE(SUM(se."quantity"), 0) <= p."minStock"
+    `;
+
+    const [rows, countRows] = await Promise.all([
+      this.prisma.$queryRaw<
+        Array<{
+          id: string;
+          name: string;
+          sku: string;
+          minStock: number;
+          totalStock: number;
+        }>
+      >(
+        Prisma.sql`${lowStockProducts} ORDER BY p."name" ASC LIMIT ${limit} OFFSET ${skip}`,
+      ),
+      this.prisma.$queryRaw<Array<{ count: number }>>(
+        Prisma.sql`SELECT COUNT(*)::int AS "count" FROM (${lowStockProducts}) AS low_stock`,
+      ),
+    ]);
+
+    return {
+      data: rows.map((r) => ({
+        productId: r.id,
+        name: r.name,
+        sku: r.sku,
+        minStock: r.minStock,
+        totalStock: r.totalStock,
+      })),
+      total: countRows[0]?.count ?? 0,
+      page,
+      limit,
+    };
   }
 
   async getStockByProduct(productId: string, companyId: string) {
@@ -356,6 +390,33 @@ export class StockService {
 
     const total = entries.reduce((sum, e) => sum + e.quantity, 0);
     return { product, total, entries };
+  }
+
+  /**
+   * Decrements stock at the source location with the availability guard in
+   * the same UPDATE statement, so two concurrent movements cannot both pass
+   * a separate check and drive the entry negative.
+   */
+  private async decrementSourceStock(
+    tx: Prisma.TransactionClient,
+    productId: string,
+    locationId: string,
+    quantity: number,
+  ) {
+    const result = await tx.stockEntry.updateMany({
+      where: { productId, locationId, quantity: { gte: quantity } },
+      data: { quantity: { decrement: quantity } },
+    });
+    if (result.count === 0) {
+      // Re-read only to build an informative message — the decision above
+      // was already made atomically.
+      const entry = await tx.stockEntry.findFirst({
+        where: { productId, locationId },
+      });
+      throw new BadRequestException(
+        `Insufficient stock at source location: available ${entry?.quantity ?? 0}, requested ${quantity}`,
+      );
+    }
   }
 
   private async findMovementLocation(

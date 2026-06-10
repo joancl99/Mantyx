@@ -43,13 +43,6 @@ export class UsersService {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
-  updateRefreshToken(id: string, token: string | null): Promise<User> {
-    return this.prisma.user.update({
-      where: { id },
-      data: { refreshToken: token },
-    });
-  }
-
   // ── Admin-facing ─────────────────────────────────────────────────────────────
 
   findAllByCompany(companyId: string) {

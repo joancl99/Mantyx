@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -28,6 +29,7 @@ import { StockListComponent } from './stock-list/stock-list.component';
 @Component({
   selector: 'app-stock',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     IonHeader,

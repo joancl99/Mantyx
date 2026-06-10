@@ -1,4 +1,9 @@
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { IonIcon } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { arrowBackOutline, chevronForwardOutline } from 'ionicons/icons';
@@ -10,6 +15,7 @@ type WarehouseView = BreadcrumbTarget | 'locations';
 @Component({
   selector: 'app-warehouse-breadcrumb',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IonIcon],
   templateUrl: './warehouse-breadcrumb.component.html',
   styleUrl: './warehouse-breadcrumb.component.scss',

@@ -1,5 +1,11 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+  output,
+} from '@angular/core';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -18,6 +24,7 @@ import { MOVEMENT_TYPE_CONFIG } from '../movement-types';
 @Component({
   selector: 'app-movement-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [DatePipe, IonIcon, IonSpinner],
   templateUrl: './movement-list.component.html',
   styleUrl: './movement-list.component.scss',
@@ -34,7 +41,7 @@ export class MovementListComponent {
   readonly emptyMessage = computed(() =>
     this.hasActiveFilters()
       ? 'Prueba con otros filtros'
-      : 'Aún no hay movimientos registrados',
+      : 'AÃºn no hay movimientos registrados',
   );
 
   constructor() {
@@ -71,6 +78,6 @@ export class MovementListComponent {
   }
 
   stockDelta(movement: StockMovement): string {
-    return `${movement.previousStock} → ${movement.newStock}`;
+    return `${movement.previousStock} â†’ ${movement.newStock}`;
   }
 }

@@ -1,4 +1,9 @@
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -16,6 +21,7 @@ export type ProductFormMode = 'create' | 'edit';
 @Component({
   selector: 'app-product-form-modal',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, IonIcon, IonSpinner],
   templateUrl: './product-form-modal.component.html',
   styleUrl: './product-form-modal.component.scss',
