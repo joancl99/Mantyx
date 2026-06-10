@@ -106,6 +106,11 @@ export class StockService {
             'TRANSFER requires fromLocationId and toLocationId',
           );
         }
+        if (fromLocationId === toLocationId) {
+          throw new BadRequestException(
+            'TRANSFER source and destination must differ',
+          );
+        }
         await this.decrementSourceStock(
           tx,
           productId,

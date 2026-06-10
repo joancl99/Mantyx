@@ -6,87 +6,186 @@
 >
   <div class="modal" role="presentation" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2 class="modal-title">Nuevo movimiento</h2>
+      <h2 class="modal-title">
+        <ion-icon name="swap-horizontal-outline" />
+        Trasladar stock
+      </h2>
       <button class="modal-close" (click)="closeModal.emit()">
         <ion-icon name="close-outline" />
       </button>
     </div>
 
-    <form [formGroup]="form()" (ngSubmit)="submitForm.emit()" class="modal-body">
-      <div class="form-field">
-        <span class="form-label">Tipo *</span>
-        <div class="type-pills" role="group" aria-label="Tipo de movimiento">
-          @for (type of availableTypes(); track type) {
-            <button
-              type="button"
-              class="type-pill {{ typeConfig()[type].cssClass }}"
-              [class.active]="form().get('type')?.value === type"
-              (click)="form().get('type')?.setValue(type)"
-            >
-              <ion-icon [name]="typeConfig()[type].icon" />
-              {{ typeConfig()[type].label }}
-            </button>
-          }
-        </div>
-      </div>
-
+    <form (ngSubmit)="submit()" class="modal-body">
+      <!-- Product -->
       <div
         class="form-field"
-        [class.has-error]="submitted() && form().get('productId')?.invalid"
+        [class.has-error]="submitted && !selectedProductId"
       >
         <label class="form-label" for="mov-product">Producto *</label>
-        <select id="mov-product" class="form-input" formControlName="productId">
+        <select
+          id="mov-product"
+          class="form-input"
+          name="product"
+          [ngModel]="selectedProductId"
+          (ngModelChange)="selectedProductId = $event; onProductChange($event)"
+          [ngModelOptions]="{ standalone: true }"
+        >
           <option value="">Seleccionar producto</option>
           @for (product of products(); track product.id) {
-            <option [value]="product.id">{{ product.name }} — {{ product.sku }}</option>
+            <option [value]="product.id">
+              {{ product.name }} — {{ product.sku }}
+            </option>
           }
         </select>
-        @if (submitted() && form().get('productId')?.hasError('required')) {
+        @if (submitted && !selectedProductId) {
           <span class="form-error">Selecciona un producto</span>
         }
       </div>
 
-      <div
-        class="form-field"
-        [class.has-error]="submitted() && form().get('warehouseId')?.invalid"
-      >
-        <label class="form-label" for="mov-warehouse">Almacén *</label>
-        <select id="mov-warehouse" class="form-input" formControlName="warehouseId">
-          <option value="">Seleccionar almacén</option>
-          @for (warehouse of warehouses(); track warehouse.id) {
-            <option [value]="warehouse.id">{{ warehouse.name }}</option>
+      <!-- Origin -->
+      @if (selectedProductId) {
+        @if (loadingEntries()) {
+          <div class="form-loading">
+            <ion-spinner name="crescent" />
+            Cargando ubicaciones con stock…
+          </div>
+        } @else if (originEntries().length === 0) {
+          <div class="form-alert form-alert--muted">
+            <ion-icon name="alert-circle-outline" />
+            Este producto no tiene stock en ninguna ubicación.
+          </div>
+        } @else {
+          <div
+            class="form-field"
+            [class.has-error]="submitted && !selectedFromEntryId"
+          >
+            <label class="form-label" for="mov-origin">Origen *</label>
+            <select
+              id="mov-origin"
+              class="form-input"
+              name="origin"
+              [ngModel]="selectedFromEntryId"
+              (ngModelChange)="selectedFromEntryId = $event; onOriginChange($event)"
+              [ngModelOptions]="{ standalone: true }"
+            >
+              <option value="">Seleccionar ubicación de origen</option>
+              @for (entry of originEntries(); track entry.id) {
+                <option [value]="entry.id">
+                  {{ entry.location.aisle.zone.warehouse.name }} ·
+                  {{ entry.location.code }} — {{ entry.quantity }} uds.
+                </option>
+              }
+            </select>
+            @if (submitted && !selectedFromEntryId) {
+              <span class="form-error">Selecciona el origen</span>
+            }
+          </div>
+        }
+      }
+
+      <!-- Destination cascade (same warehouse as the origin) -->
+      @if (selectedFromEntryId && warehouseId) {
+        <div class="form-grid">
+          <div class="form-field">
+            <label class="form-label" for="mov-zone">Zona destino *</label>
+            <select
+              id="mov-zone"
+              class="form-input"
+              name="zone"
+              [ngModel]="selectedZoneId"
+              (ngModelChange)="selectedZoneId = $event; onZoneChange($event)"
+              [ngModelOptions]="{ standalone: true }"
+            >
+              <option value="">Zona</option>
+              @for (zone of zones(); track zone.id) {
+                <option [value]="zone.id">{{ zone.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="mov-aisle">Pasillo destino *</label>
+            <select
+              id="mov-aisle"
+              class="form-input"
+              name="aisle"
+              [disabled]="!selectedZoneId"
+              [ngModel]="selectedAisleId"
+              (ngModelChange)="selectedAisleId = $event; onAisleChange($event)"
+              [ngModelOptions]="{ standalone: true }"
+            >
+              <option value="">Pasillo</option>
+              @for (aisle of aisles(); track aisle.id) {
+                <option [value]="aisle.id">{{ aisle.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div
+            class="form-field"
+            [class.has-error]="submitted && !selectedToLocationId"
+          >
+            <label class="form-label" for="mov-location">Ubicación destino *</label>
+            <select
+              id="mov-location"
+              class="form-input"
+              name="location"
+              [disabled]="!selectedAisleId"
+              [(ngModel)]="selectedToLocationId"
+              [ngModelOptions]="{ standalone: true }"
+            >
+              <option value="">Ubicación</option>
+              @for (location of locations(); track location.id) {
+                <option [value]="location.id">{{ location.code }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        @if (sameLocationSelected) {
+          <div class="form-alert form-alert--muted">
+            <ion-icon name="alert-circle-outline" />
+            El origen y el destino deben ser ubicaciones distintas.
+          </div>
+        }
+
+        <!-- Quantity -->
+        <div
+          class="form-field"
+          [class.has-error]="submitted && (quantity < 1 || quantity > maxQuantity)"
+        >
+          <label class="form-label" for="mov-quantity">
+            Cantidad * <span class="form-hint">(disponible: {{ maxQuantity }})</span>
+          </label>
+          <input
+            id="mov-quantity"
+            class="form-input"
+            type="number"
+            name="quantity"
+            min="1"
+            [max]="maxQuantity"
+            [(ngModel)]="quantity"
+            [ngModelOptions]="{ standalone: true }"
+            placeholder="1"
+          />
+          @if (submitted && (quantity < 1 || quantity > maxQuantity)) {
+            <span class="form-error">
+              Introduce entre 1 y {{ maxQuantity }} unidades
+            </span>
           }
-        </select>
-        @if (submitted() && form().get('warehouseId')?.hasError('required')) {
-          <span class="form-error">Selecciona un almacén</span>
-        }
-      </div>
+        </div>
+      }
 
-      <div
-        class="form-field"
-        [class.has-error]="submitted() && form().get('quantity')?.invalid"
-      >
-        <label class="form-label" for="mov-quantity">Cantidad *</label>
-        <input
-          id="mov-quantity"
-          class="form-input"
-          type="number"
-          formControlName="quantity"
-          min="1"
-          placeholder="1"
-        />
-        @if (submitted() && form().get('quantity')?.invalid) {
-          <span class="form-error">Mínimo 1 unidad</span>
-        }
-      </div>
-
+      <!-- Notes -->
       <div class="form-field">
         <label class="form-label" for="mov-notes">Notas</label>
         <textarea
           id="mov-notes"
           class="form-input form-textarea"
-          formControlName="notes"
+          name="notes"
           rows="3"
+          [(ngModel)]="notes"
+          [ngModelOptions]="{ standalone: true }"
           placeholder="Referencia, motivo, albarán..."
         ></textarea>
       </div>
@@ -102,11 +201,15 @@
         <button type="button" class="btn-ghost" (click)="closeModal.emit()">
           Cancelar
         </button>
-        <button type="submit" class="btn-primary" [disabled]="saving()">
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="saving() || !isFormValid()"
+        >
           @if (saving()) {
             <ion-spinner name="crescent" />
           } @else {
-            Registrar movimiento
+            Registrar traslado
           }
         </button>
       </div>

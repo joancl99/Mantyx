@@ -21,7 +21,7 @@
         @if (canCreate()) {
           <button class="btn-primary" (click)="openCreate()">
             <ion-icon name="add-outline" />
-            Nuevo movimiento
+            Nuevo traslado
           </button>
         }
       </div>
@@ -51,15 +51,10 @@
 
 @if (showModal()) {
   <app-create-movement-modal
-    [form]="form"
     [products]="products()"
-    [warehouses]="warehouses()"
-    [availableTypes]="availableTypes"
-    [typeConfig]="typeConfig"
-    [submitted]="submitted()"
     [saving]="saving()"
     [formError]="formError()"
     (closeModal)="closeModal()"
-    (submitForm)="submitForm()"
+    (submitForm)="submitTransfer($event)"
   />
 }

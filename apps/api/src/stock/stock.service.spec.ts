@@ -262,6 +262,35 @@ describe('StockService', () => {
     expect(prisma.stockMovement.create).not.toHaveBeenCalled();
   });
 
+  it('rejects a transfer whose source and destination are the same location', async () => {
+    prisma.product.findFirst.mockResolvedValue(
+      row({ id: 'product-1', name: 'Widget', sku: 'W-1', minStock: 2 }),
+    );
+    prisma.warehouse.findFirst.mockResolvedValue(row({ id: 'warehouse-1' }));
+    prisma.stockEntry.aggregate.mockResolvedValue(
+      row({ _sum: { quantity: 10 } }),
+    );
+
+    await expect(
+      service.createMovement(
+        {
+          productId: 'product-1',
+          warehouseId: 'warehouse-1',
+          type: MovementType.TRANSFER,
+          quantity: 2,
+          fromLocationId: 'location-1',
+          toLocationId: 'location-1',
+        },
+        'user-1',
+        'company-1',
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException);
+
+    expect(prisma.stockEntry.updateMany).not.toHaveBeenCalled();
+    expect(prisma.stockEntry.upsert).not.toHaveBeenCalled();
+    expect(prisma.stockMovement.create).not.toHaveBeenCalled();
+  });
+
   it('records inbound movement, audit log, and low-stock alert', async () => {
     const product = {
       id: 'product-1',
