@@ -65,7 +65,9 @@
               class="form-input"
               name="origin"
               [ngModel]="selectedFromEntryId"
-              (ngModelChange)="selectedFromEntryId = $event; onOriginChange($event)"
+              (ngModelChange)="
+                selectedFromEntryId = $event; onOriginChange($event)
+              "
               [ngModelOptions]="{ standalone: true }"
             >
               <option value="">Seleccionar ubicación de origen</option>
@@ -125,7 +127,9 @@
             class="form-field"
             [class.has-error]="submitted && !selectedToLocationId"
           >
-            <label class="form-label" for="mov-location">Ubicación destino *</label>
+            <label class="form-label" for="mov-location"
+              >Ubicación destino *</label
+            >
             <select
               id="mov-location"
               class="form-input"
@@ -152,10 +156,13 @@
         <!-- Quantity -->
         <div
           class="form-field"
-          [class.has-error]="submitted && (quantity < 1 || quantity > maxQuantity)"
+          [class.has-error]="
+            submitted && (quantity < 1 || quantity > maxQuantity)
+          "
         >
           <label class="form-label" for="mov-quantity">
-            Cantidad * <span class="form-hint">(disponible: {{ maxQuantity }})</span>
+            Cantidad *
+            <span class="form-hint">(disponible: {{ maxQuantity }})</span>
           </label>
           <input
             id="mov-quantity"

@@ -82,7 +82,9 @@ export class ManagementComponent implements OnInit {
     return Math.min(
       100,
       Math.round(
-        ((stats.kpis.lowStock + stats.kpis.noStock * 2) / stats.kpis.totalProducts) * 100,
+        ((stats.kpis.lowStock + stats.kpis.noStock * 2) /
+          stats.kpis.totalProducts) *
+          100,
       ),
     );
   });

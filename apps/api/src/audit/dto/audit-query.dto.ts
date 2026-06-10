@@ -1,14 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { AuditAction } from '@prisma/client';
 import { Type } from 'class-transformer';
-import {
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsString,
-  Max,
-  Min,
-} from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class AuditQueryDto {
   @ApiPropertyOptional({ default: 1 })

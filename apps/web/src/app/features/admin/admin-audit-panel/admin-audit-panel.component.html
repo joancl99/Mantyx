@@ -10,7 +10,9 @@
 
 <div class="filters-bar">
   <select class="filter-select" (change)="actionFilterChanged.emit($event)">
-    <option value="" [selected]="actionFilter() === ''">Todas las acciones</option>
+    <option value="" [selected]="actionFilter() === ''">
+      Todas las acciones
+    </option>
     @for (action of actions; track action) {
       <option [value]="action" [selected]="actionFilter() === action">
         {{ actionLabel(action) }}
@@ -19,9 +21,14 @@
   </select>
 
   <select class="filter-select" (change)="entityTypeFilterChanged.emit($event)">
-    <option value="" [selected]="entityTypeFilter() === ''">Toda la actividad</option>
+    <option value="" [selected]="entityTypeFilter() === ''">
+      Toda la actividad
+    </option>
     @for (type of entityTypes; track type.value) {
-      <option [value]="type.value" [selected]="entityTypeFilter() === type.value">
+      <option
+        [value]="type.value"
+        [selected]="entityTypeFilter() === type.value"
+      >
         {{ type.label }}
       </option>
     }
@@ -58,7 +65,9 @@
             <span class="action-badge {{ actionClass(entry.action) }}">
               {{ actionLabel(entry.action) }}
             </span>
-            <span class="audit-entity">{{ entityTypeLabel(entry.entityType) }}</span>
+            <span class="audit-entity">{{
+              entityTypeLabel(entry.entityType)
+            }}</span>
             <span class="audit-user">{{ entry.user.name }}</span>
           </div>
           @if (changesSummary(entry); as summary) {
@@ -69,7 +78,9 @@
           }
         </div>
 
-        <div class="audit-date">{{ entry.createdAt | date: 'dd/MM/yy HH:mm' }}</div>
+        <div class="audit-date">
+          {{ entry.createdAt | date: 'dd/MM/yy HH:mm' }}
+        </div>
       </div>
     }
   </div>

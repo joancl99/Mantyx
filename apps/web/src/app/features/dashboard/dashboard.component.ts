@@ -31,7 +31,10 @@ import {
   addCircleOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
-import { DashboardAlert, DashboardMovement } from '../../core/models/dashboard.models';
+import {
+  DashboardAlert,
+  DashboardMovement,
+} from '../../core/models/dashboard.models';
 import { DashboardService } from '../../core/services/dashboard.service';
 
 interface QuickAction {
