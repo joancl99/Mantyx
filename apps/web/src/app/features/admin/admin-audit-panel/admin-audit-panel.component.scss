@@ -1,0 +1,149 @@
+:host {
+  display: contents;
+}
+
+.panel-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.panel-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--wh-text);
+  font-size: 18px;
+  font-weight: 700;
+
+  ion-icon {
+    color: var(--wh-accent);
+    font-size: 20px;
+  }
+}
+
+.panel-subtitle {
+  margin-left: 12px;
+  color: var(--wh-text-muted);
+  font-size: 13px;
+}
+
+.audit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.audit-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 14px;
+  background: var(--wh-surface);
+  border: 1px solid var(--wh-border);
+  border-radius: 10px;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--wh-surface-hover);
+  }
+}
+
+.audit-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: var(--wh-surface-hover);
+  color: var(--wh-text-muted);
+}
+
+.audit-main {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.audit-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.audit-entity {
+  color: var(--wh-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.audit-user {
+  color: var(--wh-text-muted);
+  font-size: 12px;
+}
+
+.audit-changes,
+.audit-ip {
+  color: var(--wh-text-muted);
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audit-ip {
+  font-variant-numeric: tabular-nums;
+}
+
+.audit-date {
+  color: var(--wh-text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.action-badge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &.action--create {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+  }
+  &.action--update {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+  }
+  &.action--delete {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--wh-danger);
+  }
+  &.action--login {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+  }
+  &.action--logout {
+    background: var(--wh-surface-hover);
+    color: var(--wh-text-muted);
+  }
+}
+
+@media (max-width: 600px) {
+  .audit-date {
+    display: none;
+  }
+}

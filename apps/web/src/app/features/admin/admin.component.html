@@ -44,6 +44,14 @@
           <ion-icon name="storefront-outline" />
           Marcas
         </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab() === 'auditoria'"
+          (click)="setTab('auditoria')"
+        >
+          <ion-icon name="shield-checkmark-outline" />
+          Auditoría
+        </button>
       </div>
 
       <!-- ── USUARIOS ─────────────────────────────────────────────────────────── -->
@@ -112,6 +120,24 @@
           (createItem)="brandCatalog.openCreate()"
           (editItem)="brandCatalog.openEdit($event)"
           (deleteItem)="brandCatalog.confirmDelete($event)"
+        />
+      }
+
+      <!-- ── AUDITORÍA ─────────────────────────────────────────────────────────── -->
+      @if (activeTab() === 'auditoria') {
+        <app-admin-audit-panel
+          [entries]="audit.entries()"
+          [loading]="audit.loading()"
+          [actionFilter]="audit.actionFilter()"
+          [entityTypeFilter]="audit.entityTypeFilter()"
+          [hasActiveFilters]="audit.hasActiveFilters()"
+          [currentPage]="audit.currentPage()"
+          [totalPages]="audit.totalPages()"
+          [totalLabel]="audit.totalLabel()"
+          (actionFilterChanged)="audit.onActionFilter($event)"
+          (entityTypeFilterChanged)="audit.onEntityTypeFilter($event)"
+          (filtersCleared)="audit.clearFilters()"
+          (pageChanged)="audit.goToPage($event)"
         />
       }
     }

@@ -7,9 +7,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
+import { AuditAction, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
+import { AuditService } from '../audit/audit.service';
 import { RedisService } from '../redis/redis.service';
 import { UsersService } from '../users/users.service';
 import { AuthTokensDto } from './dto/auth-tokens.dto';
@@ -26,6 +27,12 @@ const REFRESH_TTL = 7 * 24 * 60 * 60; // 7 days in seconds
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOGIN_LOCK_SECONDS = 15 * 60; // 15 minutes
 
+/** Request metadata captured for security-relevant audit entries. */
+export interface AuthRequestMeta {
+  ipAddress?: string;
+  userAgent?: string;
+}
+
 @Injectable()
 export class AuthService {
   private readonly accessSecret: string;
@@ -37,6 +44,7 @@ export class AuthService {
     private readonly users: UsersService,
     private readonly jwt: JwtService,
     private readonly redis: RedisService,
+    private readonly audit: AuditService,
     config: ConfigService,
   ) {
     this.accessSecret = config.getOrThrow('JWT_ACCESS_SECRET');
@@ -45,7 +53,7 @@ export class AuthService {
     this.refreshExpiry = config.getOrThrow('JWT_REFRESH_EXPIRES_IN');
   }
 
-  async login(dto: LoginDto): Promise<AuthTokensDto> {
+  async login(dto: LoginDto, meta?: AuthRequestMeta): Promise<AuthTokensDto> {
     const lockKey = `login-fail:${dto.email.trim().toLowerCase()}`;
 
     const attempts = Number((await this.redis.get(lockKey)) ?? 0);
@@ -67,7 +75,17 @@ export class AuthService {
 
     // Successful credentials — reset the failure counter.
     await this.redis.del(lockKey);
-    return this.issueTokens(user);
+    const tokens = await this.issueTokens(user);
+    await this.audit.log({
+      action: AuditAction.LOGIN,
+      entityType: 'Auth',
+      entityId: user.id,
+      userId: user.id,
+      companyId: user.companyId,
+      ipAddress: meta?.ipAddress,
+      userAgent: meta?.userAgent,
+    });
+    return tokens;
   }
 
   async refresh(
@@ -90,7 +108,7 @@ export class AuthService {
     return this.issueTokens(user, sessionId);
   }
 
-  async logout(user: JwtPayload): Promise<void> {
+  async logout(user: JwtPayload, meta?: AuthRequestMeta): Promise<void> {
     // Revoke only the session this request belongs to — other devices keep
     // their sessions. Old tokens predating per-session keys carry no `sid`.
     if (user.sid) {
@@ -105,6 +123,16 @@ export class AuthService {
         await this.redis.set(denylistKey(user.jti), '1', ttl);
       }
     }
+
+    await this.audit.log({
+      action: AuditAction.LOGOUT,
+      entityType: 'Auth',
+      entityId: user.sub,
+      userId: user.sub,
+      companyId: user.companyId,
+      ipAddress: meta?.ipAddress,
+      userAgent: meta?.userAgent,
+    });
   }
 
   /**
