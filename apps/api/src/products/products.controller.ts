@@ -23,9 +23,11 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
+import { AuditAction, Role } from '@prisma/client';
 import { extname } from 'path';
+import { AuditService } from '../audit/audit.service';
 import { CompanyId } from '../auth/decorators/company-id.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateProductDto } from './dto/create-product.dto';
 import { ProductQueryDto } from './dto/product-query.dto';
@@ -39,7 +41,10 @@ const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 @ApiBearerAuth('access-token')
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly products: ProductsService) {}
+  constructor(
+    private readonly products: ProductsService,
+    private readonly audit: AuditService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'List products with pagination and filters' })
@@ -60,19 +65,42 @@ export class ProductsController {
   @Roles(Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Create a product (ADMIN, MANAGER)' })
   @ApiResponse({ status: 201 })
-  create(@CompanyId() companyId: string, @Body() dto: CreateProductDto) {
-    return this.products.create(companyId, dto);
+  async create(
+    @CompanyId() companyId: string,
+    @CurrentUser('sub') userId: string,
+    @Body() dto: CreateProductDto,
+  ) {
+    const product = await this.products.create(companyId, dto);
+    await this.audit.log({
+      action: AuditAction.CREATE,
+      entityType: 'Product',
+      entityId: product.id,
+      changes: { name: product.name, sku: product.sku },
+      userId,
+      companyId,
+    });
+    return product;
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.MANAGER)
   @ApiOperation({ summary: 'Update a product (ADMIN, MANAGER)' })
-  update(
+  async update(
     @CompanyId() companyId: string,
+    @CurrentUser('sub') userId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateProductDto,
   ) {
-    return this.products.update(id, companyId, dto);
+    const product = await this.products.update(id, companyId, dto);
+    await this.audit.log({
+      action: AuditAction.UPDATE,
+      entityType: 'Product',
+      entityId: id,
+      changes: { ...dto },
+      userId,
+      companyId,
+    });
+    return product;
   }
 
   @Delete(':id')
@@ -80,11 +108,19 @@ export class ProductsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Soft-delete a product (ADMIN)' })
   @ApiResponse({ status: 204 })
-  remove(
+  async remove(
     @CompanyId() companyId: string,
+    @CurrentUser('sub') userId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.products.remove(id, companyId);
+    await this.products.remove(id, companyId);
+    await this.audit.log({
+      action: AuditAction.DELETE,
+      entityType: 'Product',
+      entityId: id,
+      userId,
+      companyId,
+    });
   }
 
   @Patch(':id/image')

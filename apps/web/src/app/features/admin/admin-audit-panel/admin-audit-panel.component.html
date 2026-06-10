@@ -1,0 +1,107 @@
+<div class="panel-header">
+  <div class="panel-header__left">
+    <h2 class="panel-title">
+      <ion-icon name="shield-checkmark-outline" />
+      Auditoría
+    </h2>
+    <span class="panel-subtitle">{{ totalLabel() }}</span>
+  </div>
+</div>
+
+<div class="filters-bar">
+  <select class="filter-select" (change)="actionFilterChanged.emit($event)">
+    <option value="" [selected]="actionFilter() === ''">
+      Todas las acciones
+    </option>
+    @for (action of actions; track action) {
+      <option [value]="action" [selected]="actionFilter() === action">
+        {{ actionLabel(action) }}
+      </option>
+    }
+  </select>
+
+  <select class="filter-select" (change)="entityTypeFilterChanged.emit($event)">
+    <option value="" [selected]="entityTypeFilter() === ''">
+      Toda la actividad
+    </option>
+    @for (type of entityTypes; track type.value) {
+      <option
+        [value]="type.value"
+        [selected]="entityTypeFilter() === type.value"
+      >
+        {{ type.label }}
+      </option>
+    }
+  </select>
+
+  @if (hasActiveFilters()) {
+    <button class="btn-clear" (click)="filtersCleared.emit()">
+      <ion-icon name="close-outline" />
+      Limpiar
+    </button>
+  }
+</div>
+
+@if (loading()) {
+  <div class="state-center">
+    <ion-spinner name="crescent" class="main-spinner" />
+  </div>
+} @else if (entries().length === 0) {
+  <div class="state-center">
+    <div class="empty-icon">
+      <ion-icon name="document-text-outline" />
+    </div>
+    <p class="empty-title">Sin registros</p>
+    <p class="empty-sub">No hay actividad registrada con estos filtros.</p>
+  </div>
+} @else {
+  <div class="audit-list">
+    @for (entry of entries(); track entry.id) {
+      <div class="audit-row">
+        <div class="audit-avatar">{{ userInitial(entry) }}</div>
+
+        <div class="audit-main">
+          <div class="audit-line">
+            <span class="action-badge {{ actionClass(entry.action) }}">
+              {{ actionLabel(entry.action) }}
+            </span>
+            <span class="audit-entity">{{
+              entityTypeLabel(entry.entityType)
+            }}</span>
+            <span class="audit-user">{{ entry.user.name }}</span>
+          </div>
+          @if (changesSummary(entry); as summary) {
+            <span class="audit-changes">{{ summary }}</span>
+          }
+          @if (entry.ipAddress) {
+            <span class="audit-ip">IP: {{ entry.ipAddress }}</span>
+          }
+        </div>
+
+        <div class="audit-date">
+          {{ entry.createdAt | date: 'dd/MM/yy HH:mm' }}
+        </div>
+      </div>
+    }
+  </div>
+
+  @if (totalPages() > 1) {
+    <div class="pagination">
+      <button
+        class="page-btn"
+        [disabled]="currentPage() === 1"
+        (click)="pageChanged.emit(currentPage() - 1)"
+      >
+        <ion-icon name="chevron-back-outline" />
+      </button>
+      <span class="page-info">{{ currentPage() }} / {{ totalPages() }}</span>
+      <button
+        class="page-btn"
+        [disabled]="currentPage() === totalPages()"
+        (click)="pageChanged.emit(currentPage() + 1)"
+      >
+        <ion-icon name="chevron-forward-outline" />
+      </button>
+    </div>
+  }
+}

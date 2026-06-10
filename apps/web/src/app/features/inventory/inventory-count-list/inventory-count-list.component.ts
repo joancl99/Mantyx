@@ -1,4 +1,9 @@
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -12,6 +17,7 @@ import { inventoryStatusLabel } from '../inventory-status';
 @Component({
   selector: 'app-inventory-count-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IonIcon, IonSpinner],
   templateUrl: './inventory-count-list.component.html',
   styleUrl: './inventory-count-list.component.scss',

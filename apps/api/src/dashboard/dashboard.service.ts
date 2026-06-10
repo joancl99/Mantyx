@@ -1,5 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+
+interface AlertRow {
+  id: string;
+  name: string;
+  sku: string;
+  minStock: number;
+  totalStock: number;
+}
 
 @Injectable()
 export class DashboardService {
@@ -9,7 +18,22 @@ export class DashboardService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const [totalProducts, movementsToday, recentMovements, productsWithStock] =
+    // Products whose total stock is at/below their own minStock (or zero) —
+    // an aggregate-to-column comparison Prisma cannot express, so the alert
+    // page and the KPI counters run in SQL instead of loading every product
+    // of the tenant into memory.
+    const alertProducts = Prisma.sql`
+      SELECT p."id", p."name", p."sku", p."minStock",
+             COALESCE(SUM(se."quantity"), 0)::int AS "totalStock"
+      FROM "products" p
+      LEFT JOIN "stock_entries" se ON se."productId" = p."id"
+      WHERE p."companyId" = ${companyId} AND p."isActive" = true
+      GROUP BY p."id"
+      HAVING COALESCE(SUM(se."quantity"), 0) = 0
+          OR (p."minStock" > 0 AND COALESCE(SUM(se."quantity"), 0) <= p."minStock")
+    `;
+
+    const [totalProducts, movementsToday, recentMovements, alertRows, counts] =
       await Promise.all([
         this.prisma.product.count({ where: { companyId, isActive: true } }),
 
@@ -27,59 +51,34 @@ export class DashboardService {
           },
         }),
 
-        this.prisma.product.findMany({
-          where: { companyId, isActive: true },
-          select: {
-            id: true,
-            name: true,
-            sku: true,
-            minStock: true,
-            stockEntries: { select: { quantity: true } },
-          },
-        }),
+        // Most critical first: out-of-stock products, then lowest coverage.
+        this.prisma.$queryRaw<AlertRow[]>(
+          Prisma.sql`${alertProducts} ORDER BY "totalStock" ASC, p."name" ASC LIMIT 5`,
+        ),
+
+        this.prisma.$queryRaw<Array<{ lowStock: number; noStock: number }>>(
+          Prisma.sql`
+            SELECT COUNT(*) FILTER (WHERE t."totalStock" = 0)::int  AS "noStock",
+                   COUNT(*) FILTER (WHERE t."totalStock" > 0)::int AS "lowStock"
+            FROM (${alertProducts}) AS t
+          `,
+        ),
       ]);
 
-    let lowStock = 0;
-    let noStock = 0;
-    const alerts: Array<{
-      id: string;
-      productName: string;
-      sku: string;
-      totalStock: number;
-      minStock: number;
-      type: 'low-stock' | 'no-stock';
-    }> = [];
-
-    for (const p of productsWithStock) {
-      const totalStock = p.stockEntries.reduce((sum, e) => sum + e.quantity, 0);
-      if (totalStock === 0) {
-        noStock++;
-        if (alerts.length < 5)
-          alerts.push({
-            id: p.id,
-            productName: p.name,
-            sku: p.sku,
-            totalStock,
-            minStock: p.minStock,
-            type: 'no-stock',
-          });
-      } else if (p.minStock > 0 && totalStock <= p.minStock) {
-        lowStock++;
-        if (alerts.length < 5)
-          alerts.push({
-            id: p.id,
-            productName: p.name,
-            sku: p.sku,
-            totalStock,
-            minStock: p.minStock,
-            type: 'low-stock',
-          });
-      }
-    }
+    const { lowStock, noStock } = counts[0] ?? { lowStock: 0, noStock: 0 };
 
     return {
       kpis: { totalProducts, lowStock, noStock, movementsToday },
-      alerts,
+      alerts: alertRows.map((p) => ({
+        id: p.id,
+        productName: p.name,
+        sku: p.sku,
+        totalStock: p.totalStock,
+        minStock: p.minStock,
+        type: (p.totalStock === 0 ? 'no-stock' : 'low-stock') as
+          | 'no-stock'
+          | 'low-stock',
+      })),
       recentMovements: recentMovements.map((m) => ({
         id: m.id,
         type: m.type,

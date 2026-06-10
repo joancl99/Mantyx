@@ -1,4 +1,9 @@
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -17,6 +22,7 @@ import { inventoryStatusLabel } from '../inventory-status';
 @Component({
   selector: 'app-inventory-count-detail',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, IonIcon, IonSpinner],
   templateUrl: './inventory-count-detail.component.html',
   styleUrl: './inventory-count-detail.component.scss',

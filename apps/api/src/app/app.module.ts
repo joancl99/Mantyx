@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { AuditModule } from '../audit/audit.module';
 import { AuthModule } from '../auth/auth.module';
 import { BrandsModule } from '../brands/brands.module';
 import { CategoriesModule } from '../categories/categories.module';
@@ -28,12 +29,14 @@ import { AppService } from './app.service';
       validationSchema: envValidationSchema,
       envFilePath: 'apps/api/.env',
     }),
-    ThrottlerModule.forRoot([
-      { name: 'global', ttl: 60000, limit: 120 },
-      { name: 'auth', ttl: 60000, limit: 10 },
-    ]),
+    // Single default throttler: with multiple named definitions the guard
+    // enforces ALL of them on every route, so a strict named "auth" limit
+    // here would cap the whole API at 10 req/min per endpoint. The strict
+    // auth limit lives as a @Throttle override on AuthController instead.
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 120 }]),
     PrismaModule,
     RedisModule,
+    AuditModule,
     AuthModule,
     CategoriesModule,
     BrandsModule,

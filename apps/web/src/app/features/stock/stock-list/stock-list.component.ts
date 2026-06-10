@@ -1,4 +1,9 @@
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -16,6 +21,7 @@ type StockStatus = 'ok' | 'low' | 'empty';
 @Component({
   selector: 'app-stock-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IonIcon, IonSpinner],
   templateUrl: './stock-list.component.html',
   styleUrl: './stock-list.component.scss',

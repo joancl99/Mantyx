@@ -1,4 +1,5 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -60,6 +61,7 @@ import { WarehouseSublevelListComponent } from './warehouse-sublevel-list/wareho
 @Component({
   selector: 'app-warehouses',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
     ReactiveFormsModule,

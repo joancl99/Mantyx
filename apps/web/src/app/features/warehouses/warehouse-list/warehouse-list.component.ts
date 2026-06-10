@@ -1,4 +1,9 @@
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -15,6 +20,7 @@ import { Warehouse } from '../../../core/models/warehouse.models';
 @Component({
   selector: 'app-warehouse-list',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IonIcon, IonSpinner],
   templateUrl: './warehouse-list.component.html',
   styleUrl: './warehouse-list.component.scss',

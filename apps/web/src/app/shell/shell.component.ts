@@ -1,4 +1,11 @@
-import { Component, computed, DestroyRef, inject, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LowerCasePipe } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
@@ -118,6 +125,7 @@ const NAV_ITEMS: NavItem[] = [
 @Component({
   selector: 'app-shell',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     LowerCasePipe,
     RouterLink,
@@ -168,8 +176,7 @@ export class ShellComponent implements OnInit {
   }
 
   ngOnInit() {
-    const token = this.authService.accessToken();
-    if (token) this.socketService.connect(token);
+    if (this.authService.accessToken()) this.socketService.connect();
 
     this.socketService.lowStockAlerts$
       .pipe(takeUntilDestroyed(this.destroyRef))

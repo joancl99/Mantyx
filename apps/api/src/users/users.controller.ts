@@ -12,8 +12,10 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
-import { Role } from '@prisma/client';
+import { AuditAction, Role } from '@prisma/client';
+import { AuditService } from '../audit/audit.service';
 import { CompanyId } from '../auth/decorators/company-id.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UsersService } from './users.service';
 
@@ -64,7 +66,10 @@ class UpdateUserDto {
 @ApiBearerAuth('access-token')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly users: UsersService) {}
+  constructor(
+    private readonly users: UsersService,
+    private readonly audit: AuditService,
+  ) {}
 
   @Get()
   @Roles(Role.ADMIN)
@@ -76,25 +81,62 @@ export class UsersController {
   @Post()
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Create a user in the company (ADMIN only)' })
-  create(@CompanyId() companyId: string, @Body() dto: CreateUserDto) {
-    return this.users.createCompanyUser(companyId, dto);
+  async create(
+    @CompanyId() companyId: string,
+    @CurrentUser('sub') userId: string,
+    @Body() dto: CreateUserDto,
+  ) {
+    const user = await this.users.createCompanyUser(companyId, dto);
+    // Never persist the password in the audit trail.
+    await this.audit.log({
+      action: AuditAction.CREATE,
+      entityType: 'User',
+      entityId: user.id,
+      changes: { name: user.name, email: user.email, role: user.role },
+      userId,
+      companyId,
+    });
+    return user;
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Update a user name/email/role (ADMIN only)' })
-  update(
+  async update(
     @CompanyId() companyId: string,
+    @CurrentUser('sub') userId: string,
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
   ) {
-    return this.users.updateCompanyUser(companyId, id, dto);
+    const user = await this.users.updateCompanyUser(companyId, id, dto);
+    await this.audit.log({
+      action: AuditAction.UPDATE,
+      entityType: 'User',
+      entityId: id,
+      changes: { ...dto },
+      userId,
+      companyId,
+    });
+    return user;
   }
 
   @Patch(':id/toggle')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Toggle user active/inactive (ADMIN only)' })
-  toggle(@CompanyId() companyId: string, @Param('id') id: string) {
-    return this.users.toggleActive(companyId, id);
+  async toggle(
+    @CompanyId() companyId: string,
+    @CurrentUser('sub') userId: string,
+    @Param('id') id: string,
+  ) {
+    const user = await this.users.toggleActive(companyId, id);
+    await this.audit.log({
+      action: AuditAction.UPDATE,
+      entityType: 'User',
+      entityId: id,
+      changes: { isActive: user.isActive },
+      userId,
+      companyId,
+    });
+    return user;
   }
 }

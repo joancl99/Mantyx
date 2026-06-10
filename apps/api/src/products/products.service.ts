@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'fs';
+import { mkdir, rm, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -149,16 +149,16 @@ export class ProductsService {
     // Delete previous image file if it exists on disk
     if (product.imageUrl) {
       const prevPath = join(process.cwd(), product.imageUrl.replace(/^\//, ''));
-      if (existsSync(prevPath)) unlinkSync(prevPath);
+      await rm(prevPath, { force: true });
     }
 
     const uploadsDir = join(process.cwd(), 'uploads', 'products');
-    if (!existsSync(uploadsDir)) mkdirSync(uploadsDir, { recursive: true });
+    await mkdir(uploadsDir, { recursive: true });
 
     // Filename uses a random UUID and the detected type's extension, never the
     // user-supplied name.
     const filename = `${randomUUID()}.${type}`;
-    writeFileSync(join(uploadsDir, filename), file.buffer);
+    await writeFile(join(uploadsDir, filename), file.buffer);
 
     const imageUrl = `/uploads/products/${filename}`;
     return this.prisma.product.update({

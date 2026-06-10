@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
 import { mockDeep } from 'jest-mock-extended';
+import { AuditService } from '../audit/audit.service';
 import { RedisService } from '../redis/redis.service';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
@@ -14,9 +15,10 @@ function setup() {
   const users = mockDeep<UsersService>();
   const jwt = mockDeep<JwtService>();
   const config = mockDeep<ConfigService>();
+  const audit = mockDeep<AuditService>();
   config.getOrThrow.mockReturnValue('secret');
-  const service = new AuthService(users, jwt, redis, config);
-  return { redis, users, service };
+  const service = new AuthService(users, jwt, redis, audit, config);
+  return { redis, users, audit, service };
 }
 
 describe('AuthService.logout', () => {

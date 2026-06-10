@@ -1,8 +1,21 @@
-import { Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  output,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { addOutline, alertCircleOutline, createOutline, pricetagsOutline, searchOutline, storefrontOutline, trashOutline } from 'ionicons/icons';
+import {
+  addOutline,
+  alertCircleOutline,
+  createOutline,
+  pricetagsOutline,
+  searchOutline,
+  storefrontOutline,
+  trashOutline,
+} from 'ionicons/icons';
 import { Brand, Category } from '../../../core/models/product.models';
 
 type CatalogKind = 'category' | 'brand';
@@ -11,6 +24,7 @@ type CatalogItem = Category | Brand;
 @Component({
   selector: 'app-admin-catalog-panel',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, IonIcon, IonSpinner],
   templateUrl: './admin-catalog-panel.component.html',
   styleUrl: './admin-catalog-panel.component.scss',
@@ -37,10 +51,20 @@ export class AdminCatalogPanelComponent {
   readonly deleteItem = output<CatalogItem>();
 
   constructor() {
-    addIcons({ addOutline, alertCircleOutline, createOutline, pricetagsOutline, searchOutline, storefrontOutline, trashOutline });
+    addIcons({
+      addOutline,
+      alertCircleOutline,
+      createOutline,
+      pricetagsOutline,
+      searchOutline,
+      storefrontOutline,
+      trashOutline,
+    });
   }
 
   iconName(): string {
-    return this.kind() === 'category' ? 'pricetags-outline' : 'storefront-outline';
+    return this.kind() === 'category'
+      ? 'pricetags-outline'
+      : 'storefront-outline';
   }
 }

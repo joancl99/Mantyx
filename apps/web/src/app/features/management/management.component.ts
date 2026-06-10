@@ -1,5 +1,13 @@
 import { DatePipe } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin } from 'rxjs';
@@ -43,6 +51,7 @@ interface ManagementAction {
 @Component({
   selector: 'app-management',
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     DatePipe,
     RouterLink,
@@ -73,7 +82,9 @@ export class ManagementComponent implements OnInit {
     return Math.min(
       100,
       Math.round(
-        ((stats.kpis.lowStock + stats.kpis.noStock * 2) / stats.kpis.totalProducts) * 100,
+        ((stats.kpis.lowStock + stats.kpis.noStock * 2) /
+          stats.kpis.totalProducts) *
+          100,
       ),
     );
   });

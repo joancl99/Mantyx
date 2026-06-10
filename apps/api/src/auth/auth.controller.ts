@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -15,8 +16,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
-import { Response } from 'express';
-import { AuthService } from './auth.service';
+import { Request, Response } from 'express';
+import { AuthRequestMeta, AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
 import {
@@ -31,7 +32,7 @@ import { JwtPayload, JwtRefreshPayload } from './types/jwt-payload.interface';
 
 @ApiTags('Auth')
 @Controller('auth')
-@Throttle({ auth: { limit: 10, ttl: 60000 } })
+@Throttle({ default: { limit: 10, ttl: 60000 } })
 export class AuthController {
   private readonly isProd: boolean;
 
@@ -49,9 +50,10 @@ export class AuthController {
   @ApiResponse({ status: 200, type: AuthSessionDto })
   async login(
     @Body() dto: LoginDto,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthSessionDto> {
-    return this.issueSession(await this.auth.login(dto), res);
+    return this.issueSession(await this.auth.login(dto, requestMeta(req)), res);
   }
 
   @Public()
@@ -83,9 +85,10 @@ export class AuthController {
   @ApiResponse({ status: 204 })
   async logout(
     @CurrentUser() user: JwtPayload,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
-    await this.auth.logout(user);
+    await this.auth.logout(user, requestMeta(req));
     clearRefreshCookie(res, this.isProd);
   }
 
@@ -93,4 +96,11 @@ export class AuthController {
     setRefreshCookie(res, tokens.refreshToken, this.isProd);
     return { accessToken: tokens.accessToken, user: tokens.user };
   }
+}
+
+function requestMeta(req: Request): AuthRequestMeta {
+  return {
+    ipAddress: req.ip,
+    userAgent: req.headers['user-agent'],
+  };
 }

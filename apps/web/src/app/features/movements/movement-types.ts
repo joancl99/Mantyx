@@ -39,9 +39,3 @@ export const MOVEMENT_TYPE_CONFIG: Record<MovementType, MovementTypeConfig> = {
     sign: '+',
   },
 };
-
-export const MOVEMENT_FORM_TYPES: MovementType[] = [
-  'INBOUND',
-  'OUTBOUND',
-  'RETURN',
-];
