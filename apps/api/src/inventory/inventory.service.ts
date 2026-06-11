@@ -169,6 +169,37 @@ export class InventoryService {
     });
   }
 
+  async cancel(id: string, companyId: string, userId: string) {
+    const count = await this.findCount(id, companyId);
+    if (
+      count.status !== InventoryCountStatus.DRAFT &&
+      count.status !== InventoryCountStatus.IN_PROGRESS
+    ) {
+      throw new BadRequestException(
+        'Only draft or in-progress inventory counts can be cancelled',
+      );
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.auditLog.create({
+        data: {
+          entityType: 'InventoryCount',
+          entityId: id,
+          action: AuditAction.UPDATE,
+          changes: { status: InventoryCountStatus.CANCELLED },
+          userId,
+          companyId,
+        },
+      });
+
+      return tx.inventoryCount.update({
+        where: { id },
+        data: { status: InventoryCountStatus.CANCELLED },
+        include: inventoryDetailInclude,
+      });
+    });
+  }
+
   async addLine(id: string, companyId: string, dto: AddInventoryLineDto) {
     const count = await this.findMutableCount(id, companyId);
     await this.findLocation(dto.locationId, count.warehouseId, companyId);
