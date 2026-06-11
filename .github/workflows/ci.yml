@@ -16,6 +16,33 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+    # The api-e2e suite boots the real AppModule, which needs Postgres and
+    # Redis. The e2e global setup creates and migrates its own database
+    # (warehouse_e2e) on this server and uses Redis db 1.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: warehouse
+          POSTGRES_PASSWORD: warehouse
+          POSTGRES_DB: warehouse
+        ports:
+          - '5432:5432'
+        options: >-
+          --health-cmd "pg_isready -U warehouse"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - '6379:6379'
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v5
         with:
@@ -60,3 +87,7 @@ jobs:
 
       - name: E2E
         run: pnpm nx e2e api-e2e
+        env:
+          # CI's Redis service runs without a password (the local default in
+          # the e2e env support assumes the dev compose password).
+          E2E_REDIS_URL: redis://localhost:6379/1
