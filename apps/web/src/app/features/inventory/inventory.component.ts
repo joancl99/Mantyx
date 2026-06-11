@@ -226,6 +226,17 @@ export class InventoryComponent implements OnInit {
     });
   }
 
+  cancelSelected() {
+    const count = this.selectedCount();
+    if (!count) return;
+    this.saving.set(true);
+    this.inventoryService.cancel(count.id).subscribe({
+      next: (updated) => this.afterDetailAction(updated),
+      error: (err) =>
+        this.handleActionError(err, 'Error al cancelar el conteo'),
+    });
+  }
+
   onZoneChange(zoneId: string) {
     this.lineLocation.onZoneChange(zoneId);
   }

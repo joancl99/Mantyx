@@ -38,6 +38,13 @@
   flex-wrap: wrap;
 }
 
+.cancel-confirm-label {
+  color: var(--wh-text);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .line-form {
   padding: 12px;
   margin-bottom: 14px;

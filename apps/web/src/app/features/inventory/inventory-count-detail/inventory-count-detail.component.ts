@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   input,
+  linkedSignal,
   output,
 } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -10,6 +11,7 @@ import { addIcons } from 'ionicons';
 import {
   addOutline,
   checkmarkCircleOutline,
+  closeCircleOutline,
   listOutline,
   playOutline,
   scanOutline,
@@ -40,6 +42,7 @@ export class InventoryCountDetailComponent {
 
   readonly startCount = output<void>();
   readonly completeCount = output<void>();
+  readonly cancelCount = output<void>();
   readonly zoneChange = output<string>();
   readonly aisleChange = output<string>();
   readonly scanLocation = output<void>();
@@ -50,10 +53,17 @@ export class InventoryCountDetailComponent {
   }>();
   readonly removeLine = output<InventoryCountLine>();
 
+  // Inline confirm for the cancel action; resets whenever another count loads.
+  readonly confirmingCancel = linkedSignal({
+    source: this.count,
+    computation: () => false,
+  });
+
   constructor() {
     addIcons({
       addOutline,
       checkmarkCircleOutline,
+      closeCircleOutline,
       listOutline,
       playOutline,
       scanOutline,
@@ -68,7 +78,8 @@ export class InventoryCountDetailComponent {
   }
 
   isReadOnly() {
-    return this.count()?.status === 'COMPLETED';
+    const status = this.count()?.status;
+    return status === 'COMPLETED' || status === 'CANCELLED';
   }
 
   canStart() {
@@ -77,6 +88,11 @@ export class InventoryCountDetailComponent {
 
   canComplete() {
     return this.count()?.status === 'IN_PROGRESS';
+  }
+
+  canCancel() {
+    const status = this.count()?.status;
+    return status === 'DRAFT' || status === 'IN_PROGRESS';
   }
 
   lineLocationLabel(line: InventoryCountLine) {
