@@ -74,6 +74,7 @@ jobs:
           pnpm nx run api:eslint:lint
           pnpm nx lint web
           pnpm nx run api-e2e:eslint:lint
+          pnpm nx run web-e2e:eslint:lint
 
       - name: Test
         run: |
@@ -90,4 +91,14 @@ jobs:
         env:
           # CI's Redis service runs without a password (the local default in
           # the e2e env support assumes the dev compose password).
+          E2E_REDIS_URL: redis://localhost:6379/1
+
+      # Only Chromium is needed: the web-e2e project sets skipInstall, so the
+      # Nx executor won't pull Firefox/WebKit too.
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser E2E
+        run: pnpm nx e2e web-e2e
+        env:
           E2E_REDIS_URL: redis://localhost:6379/1
