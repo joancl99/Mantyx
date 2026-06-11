@@ -112,7 +112,7 @@ export class InventoryService {
     });
   }
 
-  async complete(id: string, companyId: string) {
+  async complete(id: string, companyId: string, userId: string) {
     const count = await this.findCount(id, companyId);
     if (count.status !== InventoryCountStatus.IN_PROGRESS) {
       throw new BadRequestException(
@@ -153,7 +153,9 @@ export class InventoryService {
           entityId: id,
           action: AuditAction.UPDATE,
           changes: { status: InventoryCountStatus.COMPLETED },
-          userId: count.createdById,
+          // The acting user, not count.createdById — whoever completes the
+          // count is who the audit trail must attribute it to.
+          userId,
           companyId,
         },
       });
