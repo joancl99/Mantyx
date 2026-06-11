@@ -18,25 +18,54 @@
         </p>
       </div>
       <div class="detail-actions">
-        @if (canStart()) {
+        @if (confirmingCancel()) {
+          <span class="cancel-confirm-label">¿Cancelar este conteo?</span>
           <button
             class="btn-ghost"
             [disabled]="saving()"
-            (click)="startCount.emit()"
+            (click)="confirmingCancel.set(false)"
           >
-            <ion-icon name="play-outline" />
-            Iniciar
+            Volver
           </button>
-        }
-        @if (canComplete()) {
           <button
-            class="btn-primary"
+            class="btn-danger"
             [disabled]="saving()"
-            (click)="completeCount.emit()"
+            (click)="cancelCount.emit()"
           >
-            <ion-icon name="checkmark-circle-outline" />
-            Completar
+            <ion-icon name="close-circle-outline" />
+            Sí, cancelar
           </button>
+        } @else {
+          @if (canCancel()) {
+            <button
+              class="btn-ghost"
+              [disabled]="saving()"
+              (click)="confirmingCancel.set(true)"
+            >
+              <ion-icon name="close-circle-outline" />
+              Cancelar
+            </button>
+          }
+          @if (canStart()) {
+            <button
+              class="btn-ghost"
+              [disabled]="saving()"
+              (click)="startCount.emit()"
+            >
+              <ion-icon name="play-outline" />
+              Iniciar
+            </button>
+          }
+          @if (canComplete()) {
+            <button
+              class="btn-primary"
+              [disabled]="saving()"
+              (click)="completeCount.emit()"
+            >
+              <ion-icon name="checkmark-circle-outline" />
+              Completar
+            </button>
+          }
         }
       </div>
     </div>

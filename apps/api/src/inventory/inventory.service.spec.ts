@@ -134,6 +134,51 @@ describe('InventoryService', () => {
     });
   });
 
+  it('cancels an in-progress count and writes the audit row', async () => {
+    prisma.inventoryCount.findFirst.mockResolvedValue(
+      row({ id: 'count-1', status: InventoryCountStatus.IN_PROGRESS }),
+    );
+    prisma.auditLog.create.mockResolvedValue(row({}));
+    prisma.inventoryCount.update.mockResolvedValue(
+      row({ id: 'count-1', status: InventoryCountStatus.CANCELLED }),
+    );
+
+    await expect(
+      service.cancel('count-1', 'company-1', 'user-1'),
+    ).resolves.toEqual({
+      id: 'count-1',
+      status: InventoryCountStatus.CANCELLED,
+    });
+    expect(prisma.auditLog.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: AuditAction.UPDATE,
+        entityType: 'InventoryCount',
+        entityId: 'count-1',
+        changes: { status: InventoryCountStatus.CANCELLED },
+        userId: 'user-1',
+        companyId: 'company-1',
+      }),
+    });
+    expect(prisma.inventoryCount.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'count-1' },
+        data: { status: InventoryCountStatus.CANCELLED },
+      }),
+    );
+  });
+
+  it('rejects cancelling counts that are already completed or cancelled', async () => {
+    prisma.inventoryCount.findFirst.mockResolvedValue(
+      row({ id: 'count-1', status: InventoryCountStatus.COMPLETED }),
+    );
+
+    await expect(
+      service.cancel('count-1', 'company-1', 'user-1'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect(prisma.inventoryCount.update).not.toHaveBeenCalled();
+  });
+
   it('rejects completion until every line has counted quantity', async () => {
     prisma.inventoryCount.findFirst.mockResolvedValue(
       row({ id: 'count-1', status: InventoryCountStatus.IN_PROGRESS }),

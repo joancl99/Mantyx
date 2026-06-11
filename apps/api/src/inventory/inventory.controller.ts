@@ -85,6 +85,17 @@ export class InventoryController {
     return this.inventory.complete(id, companyId);
   }
 
+  @Patch(':id/cancel')
+  @Roles(Role.ADMIN, Role.MANAGER)
+  @ApiOperation({ summary: 'Cancel a draft or in-progress inventory count' })
+  cancel(
+    @CompanyId() companyId: string,
+    @CurrentUser('sub') userId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.inventory.cancel(id, companyId, userId);
+  }
+
   @Post(':id/lines')
   @Roles(Role.ADMIN, Role.MANAGER, Role.OPERATOR)
   @HttpCode(HttpStatus.CREATED)
