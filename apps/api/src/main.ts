@@ -12,6 +12,13 @@ import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // nginx fronts the API in production and forwards the client address in
+  // X-Forwarded-For. Trust exactly that one hop so req.ip resolves to the
+  // real client: the throttler keys its buckets by req.ip (without this every
+  // user behind the proxy shares ONE rate-limit bucket) and the auth audit
+  // trail stores it. The API container is only reachable through nginx in
+  // prod, so a direct client cannot abuse the trusted hop to spoof its IP.
+  app.set('trust proxy', 1);
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
   const config = app.get(ConfigService);
 

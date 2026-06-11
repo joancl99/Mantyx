@@ -4,6 +4,7 @@ import './env';
 
 import { ValidationPipe } from '@nestjs/common';
 import type { INestApplication } from '@nestjs/common';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { Test } from '@nestjs/testing';
 import cookieParser from 'cookie-parser';
@@ -30,7 +31,11 @@ export async function createE2eApp(): Promise<E2eApp> {
     imports: [AppModule],
   }).compile();
 
-  const app = moduleRef.createNestApplication();
+  const app = moduleRef.createNestApplication<NestExpressApplication>();
+  // Mirrors main.ts: req.ip must resolve through X-Forwarded-For (throttler
+  // buckets and auth audit IPs) — the spec asserts the forwarded IP lands in
+  // the audit trail.
+  app.set('trust proxy', 1);
   app.useWebSocketAdapter(new IoAdapter(app));
   app.use(cookieParser());
   app.setGlobalPrefix('api');
