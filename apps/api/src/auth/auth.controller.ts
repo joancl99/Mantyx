@@ -18,6 +18,7 @@ import {
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { AuthRequestMeta, AuthService } from './auth.service';
+import { AllowNoCompany } from './decorators/allow-no-company.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
 import {
@@ -75,6 +76,9 @@ export class AuthController {
     return { accessToken: tokens.accessToken };
   }
 
+  // Session routes are not tenant-scoped: a SUPERADMIN (companyId null) must
+  // be able to log out too, otherwise their access token is never revoked.
+  @AllowNoCompany()
   @SkipThrottle()
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
