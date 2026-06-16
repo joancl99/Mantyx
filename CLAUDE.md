@@ -115,6 +115,26 @@ All four agreed items were built and committed on `dev` (commits `6d6f9e1`, `014
 
 Remaining frontend work: none pending — inventory count cancellation (the last optional item) was implemented on 2026-06-11 (commit `28236c1`).
 
+## Frontend Cohesion Pass (mobile/PDA-first) — IN PROGRESS (started 2026-06-16, on `dev`, not promoted)
+
+The app is **mobile/PDA-first** (warehouse workers use it on handhelds for daily tasks: movements, receptions, expeditions, inventory, stock; desktop is secondary, for SUPERADMIN/ADMIN management). A consistency refactor is underway because each page used to hardcode its own sizes, widths, and centering. Decisions agreed with the user: touch-comfortable density (body 15px, 44px tap targets), foundation-first then per-page. The full play-by-play (commits, gotchas, palette) lives in the `project-frontend-design-system` memory.
+
+Done so far (each verified with `nx build web` + `nx lint web`, all on `dev`):
+
+- **Design foundation** — `styles.scss` now defines spacing (`--sp-*`), radii (`--radius-*`), a mobile-readable type scale (`--fs-*`, 15px body), touch tokens (`--tap`/`--control-h` 44px, `--action-size` 40px), and page-layout tokens. `_shared.scss` adds a single `.page` container (`.page--wide` 1280 / `.page--narrow` 760) and every shared control is touch-sized. Before this there were only colour tokens — no type/spacing scale, which was the root of the inconsistency.
+- **All 12 pages on `.page`** — replaced 7 different per-page widths (720–1200px) and 4 paddings; admin is now centered (it was the only left-aligned page); dashboard is no longer a 480px column; dashboard + management were toned down to the standard `.page-header` (the gradient hero / 480px column were the outliers).
+- **#1 Shared `.badge`** — there were 5–6 bespoke badge styles (radii 6–20px, fonts 10–12px, square vs pill). Unified under one `.badge` (pill, `--fs-2xs`) + tones (`success/warning/danger/info/purple/neutral`); colour supplied per-use via `--badge-color/--badge-bg/--badge-border` so each feature keeps its palette. Migrated movements/inventory/stock/products/receptions/expeditions/admin×3/warehouses/dashboard + the shell role badge. Role→colour is now one convention everywhere (SUPERADMIN purple, ADMIN amber, MANAGER blue, OPERATOR green, VIEWER neutral) — it was previously swapped between the shell and the admin panel.
+- **#2 Toolbar owns the title + actions** — the page title used to render twice (`ion-title` + an in-content `<h1>`). Now the fixed toolbar is the single title and carries the page actions as icon-only `ion-button`s in `slot="end"` (primary action `color="primary"`); content keeps only a fine `.page-context` line. Applied to all 10 pages with their own toolbar; warehouses moved its create to the toolbar (warehouses view only); admin was left as-is (its toolbar is "Administración" while child panels carry distinct section titles — no duplication). Validated on mobile by the user.
+- **Login + shell** — login was already token-aligned/touch-friendly (15px inputs, 48px button), just got 44px input rows; the shell side menu is fine (≈56px items), only its role badge needed the `.badge` + colour alignment above.
+
+### NEXT SESSION — start here, in this order (agreed 2026-06-16)
+
+1. **Shared list-row pattern (`.data-row`).** Every list still defines its own row (`.movement-row`, `.stock-row`, `.product-row`, `.reception-row`/`.expedition-row`, `.count-row`, warehouse/admin rows) with different density, hover, separators. Add a `.data-row` scaffold to `_shared.scss` (surface, border, radius, hover, touch padding) and migrate the lists, leaving only the feature-specific grid/columns per component.
+2. **Unify internal card/panel surfaces.** Some inner panels use `rgba(15,23,42,…)` (e.g. management `risk-row`/`movement-feed`/`empty-panel`), others `var(--wh-surface-hover)`. Pick one treatment.
+3. **Promote `dev → main` once the visual pass is closed.** ~13 design commits are stacked on `dev`. Follow the repo flow: local gate (lint/test/build) + CI validation via a `dev → main` PR, then `--no-ff` chained merges `dev → pre → main` with tree-hash parity (see "GitHub And CI").
+
+(Also still un-started, independent of the visual pass: the functional "what works / what doesn't" audit by running the app, parked at the start of the 2026-06-16 session.)
+
 ## Remaining Product Focus
 
 - Inventory counts are implemented and hardened with service unit tests under `apps/api/src/inventory`.
