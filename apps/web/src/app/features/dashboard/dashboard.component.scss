@@ -202,29 +202,20 @@ ion-content {
     line-height: 1.4;
   }
 
+  // Colour for the shared .badge; the default low-stock alert uses --info.
   &__badge {
-    --alert-color: #60a5fa;
-    --alert-bg: rgba(96, 165, 250, 0.12);
-
     flex-shrink: 0;
-    padding: 3px 8px;
-    border-radius: 20px;
-    background: var(--alert-bg);
-    color: var(--alert-color);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    white-space: nowrap;
 
     &--stock-bajo {
-      --alert-bg: rgba(245, 158, 11, 0.12);
-      --alert-color: #f59e0b;
+      --badge-color: var(--wh-accent);
+      --badge-bg: rgba(245, 158, 11, 0.12);
+      --badge-border: rgba(245, 158, 11, 0.2);
     }
 
     &--sin-stock {
-      --alert-bg: rgba(239, 68, 68, 0.12);
-      --alert-color: #ef4444;
+      --badge-color: var(--wh-danger);
+      --badge-bg: rgba(239, 68, 68, 0.12);
+      --badge-border: rgba(239, 68, 68, 0.2);
     }
   }
 }

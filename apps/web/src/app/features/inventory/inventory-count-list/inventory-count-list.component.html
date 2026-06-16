@@ -19,9 +19,12 @@
         >
           <span class="count-main">
             <span class="count-name">{{ count.name }}</span>
-            <span class="count-meta">{{ count.warehouse.name }} · {{ count._count.lines }} líneas</span>
+            <span class="count-meta"
+              >{{ count.warehouse.name }} ·
+              {{ count._count.lines }} líneas</span
+            >
           </span>
-          <span class="status-badge" [class]="'status--' + count.status.toLowerCase()">
+          <span class="badge" [class]="'status--' + count.status.toLowerCase()">
             {{ statusLabel(count.status) }}
           </span>
         </button>

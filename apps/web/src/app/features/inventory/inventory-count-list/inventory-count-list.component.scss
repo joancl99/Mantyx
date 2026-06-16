@@ -32,7 +32,9 @@
   color: var(--wh-text);
   text-align: left;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 
   &:hover,
   &.active {
@@ -62,34 +64,27 @@
   font-size: 11px;
 }
 
-.status-badge {
-  --status-color: #94a3b8;
-  --status-bg: rgba(148, 163, 184, 0.12);
-
+// Status colour for the shared .badge (DRAFT falls back to the neutral default).
+.badge {
   flex-shrink: 0;
-  padding: 4px 8px;
-  border-radius: 999px;
-  color: var(--status-color);
-  background: var(--status-bg);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
 }
 
 .status--in_progress {
-  --status-color: var(--wh-accent);
-  --status-bg: rgba(245, 158, 11, 0.14);
+  --badge-color: var(--wh-accent);
+  --badge-bg: rgba(245, 158, 11, 0.14);
+  --badge-border: rgba(245, 158, 11, 0.2);
 }
 
 .status--completed {
-  --status-color: #22c55e;
-  --status-bg: rgba(34, 197, 94, 0.12);
+  --badge-color: #22c55e;
+  --badge-bg: rgba(34, 197, 94, 0.12);
+  --badge-border: rgba(34, 197, 94, 0.2);
 }
 
 .status--cancelled {
-  --status-color: #ef4444;
-  --status-bg: rgba(239, 68, 68, 0.12);
+  --badge-color: #ef4444;
+  --badge-bg: rgba(239, 68, 68, 0.12);
+  --badge-border: rgba(239, 68, 68, 0.2);
 }
 
 .compact {

@@ -112,34 +112,26 @@
   font-variant-numeric: tabular-nums;
 }
 
-.action-badge {
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-  flex-shrink: 0;
-
-  &.action--create {
-    background: rgba(16, 185, 129, 0.15);
-    color: #10b981;
-  }
-  &.action--update {
-    background: rgba(59, 130, 246, 0.15);
-    color: #3b82f6;
-  }
-  &.action--delete {
-    background: rgba(239, 68, 68, 0.12);
-    color: var(--wh-danger);
-  }
-  &.action--login {
-    background: rgba(245, 158, 11, 0.15);
-    color: #f59e0b;
-  }
-  &.action--logout {
-    background: var(--wh-surface-hover);
-    color: var(--wh-text-muted);
-  }
+// Action colour for the shared .badge; --logout uses the neutral default.
+.action--create {
+  --badge-color: #22c55e;
+  --badge-bg: rgba(34, 197, 94, 0.15);
+  --badge-border: rgba(34, 197, 94, 0.25);
+}
+.action--update {
+  --badge-color: #60a5fa;
+  --badge-bg: rgba(96, 165, 250, 0.15);
+  --badge-border: rgba(96, 165, 250, 0.25);
+}
+.action--delete {
+  --badge-color: var(--wh-danger);
+  --badge-bg: rgba(239, 68, 68, 0.12);
+  --badge-border: rgba(239, 68, 68, 0.2);
+}
+.action--login {
+  --badge-color: var(--wh-accent);
+  --badge-bg: rgba(245, 158, 11, 0.15);
+  --badge-border: rgba(245, 158, 11, 0.25);
 }
 
 @media (max-width: 600px) {

@@ -253,6 +253,62 @@
   }
 }
 
+// ── Badges ────────────────────────────────────────────────────────────────────
+// One shape/size for every status, type or tag badge in the app. The colour is
+// supplied per-use via --badge-color / --badge-bg / --badge-border, so each
+// feature keeps its own semantic palette while the form stays identical. Ready
+// made tones cover the common cases.
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: var(--fs-2xs);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--badge-color, var(--wh-text-muted));
+  background: var(--badge-bg, var(--wh-surface-hover));
+  border: 1px solid var(--badge-border, transparent);
+
+  ion-icon {
+    font-size: 14px;
+  }
+}
+
+.badge--success {
+  --badge-color: #22c55e;
+  --badge-bg: rgba(34, 197, 94, 0.12);
+  --badge-border: rgba(34, 197, 94, 0.2);
+}
+.badge--warning {
+  --badge-color: var(--wh-accent);
+  --badge-bg: rgba(245, 158, 11, 0.14);
+  --badge-border: rgba(245, 158, 11, 0.2);
+}
+.badge--danger {
+  --badge-color: var(--wh-danger);
+  --badge-bg: rgba(239, 68, 68, 0.12);
+  --badge-border: rgba(239, 68, 68, 0.2);
+}
+.badge--info {
+  --badge-color: #60a5fa;
+  --badge-bg: rgba(96, 165, 250, 0.12);
+  --badge-border: rgba(96, 165, 250, 0.2);
+}
+.badge--purple {
+  --badge-color: #a855f7;
+  --badge-bg: rgba(168, 85, 247, 0.12);
+  --badge-border: rgba(168, 85, 247, 0.2);
+}
+.badge--neutral {
+  --badge-color: var(--wh-text-muted);
+  --badge-bg: var(--wh-surface-hover);
+  --badge-border: var(--wh-border);
+}
+
 // ── Search & Filters ──────────────────────────────────────────────────────────
 .filters-bar {
   display: flex;

@@ -20,23 +20,6 @@
   }
 }
 
-.expedition-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  border-radius: 8px;
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--wh-danger);
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-
-  ion-icon {
-    font-size: 14px;
-  }
-}
-
 .expedition-product {
   display: flex;
   flex-direction: column;

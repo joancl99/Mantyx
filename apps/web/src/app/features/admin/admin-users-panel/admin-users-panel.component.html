@@ -2,7 +2,8 @@
   <div class="page-header__left">
     <h1 class="page-title">Usuarios</h1>
     <span class="page-subtitle">
-      {{ activeCount() }} activo{{ activeCount() === 1 ? '' : 's' }} · {{ totalCount() }} total
+      {{ activeCount() }} activo{{ activeCount() === 1 ? '' : 's' }} ·
+      {{ totalCount() }} total
     </span>
   </div>
   <button class="btn-primary" (click)="createUser.emit()">
@@ -41,7 +42,11 @@
     />
   </div>
   <div class="filter-selects">
-    <select class="filter-select" [ngModel]="roleFilter()" (ngModelChange)="roleFilterChange.emit($event)">
+    <select
+      class="filter-select"
+      [ngModel]="roleFilter()"
+      (ngModelChange)="roleFilterChange.emit($event)"
+    >
       <option value="">Todos los roles</option>
       @for (role of roles(); track role) {
         <option [value]="role">{{ roleLabel(role) }}</option>
@@ -51,37 +56,61 @@
 </div>
 
 @if (loading()) {
-  <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
+  <div class="state-center">
+    <ion-spinner name="crescent" class="main-spinner" />
+  </div>
 } @else if (users().length === 0) {
   <div class="state-center">
     <div class="empty-icon"><ion-icon name="people-outline" /></div>
     <p class="empty-title">Sin usuarios</p>
     <p class="empty-sub">
-      @if (search() || roleFilter()) { Ningún usuario coincide con los filtros }
-      @else { Crea el primer usuario para empezar }
+      @if (search() || roleFilter()) {
+        Ningún usuario coincide con los filtros
+      } @else {
+        Crea el primer usuario para empezar
+      }
     </p>
   </div>
 } @else {
   <div class="user-list">
     @for (user of users(); track user.id) {
       <div class="user-row" [class.inactive]="!user.isActive">
-        <div class="user-avatar" [attr.data-role]="user.role">{{ userInitial(user) }}</div>
+        <div class="user-avatar" [attr.data-role]="user.role">
+          {{ userInitial(user) }}
+        </div>
         <div class="user-info">
           <span class="user-name">{{ user.name }}</span>
           <span class="user-email">{{ user.email }}</span>
         </div>
-        <span class="role-badge role-badge--{{ user.role.toLowerCase() }}">{{ roleLabel(user.role) }}</span>
-        <span [class]="user.isActive ? 'status-chip status-chip--active' : 'status-chip status-chip--inactive'">
+        <span
+          class="badge role-badge role-badge--{{ user.role.toLowerCase() }}"
+          >{{ roleLabel(user.role) }}</span
+        >
+        <span
+          [class]="
+            user.isActive
+              ? 'badge status-chip status-chip--active'
+              : 'badge status-chip status-chip--inactive'
+          "
+        >
           {{ user.isActive ? 'Activo' : 'Inactivo' }}
         </span>
         <div class="user-actions">
-          <button class="action-btn action-btn--edit" (click)="editUser.emit(user)" title="Editar">
+          <button
+            class="action-btn action-btn--edit"
+            (click)="editUser.emit(user)"
+            title="Editar"
+          >
             <ion-icon name="create-outline" />
           </button>
           @if (user.id !== currentUserId()) {
             <button
               class="action-btn"
-              [class]="user.isActive ? 'action-btn--deactivate' : 'action-btn--activate'"
+              [class]="
+                user.isActive
+                  ? 'action-btn--deactivate'
+                  : 'action-btn--activate'
+              "
               (click)="toggleUser.emit(user)"
               [title]="user.isActive ? 'Desactivar' : 'Activar'"
             >

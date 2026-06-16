@@ -9,7 +9,9 @@
     </div>
     <p class="empty-title">Sin productos</p>
     <p class="empty-sub">
-      {{ hasFilters() ? 'Prueba con otros filtros' : 'Crea el primer producto' }}
+      {{
+        hasFilters() ? 'Prueba con otros filtros' : 'Crea el primer producto'
+      }}
     </p>
   </div>
 } @else {
@@ -28,10 +30,10 @@
           <span class="product-sku">{{ product.sku }}</span>
           <div class="product-tags">
             @if (product.category) {
-              <span class="tag tag--category">{{ product.category.name }}</span>
+              <span class="badge badge--info">{{ product.category.name }}</span>
             }
             @if (product.brand) {
-              <span class="tag tag--brand">{{ product.brand.name }}</span>
+              <span class="badge badge--purple">{{ product.brand.name }}</span>
             }
           </div>
         </div>

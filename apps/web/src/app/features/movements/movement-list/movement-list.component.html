@@ -14,7 +14,7 @@
   <div class="movement-list">
     @for (movement of movements(); track movement.id) {
       <div class="movement-row">
-        <div class="type-badge {{ typeCssClass(movement.type) }}">
+        <div class="badge {{ typeCssClass(movement.type) }}">
           <ion-icon [name]="typeIcon(movement.type)" />
           <span>{{ typeLabel(movement.type) }}</span>
         </div>
