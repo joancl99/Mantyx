@@ -9,11 +9,15 @@
     </div>
     <p class="empty-title">Sin resultados</p>
     <p class="empty-sub">
-      {{ filterLowStock() ? 'No hay productos con stock bajo' : 'Prueba con otro término de búsqueda' }}
+      {{
+        filterLowStock()
+          ? 'No hay productos con stock bajo'
+          : 'Prueba con otro término de búsqueda'
+      }}
     </p>
   </div>
 } @else {
-  <div class="stock-list">
+  <div class="data-list">
     <div class="list-header">
       <span class="col-product">Producto</span>
       <span class="col-stock">Stock actual</span>
@@ -22,7 +26,7 @@
     </div>
 
     @for (item of items(); track item.productId) {
-      <div class="stock-row" [class]="'row--' + stockStatus(item)">
+      <div class="stock-row data-row" [class]="'row--' + stockStatus(item)">
         <div class="col-product">
           <span class="product-name">{{ item.name }}</span>
           <span class="product-sku">{{ item.sku }}</span>
@@ -41,17 +45,17 @@
 
         <div class="col-status">
           @if (stockStatus(item) === 'empty') {
-            <span class="status-badge status--empty">
+            <span class="badge badge--danger">
               <ion-icon name="alert-circle-outline" />
               Sin stock
             </span>
           } @else if (stockStatus(item) === 'low') {
-            <span class="status-badge status--low">
+            <span class="badge badge--warning">
               <ion-icon name="warning-outline" />
               Stock bajo
             </span>
           } @else {
-            <span class="status-badge status--ok">
+            <span class="badge badge--success">
               <ion-icon name="checkmark-circle-outline" />
               OK
             </span>
@@ -63,11 +67,19 @@
 
   @if (totalPages() > 1) {
     <div class="pagination">
-      <button class="page-btn" [disabled]="currentPage() === 1" (click)="pageChange.emit(currentPage() - 1)">
+      <button
+        class="page-btn"
+        [disabled]="currentPage() === 1"
+        (click)="pageChange.emit(currentPage() - 1)"
+      >
         <ion-icon name="chevron-back-outline" />
       </button>
       <span class="page-info">{{ currentPage() }} / {{ totalPages() }}</span>
-      <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="pageChange.emit(currentPage() + 1)">
+      <button
+        class="page-btn"
+        [disabled]="currentPage() === totalPages()"
+        (click)="pageChange.emit(currentPage() + 1)"
+      >
         <ion-icon name="chevron-forward-outline" />
       </button>
     </div>

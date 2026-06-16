@@ -11,10 +11,10 @@
     <p class="empty-sub">{{ emptyMessage() }}</p>
   </div>
 } @else {
-  <div class="reception-list">
+  <div class="data-list">
     @for (r of receptions(); track r.id) {
-      <div class="reception-row">
-        <div class="reception-badge">
+      <div class="reception-row data-row">
+        <div class="badge badge--success">
           <ion-icon name="arrow-down-outline" />
           <span>Entrada</span>
         </div>

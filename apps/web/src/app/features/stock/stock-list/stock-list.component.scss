@@ -2,12 +2,6 @@
   display: contents;
 }
 
-.stock-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .list-header {
   display: grid;
   grid-template-columns: 1fr 100px 90px 110px;
@@ -20,20 +14,18 @@
   text-transform: uppercase;
 }
 
+// Layout + status accent only; the card surface comes from .data-row.
 .stock-row {
   display: grid;
   grid-template-columns: 1fr 100px 90px 110px;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  background: var(--wh-surface);
-  border: 1px solid var(--wh-border);
-  border-radius: 12px;
-  transition: border-color 0.15s;
+  gap: var(--sp-3);
 
-  &:hover { border-color: rgba(245, 158, 11, 0.2); }
-  &.row--low { border-left: 3px solid rgba(245, 158, 11, 0.6); }
-  &.row--empty { border-left: 3px solid rgba(239, 68, 68, 0.6); }
+  &.row--low {
+    border-left: 3px solid rgba(245, 158, 11, 0.6);
+  }
+  &.row--empty {
+    border-left: 3px solid rgba(239, 68, 68, 0.6);
+  }
 }
 
 .col-product {
@@ -69,9 +61,15 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 
-  &.qty--ok { color: #22c55e; }
-  &.qty--low { color: var(--wh-accent); }
-  &.qty--empty { color: #ef4444; }
+  &.qty--ok {
+    color: #22c55e;
+  }
+  &.qty--low {
+    color: var(--wh-accent);
+  }
+  &.qty--empty {
+    color: #ef4444;
+  }
 }
 
 .stock-unit {
@@ -91,27 +89,18 @@
   font-variant-numeric: tabular-nums;
 }
 
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 9px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-
-  ion-icon { font-size: 12px; }
-
-  &.status--ok { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
-  &.status--low { background: rgba(245, 158, 11, 0.1); color: var(--wh-accent); border: 1px solid rgba(245, 158, 11, 0.2); }
-  &.status--empty { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-}
-
 @media (max-width: 600px) {
-  .list-header { display: none; }
-  .stock-row { grid-template-columns: 1fr auto; grid-template-rows: auto auto; }
-  .col-min { display: none; }
-  .col-status { justify-content: flex-end; }
+  .list-header {
+    display: none;
+  }
+  .stock-row {
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+  }
+  .col-min {
+    display: none;
+  }
+  .col-status {
+    justify-content: flex-end;
+  }
 }

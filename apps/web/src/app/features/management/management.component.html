@@ -2,25 +2,17 @@
   <ion-toolbar>
     <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
     <ion-title>Management</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="loadManagementData()" aria-label="Actualizar">
+        <ion-icon slot="icon-only" name="refresh-outline" />
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [scrollY]="true" [fullscreen]="true">
-  <div class="management-page">
-    <header class="management-hero">
-      <div>
-        <span class="eyebrow">Centro de mando</span>
-        <h1>Precisión operativa para hoy</h1>
-        <p>
-          Una lectura ejecutiva del riesgo de stock, actividad reciente y
-          acciones que mantienen el almacén bajo control.
-        </p>
-      </div>
-      <button class="refresh-btn" type="button" (click)="loadManagementData()">
-        <ion-icon name="refresh-outline" />
-        Actualizar
-      </button>
-    </header>
+  <div class="page page--wide">
+    <p class="page-context">Riesgo de stock y actividad reciente del almacén</p>
 
     @if (loading()) {
       <div class="state-center">
@@ -37,7 +29,9 @@
           <div class="risk-meter" aria-label="Riesgo operativo">
             <span [style.width.%]="riskScore()"></span>
           </div>
-          <small>{{ riskScore() }}% de presión por stock bajo o sin stock</small>
+          <small
+            >{{ riskScore() }}% de presión por stock bajo o sin stock</small
+          >
         </article>
 
         <div class="metric-stack">
@@ -112,12 +106,20 @@
             </div>
           } @else {
             <div class="movement-feed">
-              @for (movement of dashboard()!.recentMovements; track movement.id) {
+              @for (
+                movement of dashboard()!.recentMovements;
+                track movement.id
+              ) {
                 <div class="movement-feed__item">
-                  <span class="movement-feed__type">{{ movementTypeLabel(movement.type) }}</span>
+                  <span class="movement-feed__type">{{
+                    movementTypeLabel(movement.type)
+                  }}</span>
                   <div>
                     <strong>{{ movement.productName }}</strong>
-                    <small>{{ movement.warehouseName }} · {{ movement.createdAt | date: 'short' }}</small>
+                    <small
+                      >{{ movement.warehouseName }} ·
+                      {{ movement.createdAt | date: 'short' }}</small
+                    >
                   </div>
                   <b>{{ movement.quantity }}</b>
                 </div>
@@ -129,7 +131,10 @@
 
       <section class="action-rail" aria-label="Acciones de gestión">
         @for (action of actions; track action.route) {
-          <a class="action-card action-card--{{ action.tone }}" [routerLink]="action.route">
+          <a
+            class="action-card action-card--{{ action.tone }}"
+            [routerLink]="action.route"
+          >
             <ion-icon [name]="action.icon" />
             <div>
               <strong>{{ action.label }}</strong>

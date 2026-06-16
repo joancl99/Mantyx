@@ -66,6 +66,7 @@ ion-content {
 .input-wrap {
   display: flex;
   align-items: center;
+  min-height: var(--control-h);
   background: var(--wh-bg);
   border: 1px solid var(--wh-border);
   border-radius: 10px;

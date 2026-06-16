@@ -17,7 +17,9 @@ export class CsvExportService {
       ...rows.map((row) => row.map(escape).join(',')),
     ];
 
-    const blob = new Blob(['﻿' + lines.join('\r\n')], {
+    // Prepend the UTF-8 BOM (\uFEFF) so Excel detects the encoding; written
+    // as an escape, not a literal invisible char, to stay visible in source.
+    const blob = new Blob(['\uFEFF' + lines.join('\r\n')], {
       type: 'text/csv;charset=utf-8;',
     });
     const url = URL.createObjectURL(blob);
@@ -28,7 +30,13 @@ export class CsvExportService {
     URL.revokeObjectURL(url);
   }
 
+  // Date + time (filesystem-safe, no ':') so two exports of the same list on
+  // the same day don't collide on the download name.
   private timestamp(): string {
-    return new Date().toISOString().slice(0, 10);
+    return new Date()
+      .toISOString()
+      .slice(0, 19)
+      .replace('T', '_')
+      .replace(/:/g, '-');
   }
 }

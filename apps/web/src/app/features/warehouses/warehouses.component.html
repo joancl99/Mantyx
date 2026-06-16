@@ -2,12 +2,22 @@
   <ion-toolbar>
     <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
     <ion-title>Almacenes</ion-title>
+    @if (navigation.currentView() === 'warehouses' && canEdit()) {
+      <ion-buttons slot="end">
+        <ion-button
+          color="primary"
+          (click)="openCreateWh()"
+          aria-label="Nuevo almacén"
+        >
+          <ion-icon slot="icon-only" name="add-outline" />
+        </ion-button>
+      </ion-buttons>
+    }
   </ion-toolbar>
 </ion-header>
 
 <ion-content [scrollY]="true" [fullscreen]="true">
-  <div class="warehouses-page">
-
+  <div class="page page--narrow">
     <app-warehouse-breadcrumb
       [currentView]="navigation.currentView()"
       [selectedWarehouse]="navigation.selectedWarehouse()"
@@ -25,7 +35,6 @@
         [canEdit]="canEdit()"
         [activeCount]="activeCount()"
         [totalCount]="totalCount()"
-        (createWarehouse)="openCreateWh()"
         (editWarehouse)="openEditWh($event)"
         (toggleWarehouse)="confirmToggle($event)"
         (manageWarehouse)="enterZones($event)"
@@ -84,38 +93,72 @@
         (deleteItem)="confirmDelete($event.id, $event.label, $event.level)"
       />
     }
-
   </div>
 </ion-content>
 
 <!-- ── WAREHOUSE MODAL ─────────────────────────────────────────────────────── -->
 @if (showWhModal()) {
-  <div class="modal-backdrop" tabindex="0" (click)="closeWhModal()" (keydown.escape)="closeWhModal()">
-    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+  <div
+    class="modal-backdrop"
+    tabindex="0"
+    (click)="closeWhModal()"
+    (keydown.escape)="closeWhModal()"
+  >
+    <div
+      class="modal modal--sm"
+      role="presentation"
+      (click)="$event.stopPropagation()"
+    >
       <div class="modal-header">
-        <h2 class="modal-title">{{ whModalMode() === 'create' ? 'Nuevo almacén' : 'Editar almacén' }}</h2>
-        <button class="modal-close" (click)="closeWhModal()"><ion-icon name="close-outline" /></button>
+        <h2 class="modal-title">
+          {{ whModalMode() === 'create' ? 'Nuevo almacén' : 'Editar almacén' }}
+        </h2>
+        <button class="modal-close" (click)="closeWhModal()">
+          <ion-icon name="close-outline" />
+        </button>
       </div>
       <form [formGroup]="whForm" (ngSubmit)="submitWhForm()" class="modal-body">
-        <div class="form-field" [class.has-error]="whSubmitted() && whForm.get('name')?.invalid">
+        <div
+          class="form-field"
+          [class.has-error]="whSubmitted() && whForm.get('name')?.invalid"
+        >
           <label class="form-label" for="wh-name">Nombre *</label>
-          <input id="wh-name" class="form-input" formControlName="name" placeholder="Almacén Central" />
+          <input
+            id="wh-name"
+            class="form-input"
+            formControlName="name"
+            placeholder="Almacén Central"
+          />
           @if (whSubmitted() && whForm.get('name')?.hasError('required')) {
             <span class="form-error">Campo obligatorio</span>
           }
         </div>
         <div class="form-field">
           <label class="form-label" for="wh-address">Dirección</label>
-          <input id="wh-address" class="form-input" formControlName="address" placeholder="Calle Mayor 12, Barcelona" />
+          <input
+            id="wh-address"
+            class="form-input"
+            formControlName="address"
+            placeholder="Calle Mayor 12, Barcelona"
+          />
         </div>
         @if (whFormError()) {
-          <div class="form-alert"><ion-icon name="alert-circle-outline" />{{ whFormError() }}</div>
+          <div class="form-alert">
+            <ion-icon name="alert-circle-outline" />{{ whFormError() }}
+          </div>
         }
         <div class="modal-footer">
-          <button type="button" class="btn-ghost" (click)="closeWhModal()">Cancelar</button>
+          <button type="button" class="btn-ghost" (click)="closeWhModal()">
+            Cancelar
+          </button>
           <button type="submit" class="btn-primary" [disabled]="whSaving()">
-            @if (whSaving()) { <ion-spinner name="crescent" /> }
-            @else { {{ whModalMode() === 'create' ? 'Crear almacén' : 'Guardar cambios' }} }
+            @if (whSaving()) {
+              <ion-spinner name="crescent" />
+            } @else {
+              {{
+                whModalMode() === 'create' ? 'Crear almacén' : 'Guardar cambios'
+              }}
+            }
           </button>
         </div>
       </form>
@@ -125,23 +168,48 @@
 
 <!-- ── TOGGLE ACTIVE CONFIRM ─────────────────────────────────────────────── -->
 @if (toggleTarget()) {
-  <div class="modal-backdrop" tabindex="0" (click)="cancelToggle()" (keydown.escape)="cancelToggle()">
-    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+  <div
+    class="modal-backdrop"
+    tabindex="0"
+    (click)="cancelToggle()"
+    (keydown.escape)="cancelToggle()"
+  >
+    <div
+      class="modal modal--sm"
+      role="presentation"
+      (click)="$event.stopPropagation()"
+    >
       <div class="modal-header">
-        <h2 class="modal-title">{{ toggleTarget()!.isActive ? 'Desactivar almacén' : 'Activar almacén' }}</h2>
+        <h2 class="modal-title">
+          {{
+            toggleTarget()!.isActive ? 'Desactivar almacén' : 'Activar almacén'
+          }}
+        </h2>
       </div>
       <div class="modal-body">
         <p class="delete-text">
           {{ toggleTarget()!.isActive ? '¿Desactivar' : '¿Activar' }}
-          <strong>{{ toggleTarget()!.name }}</strong>?
-          {{ toggleTarget()!.isActive ? 'No aparecerá como opción en nuevos movimientos.' : 'Volverá a estar disponible para movimientos.' }}
+          <strong>{{ toggleTarget()!.name }}</strong
+          >?
+          {{
+            toggleTarget()!.isActive
+              ? 'No aparecerá como opción en nuevos movimientos.'
+              : 'Volverá a estar disponible para movimientos.'
+          }}
         </p>
       </div>
       <div class="modal-footer">
         <button class="btn-ghost" (click)="cancelToggle()">Cancelar</button>
-        <button class="btn-primary" [disabled]="whSaving()" (click)="executeToggle()">
-          @if (whSaving()) { <ion-spinner name="crescent" /> }
-          @else { {{ toggleTarget()!.isActive ? 'Desactivar' : 'Activar' }} }
+        <button
+          class="btn-primary"
+          [disabled]="whSaving()"
+          (click)="executeToggle()"
+        >
+          @if (whSaving()) {
+            <ion-spinner name="crescent" />
+          } @else {
+            {{ toggleTarget()!.isActive ? 'Desactivar' : 'Activar' }}
+          }
         </button>
       </div>
     </div>
@@ -150,28 +218,61 @@
 
 <!-- ── SUB-LEVEL CREATE / EDIT MODAL ─────────────────────────────────────── -->
 @if (showSubModal()) {
-  <div class="modal-backdrop" tabindex="0" (click)="closeSubModal()" (keydown.escape)="closeSubModal()">
-    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+  <div
+    class="modal-backdrop"
+    tabindex="0"
+    (click)="closeSubModal()"
+    (keydown.escape)="closeSubModal()"
+  >
+    <div
+      class="modal modal--sm"
+      role="presentation"
+      (click)="$event.stopPropagation()"
+    >
       <div class="modal-header">
         <h2 class="modal-title">{{ subModalTitle() }}</h2>
-        <button class="modal-close" (click)="closeSubModal()"><ion-icon name="close-outline" /></button>
+        <button class="modal-close" (click)="closeSubModal()">
+          <ion-icon name="close-outline" />
+        </button>
       </div>
       <div class="modal-body">
-        <div class="form-field" [class.has-error]="subSubmitted() && subForm.invalid">
-          <label class="form-label" for="sub-input">{{ subModalLabel() }} *</label>
-          <input id="sub-input" class="form-input" [formControl]="subForm" [placeholder]="subModalPlaceholder()" />
+        <div
+          class="form-field"
+          [class.has-error]="subSubmitted() && subForm.invalid"
+        >
+          <label class="form-label" for="sub-input"
+            >{{ subModalLabel() }} *</label
+          >
+          <input
+            id="sub-input"
+            class="form-input"
+            [formControl]="subForm"
+            [placeholder]="subModalPlaceholder()"
+          />
           @if (subSubmitted() && subForm.hasError('required')) {
             <span class="form-error">Campo obligatorio</span>
           }
         </div>
         @if (subError()) {
-          <div class="form-alert"><ion-icon name="alert-circle-outline" />{{ subError() }}</div>
+          <div class="form-alert">
+            <ion-icon name="alert-circle-outline" />{{ subError() }}
+          </div>
         }
         <div class="modal-footer">
-          <button type="button" class="btn-ghost" (click)="closeSubModal()">Cancelar</button>
-          <button type="button" class="btn-primary" [disabled]="subSaving()" (click)="submitSubForm()">
-            @if (subSaving()) { <ion-spinner name="crescent" /> }
-            @else { {{ subModalMode() === 'create' ? 'Crear' : 'Guardar cambios' }} }
+          <button type="button" class="btn-ghost" (click)="closeSubModal()">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="btn-primary"
+            [disabled]="subSaving()"
+            (click)="submitSubForm()"
+          >
+            @if (subSaving()) {
+              <ion-spinner name="crescent" />
+            } @else {
+              {{ subModalMode() === 'create' ? 'Crear' : 'Guardar cambios' }}
+            }
           </button>
         </div>
       </div>
@@ -181,14 +282,26 @@
 
 <!-- ── DELETE CONFIRM MODAL ───────────────────────────────────────────────── -->
 @if (deleteTarget()) {
-  <div class="modal-backdrop" tabindex="0" (click)="cancelDelete()" (keydown.escape)="cancelDelete()">
-    <div class="modal modal--sm" role="presentation" (click)="$event.stopPropagation()">
+  <div
+    class="modal-backdrop"
+    tabindex="0"
+    (click)="cancelDelete()"
+    (keydown.escape)="cancelDelete()"
+  >
+    <div
+      class="modal modal--sm"
+      role="presentation"
+      (click)="$event.stopPropagation()"
+    >
       <div class="modal-header">
-        <h2 class="modal-title">Eliminar {{ deleteLevelLabel(deleteTarget()!.level) }}</h2>
+        <h2 class="modal-title">
+          Eliminar {{ deleteLevelLabel(deleteTarget()!.level) }}
+        </h2>
       </div>
       <div class="modal-body">
         <p class="delete-text">
-          ¿Eliminar <strong>{{ deleteTarget()!.label }}</strong>?
+          ¿Eliminar <strong>{{ deleteTarget()!.label }}</strong
+          >?
           @if (deleteTarget()!.level === 'zone') {
             Esta acción fallará si la zona tiene pasillos.
           } @else if (deleteTarget()!.level === 'aisle') {
@@ -198,13 +311,22 @@
           }
         </p>
         @if (deleteError()) {
-          <div class="form-alert"><ion-icon name="alert-circle-outline" />{{ deleteError() }}</div>
+          <div class="form-alert">
+            <ion-icon name="alert-circle-outline" />{{ deleteError() }}
+          </div>
         }
         <div class="modal-footer">
           <button class="btn-ghost" (click)="cancelDelete()">Cancelar</button>
-          <button class="btn-danger" [disabled]="subDeleting()" (click)="executeDelete()">
-            @if (subDeleting()) { <ion-spinner name="crescent" /> }
-            @else { Eliminar }
+          <button
+            class="btn-danger"
+            [disabled]="subDeleting()"
+            (click)="executeDelete()"
+          >
+            @if (subDeleting()) {
+              <ion-spinner name="crescent" />
+            } @else {
+              Eliminar
+            }
           </button>
         </div>
       </div>

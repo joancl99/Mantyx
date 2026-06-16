@@ -2,12 +2,6 @@
   display: contents;
 }
 
-.inventory-page {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 24px 16px 80px;
-}
-
 .inventory-grid {
   display: grid;
   grid-template-columns: minmax(280px, 380px) 1fr;
