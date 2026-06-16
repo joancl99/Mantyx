@@ -106,8 +106,8 @@
 .line-row {
   padding: 10px;
   border: 1px solid var(--wh-border);
-  border-radius: 10px;
-  background: rgba(15, 23, 42, 0.28);
+  border-radius: var(--radius-md);
+  background: var(--wh-surface-hover);
 }
 
 .line-location {
