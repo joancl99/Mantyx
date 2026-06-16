@@ -1,18 +1,7 @@
-<header class="page-header">
-  <div class="page-header__left">
-    <h1 class="page-title">Almacenes</h1>
-    <span class="page-subtitle">
-      {{ activeCount() }} activo{{ activeCount() === 1 ? '' : 's' }} ·
-      {{ totalCount() }} total
-    </span>
-  </div>
-  @if (canEdit()) {
-    <button class="btn-primary" (click)="createWarehouse.emit()">
-      <ion-icon name="add-outline" />
-      Nuevo almacén
-    </button>
-  }
-</header>
+<p class="page-context">
+  {{ activeCount() }} activo{{ activeCount() === 1 ? '' : 's' }} ·
+  {{ totalCount() }} total
+</p>
 
 @if (loading()) {
   <div class="state-center">
