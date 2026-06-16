@@ -33,6 +33,12 @@ process.env.JWT_REFRESH_SECRET ??=
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcrypt');
 const Redis = require('ioredis');
+// Shared with the api-e2e Jest globalSetup; lives in tools/ as CommonJS so
+// this raw-node webServer can require it without a TypeScript build.
+const {
+  ensureDatabaseExists,
+  truncateAllTables,
+} = require('../../../../tools/e2e/db-prep.cjs');
 
 const SEED = {
   superadmin: { email: 'superadmin@web-e2e.test', password: 'Super-Pass123!' },
@@ -43,7 +49,7 @@ const SEED = {
 };
 
 async function main() {
-  await ensureDatabaseExists();
+  await ensureDatabaseExists(E2E_DATABASE_URL);
   execSync('npx prisma migrate deploy --schema=apps/api/prisma/schema.prisma', {
     stdio: 'inherit',
     env: process.env,
@@ -74,38 +80,6 @@ async function main() {
   for (const signal of ['SIGINT', 'SIGTERM']) {
     process.on(signal, () => api.kill('SIGTERM'));
   }
-}
-
-// NOTE: ensureDatabaseExists + truncateAllTables intentionally mirror
-// apps/api-e2e/src/support/global-setup.ts. They stay duplicated because
-// Playwright runs THIS file with raw node (no TS build) before globalSetup,
-// so it can't import the api-e2e TS support. Keep the two copies in sync.
-async function ensureDatabaseExists() {
-  const dbName = new URL(E2E_DATABASE_URL).pathname.replace(/^\//, '');
-  const adminUrl = new URL(E2E_DATABASE_URL);
-  adminUrl.pathname = '/postgres';
-
-  const admin = new PrismaClient({ datasourceUrl: adminUrl.toString() });
-  try {
-    await admin.$executeRawUnsafe(`CREATE DATABASE "${dbName}"`);
-  } catch (error) {
-    // Postgres 42P04 (duplicate_database) means it is already there.
-    if (!(error instanceof Error && error.message.includes('42P04'))) {
-      throw error;
-    }
-  } finally {
-    await admin.$disconnect();
-  }
-}
-
-async function truncateAllTables(prisma) {
-  const tables = await prisma.$queryRaw`
-    SELECT tablename FROM pg_tables
-    WHERE schemaname = 'public' AND tablename <> '_prisma_migrations'
-  `;
-  if (tables.length === 0) return;
-  const list = tables.map((t) => `"public"."${t.tablename}"`).join(', ');
-  await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${list} CASCADE`);
 }
 
 async function seed(prisma) {
