@@ -9,13 +9,11 @@
       <p class="empty-title">Selecciona un conteo</p>
       <p class="empty-sub">Revisa líneas, cantidades y diferencias</p>
     </div>
-  } @else {
+  } @else if (count(); as count) {
     <div class="detail-header">
       <div>
-        <h2>{{ count()!.name }}</h2>
-        <p>
-          {{ count()!.warehouse.name }} · {{ statusLabel(count()!.status) }}
-        </p>
+        <h2>{{ count.name }}</h2>
+        <p>{{ count.warehouse.name }} · {{ statusLabel(count.status) }}</p>
       </div>
       <div class="detail-actions">
         @if (confirmingCancel()) {
@@ -167,7 +165,7 @@
             </span>
             <button
               class="action-btn action-btn--delete"
-              [disabled]="count()!.status !== 'DRAFT'"
+              [disabled]="count.status !== 'DRAFT'"
               (click)="removeLine.emit(line)"
             >
               <ion-icon name="trash-outline" />

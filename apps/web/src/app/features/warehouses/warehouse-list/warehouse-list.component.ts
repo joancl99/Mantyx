@@ -7,7 +7,6 @@ import {
 import { IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
-  addOutline,
   businessOutline,
   chevronForwardOutline,
   createOutline,
@@ -32,14 +31,12 @@ export class WarehouseListComponent {
   readonly activeCount = input.required<number>();
   readonly totalCount = input.required<number>();
 
-  readonly createWarehouse = output<void>();
   readonly editWarehouse = output<Warehouse>();
   readonly toggleWarehouse = output<Warehouse>();
   readonly manageWarehouse = output<Warehouse>();
 
   constructor() {
     addIcons({
-      addOutline,
       businessOutline,
       chevronForwardOutline,
       createOutline,

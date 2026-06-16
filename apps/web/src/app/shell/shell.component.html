@@ -11,7 +11,9 @@
         }
         @if (currentUser()) {
           <div
-            class="menu-role-badge role-{{ currentUser()!.role | lowercase }}"
+            class="badge menu-role-badge role-{{
+              currentUser()!.role | lowercase
+            }}"
           >
             <ion-icon name="shield-checkmark-outline"></ion-icon>
             {{ currentUser()!.role }}

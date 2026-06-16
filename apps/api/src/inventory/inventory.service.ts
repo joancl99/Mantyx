@@ -250,6 +250,10 @@ export class InventoryService {
 
   async removeLine(id: string, lineId: string, companyId: string) {
     const count = await this.findCount(id, companyId);
+    // Intentional asymmetry vs add/updateLine (DRAFT + IN_PROGRESS): once a
+    // count is IN_PROGRESS, lines may be added or counted but never deleted —
+    // removing a line would silently discard counting work already recorded.
+    // A counted scope is corrected by cancelling the count, not by pruning it.
     if (count.status !== InventoryCountStatus.DRAFT) {
       throw new BadRequestException(
         'Only draft inventory count lines can be removed',

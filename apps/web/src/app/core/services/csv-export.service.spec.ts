@@ -88,12 +88,14 @@ describe('CsvExportService', () => {
     expect(text.replace('﻿', '')).toBe('A,B,C\r\n,,0');
   });
 
-  it('downloads as <name>_<YYYY-MM-DD>.csv and revokes the object URL', () => {
+  it('downloads as <name>_<YYYY-MM-DD_HH-MM-SS>.csv and revokes the object URL', () => {
     service.export('albaran', ['X'], []);
 
     expect(clickSpy).toHaveBeenCalledTimes(1);
-    const today = new Date().toISOString().slice(0, 10);
-    expect(downloadName).toBe(`albaran_${today}.csv`);
+    // Date + time so same-day exports of the same list don't collide.
+    expect(downloadName).toMatch(
+      /^albaran_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.csv$/,
+    );
     expect(revokeSpy).toHaveBeenCalledWith('blob:fake-url');
   });
 });

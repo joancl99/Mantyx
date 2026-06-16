@@ -15,6 +15,8 @@ export default {
       },
     ],
   },
-  moduleFileExtensions: ['ts', 'js', 'html'],
+  // 'cjs' so the extensionless import of tools/e2e/db-prep resolves the
+  // shared CommonJS plumbing (db-prep.cjs) at runtime.
+  moduleFileExtensions: ['ts', 'js', 'cjs', 'html'],
   coverageDirectory: '../../coverage/api-e2e',
 };

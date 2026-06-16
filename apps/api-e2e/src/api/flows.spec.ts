@@ -59,6 +59,13 @@ describe('Mantyx API e2e flows', () => {
     return api.post('/api/auth/login', { email, password });
   }
 
+  it('exposes an unauthenticated health check on the real app', async () => {
+    const res = await api.get('/api/health');
+    expect(res.status).toBe(200);
+    expect(res.data).toMatchObject({ status: 'ok' });
+    expect(typeof res.data.timestamp).toBe('string');
+  });
+
   describe('auth session', () => {
     it('rejects a wrong password with 401', async () => {
       const res = await login(SUPERADMIN_EMAIL, 'definitely-wrong');

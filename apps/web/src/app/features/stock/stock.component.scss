@@ -2,36 +2,6 @@
   display: contents;
 }
 
-.stock-page {
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 24px 16px 80px;
-}
-
 .search-wrap {
   margin-bottom: 20px;
-}
-
-.btn-filter {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--wh-border);
-  background: transparent;
-  color: var(--wh-text-muted);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-
-  ion-icon { font-size: 15px; }
-  &:hover { border-color: rgba(245, 158, 11, 0.4); color: var(--wh-accent); }
-  &.active {
-    background: rgba(245, 158, 11, 0.12);
-    border-color: rgba(245, 158, 11, 0.4);
-    color: var(--wh-accent);
-  }
 }

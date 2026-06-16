@@ -28,9 +28,15 @@
     font-size: 12px;
   }
 
-  &--green .stat-card__value { color: #10b981; }
-  &--red .stat-card__value { color: var(--wh-danger); }
-  &--accent .stat-card__value { color: var(--wh-accent); }
+  &--green .stat-card__value {
+    color: #10b981;
+  }
+  &--red .stat-card__value {
+    color: var(--wh-danger);
+  }
+  &--accent .stat-card__value {
+    color: var(--wh-accent);
+  }
 }
 
 .search-wrap--grow {
@@ -39,26 +45,8 @@
   max-width: 340px;
 }
 
-.user-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.user-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  background: var(--wh-surface);
-  border: 1px solid var(--wh-border);
-  border-radius: 10px;
-  transition: background 0.15s;
-
-  &:hover { background: var(--wh-surface-hover); }
-  &.inactive { opacity: 0.55; }
-}
-
+// .user-row inherits the card surface + flex from .data-row (and
+// .data-row--inactive for the dimmed state); only its children need styling.
 .user-avatar {
   width: 38px;
   height: 38px;
@@ -70,10 +58,22 @@
   font-weight: 700;
   flex-shrink: 0;
 
-  &[data-role='ADMIN'] { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-  &[data-role='MANAGER'] { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
-  &[data-role='OPERATOR'] { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-  &[data-role='VIEWER'] { background: var(--wh-surface-hover); color: var(--wh-text-muted); }
+  &[data-role='ADMIN'] {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+  }
+  &[data-role='MANAGER'] {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+  }
+  &[data-role='OPERATOR'] {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+  }
+  &[data-role='VIEWER'] {
+    background: var(--wh-surface-hover);
+    color: var(--wh-text-muted);
+  }
 }
 
 .user-info {
@@ -102,26 +102,38 @@
   font-size: 12px;
 }
 
-.role-badge,
-.status-chip {
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
+// .role-badge / .status-chip are kept only as hooks for the mobile media
+// query below; the shape comes from the shared .badge, colour from the vars.
 .role-badge {
-  &--admin { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-  &--manager { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
-  &--operator { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-  &--viewer { background: var(--wh-surface-hover); color: var(--wh-text-muted); }
+  &--admin {
+    --badge-color: var(--wh-accent);
+    --badge-bg: rgba(245, 158, 11, 0.15);
+    --badge-border: rgba(245, 158, 11, 0.25);
+  }
+  &--manager {
+    --badge-color: #60a5fa;
+    --badge-bg: rgba(96, 165, 250, 0.15);
+    --badge-border: rgba(96, 165, 250, 0.25);
+  }
+  &--operator {
+    --badge-color: #22c55e;
+    --badge-bg: rgba(34, 197, 94, 0.15);
+    --badge-border: rgba(34, 197, 94, 0.25);
+  }
+  // --viewer falls back to the neutral default.
 }
 
 .status-chip {
-  &--active { background: rgba(16, 185, 129, 0.12); color: #10b981; }
-  &--inactive { background: rgba(239, 68, 68, 0.1); color: var(--wh-danger); }
+  &--active {
+    --badge-color: #22c55e;
+    --badge-bg: rgba(34, 197, 94, 0.12);
+    --badge-border: rgba(34, 197, 94, 0.2);
+  }
+  &--inactive {
+    --badge-color: var(--wh-danger);
+    --badge-bg: rgba(239, 68, 68, 0.1);
+    --badge-border: rgba(239, 68, 68, 0.2);
+  }
 }
 
 .user-actions {
@@ -131,10 +143,16 @@
 }
 
 @media (max-width: 720px) {
-  .stats-grid { grid-template-columns: 1fr 1fr; }
-  .status-chip { display: none; }
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .status-chip {
+    display: none;
+  }
 }
 
 @media (max-width: 480px) {
-  .role-badge { display: none; }
+  .role-badge {
+    display: none;
+  }
 }

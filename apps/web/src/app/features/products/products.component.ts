@@ -16,6 +16,7 @@ import {
   IonHeader,
   IonToolbar,
   IonButtons,
+  IonButton,
   IonMenuButton,
   IonTitle,
 } from '@ionic/angular/standalone';
@@ -49,6 +50,7 @@ type ModalMode = 'create' | 'edit';
     IonHeader,
     IonToolbar,
     IonButtons,
+    IonButton,
     IonMenuButton,
     IonTitle,
     ProductDeleteModalComponent,
