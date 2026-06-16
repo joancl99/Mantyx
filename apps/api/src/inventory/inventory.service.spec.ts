@@ -113,7 +113,9 @@ describe('InventoryService', () => {
       row({ id: 'count-1', status: InventoryCountStatus.COMPLETED }),
     );
 
-    await expect(service.complete('count-1', 'company-1')).resolves.toEqual({
+    await expect(
+      service.complete('count-1', 'company-1', 'manager-1'),
+    ).resolves.toEqual({
       id: 'count-1',
       status: InventoryCountStatus.COMPLETED,
     });
@@ -130,6 +132,8 @@ describe('InventoryService', () => {
         action: AuditAction.UPDATE,
         companyId: 'company-1',
         entityId: 'count-1',
+        // Attributed to the acting user, not the count creator (user-1).
+        userId: 'manager-1',
       }),
     });
   });
@@ -188,7 +192,7 @@ describe('InventoryService', () => {
     );
 
     await expect(
-      service.complete('count-1', 'company-1'),
+      service.complete('count-1', 'company-1', 'manager-1'),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(prisma.$transaction).not.toHaveBeenCalled();
   });

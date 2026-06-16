@@ -147,11 +147,30 @@ describe('Mantyx API e2e flows', () => {
   });
 
   describe('catalog and warehouse setup (company A ADMIN)', () => {
+    // The app trusts exactly one proxy hop (nginx in prod), so the client IP
+    // forwarded in X-Forwarded-For must be what req.ip resolves to.
+    const forwardedIp = '203.0.113.7';
+
     it('logs in as the provisioned company A ADMIN', async () => {
-      const res = await login(adminA.email, adminA.password);
+      const res = await api.post(
+        '/api/auth/login',
+        { email: adminA.email, password: adminA.password },
+        { headers: { 'X-Forwarded-For': forwardedIp } },
+      );
       expect(res.status).toBe(200);
       expect(res.data.user).toMatchObject({ role: 'ADMIN' });
       adminAToken = res.data.accessToken;
+    });
+
+    it('records the login in the audit trail with the forwarded client IP', async () => {
+      const res = await api.get('/api/audit?action=LOGIN', bearer(adminAToken));
+      expect(res.status).toBe(200);
+      const entry = res.data.data.find(
+        (row: { user?: { email: string } | null }) =>
+          row.user?.email === adminA.email,
+      );
+      expect(entry).toBeDefined();
+      expect(entry.ipAddress).toBe(forwardedIp);
     });
 
     it('blocks an ADMIN on the platform-level companies route with 403', async () => {

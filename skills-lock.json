@@ -46,6 +46,11 @@
       "sourceType": "autoskills-registry",
       "computedHash": "b15b3e6dda23d3f3c230285a122de9df3aabae6408dc2bd52038445e60ba745e"
     },
+    "playwright-best-practices": {
+      "source": "currents-dev/playwright-best-practices-skill",
+      "sourceType": "autoskills-registry",
+      "computedHash": "dcc414410b81cfcc5c56490a7e450e664b11d170f3c336fe475c6e0a47def574"
+    },
     "pr_review": {
       "source": "angular/angular",
       "sourceType": "autoskills-registry",

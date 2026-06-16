@@ -80,9 +80,10 @@ export class InventoryController {
   })
   complete(
     @CompanyId() companyId: string,
+    @CurrentUser('sub') userId: string,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
-    return this.inventory.complete(id, companyId);
+    return this.inventory.complete(id, companyId, userId);
   }
 
   @Patch(':id/cancel')
