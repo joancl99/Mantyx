@@ -8,13 +8,11 @@
 <ion-content [scrollY]="true" [fullscreen]="true">
   <div class="page dashboard">
     <!-- Header -->
-    <header class="dash-header">
-      <div class="dash-header__eyebrow">
-        <span class="dash-header__dot"></span>
-        Sistema activo
+    <header class="page-header">
+      <div class="page-header__left">
+        <h1 class="page-title">{{ greeting() }}</h1>
+        <span class="page-subtitle">Resumen del almacén central</span>
       </div>
-      <h1 class="dash-header__greeting">{{ greeting() }}</h1>
-      <p class="dash-header__sub">Resumen del almacén central</p>
     </header>
 
     @if (loading()) {

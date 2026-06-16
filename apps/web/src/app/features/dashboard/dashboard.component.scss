@@ -10,46 +10,10 @@ ion-content {
   display: flex;
   flex-direction: column;
   gap: var(--sp-6);
-}
 
-.dash-header {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  &__eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    margin-bottom: 4px;
-    color: var(--wh-success);
-    font-size: var(--fs-2xs);
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  &__dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--wh-success);
-    box-shadow: 0 0 8px var(--wh-success);
-  }
-
-  &__greeting {
-    margin: 0;
-    color: var(--wh-text);
-    font-size: var(--fs-2xl);
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    line-height: 1.2;
-  }
-
-  &__sub {
-    margin: 2px 0 0;
-    color: var(--wh-text-muted);
-    font-size: var(--fs-sm);
+  // The flex gap owns the vertical rhythm; drop the header's own margin.
+  .page-header {
+    margin-bottom: 0;
   }
 }
 

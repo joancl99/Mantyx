@@ -7,19 +7,19 @@
 
 <ion-content [scrollY]="true" [fullscreen]="true">
   <div class="page page--wide">
-    <header class="management-hero">
-      <div>
-        <span class="eyebrow">Centro de mando</span>
-        <h1>Precisión operativa para hoy</h1>
-        <p>
-          Una lectura ejecutiva del riesgo de stock, actividad reciente y
-          acciones que mantienen el almacén bajo control.
-        </p>
+    <header class="page-header">
+      <div class="page-header__left">
+        <h1 class="page-title">Centro de mando</h1>
+        <span class="page-subtitle">
+          Riesgo de stock y actividad reciente del almacén
+        </span>
       </div>
-      <button class="refresh-btn" type="button" (click)="loadManagementData()">
-        <ion-icon name="refresh-outline" />
-        Actualizar
-      </button>
+      <div class="page-header__actions">
+        <button class="btn-ghost" type="button" (click)="loadManagementData()">
+          <ion-icon name="refresh-outline" />
+          Actualizar
+        </button>
+      </div>
     </header>
 
     @if (loading()) {
