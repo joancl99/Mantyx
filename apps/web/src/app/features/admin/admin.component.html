@@ -6,7 +6,7 @@
 </ion-header>
 
 <ion-content [scrollY]="true" [fullscreen]="true">
-  <div class="admin-page">
+  <div class="page">
     @if (isSuperAdmin()) {
       <app-admin-company-list
         [companies]="companies.filteredCompanies()"
