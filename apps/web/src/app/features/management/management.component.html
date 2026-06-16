@@ -6,7 +6,7 @@
 </ion-header>
 
 <ion-content [scrollY]="true" [fullscreen]="true">
-  <div class="management-page">
+  <div class="page page--wide">
     <header class="management-hero">
       <div>
         <span class="eyebrow">Centro de mando</span>
@@ -37,7 +37,9 @@
           <div class="risk-meter" aria-label="Riesgo operativo">
             <span [style.width.%]="riskScore()"></span>
           </div>
-          <small>{{ riskScore() }}% de presión por stock bajo o sin stock</small>
+          <small
+            >{{ riskScore() }}% de presión por stock bajo o sin stock</small
+          >
         </article>
 
         <div class="metric-stack">
@@ -112,12 +114,20 @@
             </div>
           } @else {
             <div class="movement-feed">
-              @for (movement of dashboard()!.recentMovements; track movement.id) {
+              @for (
+                movement of dashboard()!.recentMovements;
+                track movement.id
+              ) {
                 <div class="movement-feed__item">
-                  <span class="movement-feed__type">{{ movementTypeLabel(movement.type) }}</span>
+                  <span class="movement-feed__type">{{
+                    movementTypeLabel(movement.type)
+                  }}</span>
                   <div>
                     <strong>{{ movement.productName }}</strong>
-                    <small>{{ movement.warehouseName }} · {{ movement.createdAt | date: 'short' }}</small>
+                    <small
+                      >{{ movement.warehouseName }} ·
+                      {{ movement.createdAt | date: 'short' }}</small
+                    >
                   </div>
                   <b>{{ movement.quantity }}</b>
                 </div>
@@ -129,7 +139,10 @@
 
       <section class="action-rail" aria-label="Acciones de gestión">
         @for (action of actions; track action.route) {
-          <a class="action-card action-card--{{ action.tone }}" [routerLink]="action.route">
+          <a
+            class="action-card action-card--{{ action.tone }}"
+            [routerLink]="action.route"
+          >
             <ion-icon [name]="action.icon" />
             <div>
               <strong>{{ action.label }}</strong>
