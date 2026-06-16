@@ -7,7 +7,6 @@ import {
   OnInit,
   DestroyRef,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   IonContent,
@@ -27,37 +26,12 @@ import {
   swapHorizontalOutline,
   arrowUpOutline,
   arrowDownOutline,
-  layersOutline,
-  addCircleOutline,
 } from 'ionicons/icons';
-import { AuthService } from '../../core/services/auth.service';
 import {
   DashboardAlert,
   DashboardMovement,
 } from '../../core/models/dashboard.models';
 import { DashboardService } from '../../core/services/dashboard.service';
-
-interface QuickAction {
-  label: string;
-  icon: string;
-  route: string;
-  accent: boolean;
-}
-
-const QUICK_ACTIONS: QuickAction[] = [
-  {
-    label: 'Ver stock',
-    icon: 'layers-outline',
-    route: '/app/stock',
-    accent: false,
-  },
-  {
-    label: 'Nuevo movimiento',
-    icon: 'add-circle-outline',
-    route: '/app/movements',
-    accent: true,
-  },
-];
 
 @Component({
   selector: 'app-dashboard',
@@ -72,13 +46,11 @@ const QUICK_ACTIONS: QuickAction[] = [
     IonMenuButton,
     IonTitle,
     IonSpinner,
-    RouterLink,
   ],
   styleUrl: './dashboard.component.scss',
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
-  private readonly auth = inject(AuthService);
   private readonly dashboardService = inject(DashboardService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -89,16 +61,15 @@ export class DashboardComponent implements OnInit {
   readonly movementsToday = signal(0);
   readonly alerts = signal<DashboardAlert[]>([]);
   readonly movements = signal<DashboardMovement[]>([]);
+  readonly warehouseCount = signal(0);
 
-  readonly quickActions = QUICK_ACTIONS;
-
-  readonly greeting = computed(() => {
-    const name = this.auth.currentUser()?.name?.split(' ')[0] ?? 'usuario';
-    const hour = new Date().getHours();
-    const saludo =
-      hour < 13 ? 'Buenos días' : hour < 20 ? 'Buenas tardes' : 'Buenas noches';
-    return `${saludo}, ${name}`;
-  });
+  // Tenant data spans every warehouse, so the subtitle only says "todos los
+  // almacenes" when there is actually more than one.
+  readonly summaryLabel = computed(() =>
+    this.warehouseCount() > 1
+      ? 'Resumen de todos los almacenes'
+      : 'Resumen general',
+  );
 
   constructor() {
     addIcons({
@@ -108,8 +79,6 @@ export class DashboardComponent implements OnInit {
       swapHorizontalOutline,
       arrowUpOutline,
       arrowDownOutline,
-      layersOutline,
-      addCircleOutline,
     });
   }
 
@@ -125,6 +94,7 @@ export class DashboardComponent implements OnInit {
           this.movementsToday.set(stats.kpis.movementsToday);
           this.alerts.set(stats.alerts);
           this.movements.set(stats.recentMovements);
+          this.warehouseCount.set(stats.warehouseCount);
           this.loading.set(false);
         },
         error: () => this.loading.set(false),
@@ -160,9 +130,11 @@ export class DashboardComponent implements OnInit {
   }
 
   alertText(alert: DashboardAlert): string {
+    // The status word lives in the badge; the line only carries the product
+    // name plus (for low stock) the useful quantity vs. minimum.
     return alert.type === 'no-stock'
-      ? `${alert.productName} — sin stock`
-      : `${alert.productName} — stock bajo (${alert.totalStock} uds, mín. ${alert.minStock})`;
+      ? alert.productName
+      : `${alert.productName} (${alert.totalStock} uds, mín. ${alert.minStock})`;
   }
 
   timeAgo(dateStr: string): string {

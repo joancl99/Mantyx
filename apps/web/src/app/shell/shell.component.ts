@@ -61,7 +61,7 @@ const ADMINS_UP: UserRole[] = ['SUPERADMIN', 'ADMIN'];
 
 const NAV_ITEMS: NavItem[] = [
   {
-    label: 'Dashboard',
+    label: 'Inicio',
     icon: 'home-outline',
     route: '/app/dashboard',
     roles: ALL_ROLES,

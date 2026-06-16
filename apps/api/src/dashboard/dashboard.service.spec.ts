@@ -12,6 +12,7 @@ describe('DashboardService', () => {
 
   it('builds KPIs and alerts from SQL aggregates scoped to the company', async () => {
     prisma.product.count.mockResolvedValue(30);
+    prisma.warehouse.count.mockResolvedValue(3);
     prisma.stockMovement.count.mockResolvedValue(4);
     prisma.stockMovement.findMany.mockResolvedValue(
       row([
@@ -41,6 +42,7 @@ describe('DashboardService', () => {
       .mockResolvedValueOnce(row([{ lowStock: 6, noStock: 2 }]));
 
     await expect(service.getStats('company-1')).resolves.toEqual({
+      warehouseCount: 3,
       kpis: { totalProducts: 30, lowStock: 6, noStock: 2, movementsToday: 4 },
       alerts: [
         {

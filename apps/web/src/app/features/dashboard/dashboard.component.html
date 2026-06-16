@@ -1,14 +1,14 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
-    <ion-title>Dashboard</ion-title>
+    <ion-title>Inicio</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [scrollY]="true" [fullscreen]="true">
   <div class="page dashboard">
     <!-- Header -->
-    <p class="page-context">{{ greeting() }} · Resumen del almacén central</p>
+    <h2 class="dash-section__title summary-title">{{ summaryLabel() }}</h2>
 
     @if (loading()) {
       <div class="state-center">
@@ -17,7 +17,7 @@
     } @else {
       <!-- KPIs -->
       <section class="kpi-grid">
-        <div class="kpi-card kpi-card--default">
+        <div class="kpi-card kpi-card--success">
           <div class="kpi-card__icon-wrap">
             <ion-icon name="cube-outline"></ion-icon>
           </div>
@@ -38,7 +38,7 @@
           <span class="kpi-card__value">{{ noStock() }}</span>
           <span class="kpi-card__label">Sin stock</span>
         </div>
-        <div class="kpi-card kpi-card--success">
+        <div class="kpi-card kpi-card--info">
           <div class="kpi-card__icon-wrap">
             <ion-icon name="swap-horizontal-outline"></ion-icon>
           </div>
@@ -52,7 +52,11 @@
         <section class="dash-section">
           <div class="dash-section__header">
             <h2 class="dash-section__title">Alertas importantes</h2>
-            <span class="dash-section__count">{{ alerts().length }}</span>
+            <span
+              class="dash-section__count"
+              [class.dash-section__count--alert]="alerts().length > 0"
+              >{{ alerts().length }}</span
+            >
           </div>
           <div class="alert-list">
             @if (alerts().length === 0) {
@@ -122,23 +126,6 @@
           </div>
         </section>
       </div>
-
-      <!-- Accesos rápidos -->
-      <section class="dash-section dash-section--last">
-        <h2 class="dash-section__title">Accesos rápidos</h2>
-        <div class="quick-actions">
-          @for (action of quickActions; track action.label) {
-            <a
-              class="quick-action"
-              [class.quick-action--accent]="action.accent"
-              [routerLink]="action.route"
-            >
-              <ion-icon [name]="action.icon"></ion-icon>
-              <span>{{ action.label }}</span>
-            </a>
-          }
-        </div>
-      </section>
     }
   </div>
 </ion-content>
