@@ -1,23 +1,10 @@
-.reception-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
+// Layout + green hover cue; card surface comes from .data-row.
 .reception-row {
+  --row-hover: rgba(34, 197, 94, 0.4);
+
   display: grid;
   grid-template-columns: 96px 1fr 80px 180px 120px;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 16px;
-  background: var(--wh-surface);
-  border: 1px solid var(--wh-border);
-  border-radius: 12px;
-  transition: border-color 0.15s;
-
-  &:hover {
-    border-color: rgba(34, 197, 94, 0.4);
-  }
+  gap: var(--sp-4);
 }
 
 .reception-product {

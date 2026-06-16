@@ -45,30 +45,8 @@
   max-width: 340px;
 }
 
-.user-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.user-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 14px;
-  background: var(--wh-surface);
-  border: 1px solid var(--wh-border);
-  border-radius: 10px;
-  transition: background 0.15s;
-
-  &:hover {
-    background: var(--wh-surface-hover);
-  }
-  &.inactive {
-    opacity: 0.55;
-  }
-}
-
+// .user-row inherits the card surface + flex from .data-row (and
+// .data-row--inactive for the dimmed state); only its children need styling.
 .user-avatar {
   width: 38px;
   height: 38px;

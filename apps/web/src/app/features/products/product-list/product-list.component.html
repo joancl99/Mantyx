@@ -15,9 +15,9 @@
     </p>
   </div>
 } @else {
-  <div class="product-list">
+  <div class="data-list">
     @for (product of products(); track product.id) {
-      <div class="product-row">
+      <div class="product-row data-row">
         <div class="product-thumb">
           @if (product.imageUrl) {
             <img [src]="product.imageUrl" [alt]="product.name" />

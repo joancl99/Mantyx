@@ -37,9 +37,9 @@
     <p class="empty-sub">Crea la primera empresa cliente</p>
   </div>
 } @else {
-  <div class="company-list">
+  <div class="data-list">
     @for (company of companies(); track company.id) {
-      <div class="company-row">
+      <div class="company-row data-row">
         <div class="company-avatar">{{ companyInitials(company.name) }}</div>
         <div class="company-info">
           <span class="company-name">{{ company.name }}</span>

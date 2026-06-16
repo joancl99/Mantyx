@@ -17,7 +17,7 @@
     </p>
   </div>
 } @else {
-  <div class="stock-list">
+  <div class="data-list">
     <div class="list-header">
       <span class="col-product">Producto</span>
       <span class="col-stock">Stock actual</span>
@@ -26,7 +26,7 @@
     </div>
 
     @for (item of items(); track item.productId) {
-      <div class="stock-row" [class]="'row--' + stockStatus(item)">
+      <div class="stock-row data-row" [class]="'row--' + stockStatus(item)">
         <div class="col-product">
           <span class="product-name">{{ item.name }}</span>
           <span class="product-sku">{{ item.sku }}</span>

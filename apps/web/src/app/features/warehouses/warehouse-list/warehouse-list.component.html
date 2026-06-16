@@ -14,9 +14,9 @@
     <p class="empty-sub">Crea el primer almacén para empezar</p>
   </div>
 } @else {
-  <div class="wh-list">
+  <div class="data-list">
     @for (wh of warehouses(); track wh.id) {
-      <div class="wh-row" [class.inactive]="!wh.isActive">
+      <div class="wh-row data-row" [class.data-row--inactive]="!wh.isActive">
         <div class="wh-icon"><ion-icon name="business-outline" /></div>
         <div class="wh-info">
           <div class="wh-name-row">

@@ -11,9 +11,9 @@
     <p class="empty-sub">{{ emptyMessage() }}</p>
   </div>
 } @else {
-  <div class="movement-list">
+  <div class="data-list">
     @for (movement of movements(); track movement.id) {
-      <div class="movement-row">
+      <div class="movement-row data-row">
         <div class="badge {{ typeCssClass(movement.type) }}">
           <ion-icon [name]="typeIcon(movement.type)" />
           <span>{{ typeLabel(movement.type) }}</span>

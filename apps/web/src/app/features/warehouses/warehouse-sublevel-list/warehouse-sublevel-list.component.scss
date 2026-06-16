@@ -2,25 +2,8 @@
   display: contents;
 }
 
-.sub-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.sub-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  background: var(--wh-surface);
-  border: 1px solid var(--wh-border);
-  border-radius: 10px;
-  transition: background 0.15s;
-
-  &:hover { background: var(--wh-surface-hover); }
-}
-
+// .sub-row inherits the card surface + flex from .data-row; only its
+// icon/name/count/actions children need styling.
 .sub-row__icon {
   --sub-icon-bg: rgba(16, 185, 129, 0.12);
   --sub-icon-color: #10b981;

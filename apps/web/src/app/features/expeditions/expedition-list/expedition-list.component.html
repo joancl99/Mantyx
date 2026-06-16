@@ -11,9 +11,9 @@
     <p class="empty-sub">{{ emptyMessage() }}</p>
   </div>
 } @else {
-  <div class="expedition-list">
+  <div class="data-list">
     @for (e of expeditions(); track e.id) {
-      <div class="expedition-row">
+      <div class="expedition-row data-row">
         <div class="badge badge--danger">
           <ion-icon name="arrow-up-outline" />
           <span>Salida</span>

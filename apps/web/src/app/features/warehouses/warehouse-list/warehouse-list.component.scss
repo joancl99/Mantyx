@@ -2,30 +2,8 @@
   display: contents;
 }
 
-.wh-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.wh-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px;
-  background: var(--wh-surface);
-  border: 1px solid var(--wh-border);
-  border-radius: 12px;
-  transition: border-color 0.15s;
-
-  &:hover {
-    border-color: rgba(245, 158, 11, 0.3);
-  }
-  &.inactive {
-    opacity: 0.55;
-  }
-}
-
+// .wh-row inherits the card surface + flex from .data-row (and
+// .data-row--inactive for the dimmed state); only its children need styling.
 .wh-icon {
   width: 44px;
   height: 44px;

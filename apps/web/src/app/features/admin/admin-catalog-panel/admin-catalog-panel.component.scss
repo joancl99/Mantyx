@@ -8,25 +8,8 @@
   max-width: 340px;
 }
 
-.catalog-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.catalog-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 14px;
-  background: var(--wh-surface);
-  border: 1px solid var(--wh-border);
-  border-radius: 10px;
-  transition: background 0.15s;
-
-  &:hover { background: var(--wh-surface-hover); }
-}
-
+// .catalog-row inherits the card surface + flex from .data-row; only its
+// dot/name/actions children need styling.
 .catalog-dot {
   width: 8px;
   height: 8px;

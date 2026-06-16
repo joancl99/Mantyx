@@ -10,10 +10,10 @@
       <p class="empty-sub">Crea el primer conteo de inventario</p>
     </div>
   } @else {
-    <div class="count-list">
+    <div class="data-list">
       @for (count of counts(); track count.id) {
         <button
-          class="count-row"
+          class="count-row data-row data-row--button"
           [class.active]="selectedCountId() === count.id"
           (click)="selectCount.emit(count)"
         >

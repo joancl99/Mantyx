@@ -2,12 +2,6 @@
   display: contents;
 }
 
-.stock-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
 .list-header {
   display: grid;
   grid-template-columns: 1fr 100px 90px 110px;
@@ -20,20 +14,12 @@
   text-transform: uppercase;
 }
 
+// Layout + status accent only; the card surface comes from .data-row.
 .stock-row {
   display: grid;
   grid-template-columns: 1fr 100px 90px 110px;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  background: var(--wh-surface);
-  border: 1px solid var(--wh-border);
-  border-radius: 12px;
-  transition: border-color 0.15s;
+  gap: var(--sp-3);
 
-  &:hover {
-    border-color: rgba(245, 158, 11, 0.2);
-  }
   &.row--low {
     border-left: 3px solid rgba(245, 158, 11, 0.6);
   }

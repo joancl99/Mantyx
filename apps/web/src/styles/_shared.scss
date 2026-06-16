@@ -317,6 +317,57 @@
   --badge-border: var(--wh-border);
 }
 
+// ── Data list rows ──────────────────────────────────────────────────────────
+// One scaffold for every list row in the app (movements, stock, products,
+// receptions, expeditions, inventory counts, warehouses, admin users/companies/
+// audit). Surface, border, radius, touch padding, transition and hover live
+// here; each feature keeps only its own grid/flex column layout. The hover
+// accent colour is themeable per-list via --row-hover (receptions green,
+// expeditions red…) so the form stays identical while the cue keeps its meaning.
+.data-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.data-row {
+  --row-hover: rgba(245, 158, 11, 0.3);
+
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--wh-surface);
+  border: 1px solid var(--wh-border);
+  border-radius: var(--radius-lg);
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+
+  &:hover {
+    border-color: var(--row-hover);
+  }
+}
+
+// Clickable/selectable rows (e.g. inventory counts) reuse the surface and add a
+// pressed/selected accent.
+.data-row--button {
+  width: 100%;
+  text-align: left;
+  color: var(--wh-text);
+  cursor: pointer;
+
+  &.active {
+    border-color: var(--row-hover);
+    background: rgba(245, 158, 11, 0.08);
+  }
+}
+
+// Dimmed state for deactivated/inactive entities (users, warehouses…).
+.data-row--inactive {
+  opacity: 0.55;
+}
+
 // ── Search & Filters ──────────────────────────────────────────────────────────
 .filters-bar {
   display: flex;

@@ -2,27 +2,8 @@
   display: contents;
 }
 
-.product-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.product-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  background: var(--wh-surface);
-  border: 1px solid var(--wh-border);
-  border-radius: 12px;
-  transition: border-color 0.15s;
-
-  &:hover {
-    border-color: rgba(245, 158, 11, 0.3);
-  }
-}
-
+// .product-row inherits the card surface + flex from .data-row; only its
+// thumbnail/info/meta children need styling.
 .product-thumb {
   width: 44px;
   height: 44px;

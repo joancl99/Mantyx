@@ -10,37 +10,10 @@
   background: var(--wh-surface);
 }
 
-.count-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
+// Card surface + clickable/active state come from .data-row / .data-row--button;
+// the count row only needs to space its content edge-to-edge.
 .count-row {
-  --row-border: var(--wh-border);
-  --row-bg: var(--wh-surface-hover);
-
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  width: 100%;
-  padding: 13px 14px;
-  border: 1px solid var(--row-border);
-  border-radius: 12px;
-  background: var(--row-bg);
-  color: var(--wh-text);
-  text-align: left;
-  cursor: pointer;
-  transition:
-    border-color 0.15s,
-    background 0.15s;
-
-  &:hover,
-  &.active {
-    --row-border: rgba(245, 158, 11, 0.45);
-    --row-bg: rgba(245, 158, 11, 0.08);
-  }
 }
 
 .count-main {

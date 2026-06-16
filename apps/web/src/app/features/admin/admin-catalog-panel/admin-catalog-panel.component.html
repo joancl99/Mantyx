@@ -35,9 +35,9 @@
     </p>
   </div>
 } @else {
-  <div class="catalog-list">
+  <div class="data-list">
     @for (item of items(); track item.id) {
-      <div class="catalog-row">
+      <div class="catalog-row data-row">
         <div class="catalog-dot" [class.catalog-dot--cat]="kind() === 'category'" [class.catalog-dot--brand]="kind() === 'brand'"></div>
         <span class="catalog-name">{{ item.name }}</span>
         <div class="catalog-actions">

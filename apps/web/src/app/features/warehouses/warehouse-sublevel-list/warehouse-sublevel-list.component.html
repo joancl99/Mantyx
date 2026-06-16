@@ -21,9 +21,9 @@
       <p class="empty-sub">Crea la primera zona para organizar los pasillos</p>
     </div>
   } @else {
-    <div class="sub-list">
+    <div class="data-list">
       @for (zone of zones(); track zone.id) {
-        <div class="sub-row">
+        <div class="sub-row data-row">
           <div class="sub-row__icon sub-row__icon--zone"><ion-icon name="layers-outline" /></div>
           <span class="sub-row__name">{{ zone.name }}</span>
           <span class="sub-row__count">{{ zone._count.aisles }} pasillo{{ zone._count.aisles === 1 ? '' : 's' }}</span>
@@ -71,9 +71,9 @@
       <p class="empty-sub">Crea el primer pasillo para agregar ubicaciones</p>
     </div>
   } @else {
-    <div class="sub-list">
+    <div class="data-list">
       @for (aisle of aisles(); track aisle.id) {
-        <div class="sub-row">
+        <div class="sub-row data-row">
           <div class="sub-row__icon sub-row__icon--aisle"><ion-icon name="git-branch-outline" /></div>
           <span class="sub-row__name">{{ aisle.name }}</span>
           <span class="sub-row__count">{{ aisle._count.locations }} ubicación{{ aisle._count.locations === 1 ? '' : 'es' }}</span>
@@ -121,9 +121,9 @@
       <p class="empty-sub">Añade ubicaciones (ej. A-01-01) para registrar stock</p>
     </div>
   } @else {
-    <div class="sub-list">
+    <div class="data-list">
       @for (loc of locations(); track loc.id) {
-        <div class="sub-row">
+        <div class="sub-row data-row">
           <div class="sub-row__icon sub-row__icon--location"><ion-icon name="cube-outline" /></div>
           <span class="sub-row__name sub-row__name--code">{{ loc.code }}</span>
           <span class="sub-row__count">{{ loc._count.stockEntries }} artículo{{ loc._count.stockEntries === 1 ? '' : 's' }}</span>

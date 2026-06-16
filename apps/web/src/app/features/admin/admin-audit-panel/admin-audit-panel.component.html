@@ -55,9 +55,9 @@
     <p class="empty-sub">No hay actividad registrada con estos filtros.</p>
   </div>
 } @else {
-  <div class="audit-list">
+  <div class="data-list">
     @for (entry of entries(); track entry.id) {
-      <div class="audit-row">
+      <div class="audit-row data-row">
         <div class="audit-avatar">{{ userInitial(entry) }}</div>
 
         <div class="audit-main">

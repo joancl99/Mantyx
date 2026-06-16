@@ -30,25 +30,10 @@
   font-size: 13px;
 }
 
-.audit-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
+// .audit-row inherits the card surface + flex from .data-row; it only needs to
+// top-align its content (the date column sits at the top-right).
 .audit-row {
-  display: flex;
   align-items: flex-start;
-  gap: 14px;
-  padding: 12px 14px;
-  background: var(--wh-surface);
-  border: 1px solid var(--wh-border);
-  border-radius: 10px;
-  transition: background 0.15s;
-
-  &:hover {
-    background: var(--wh-surface-hover);
-  }
 }
 
 .audit-avatar {
