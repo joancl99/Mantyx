@@ -2,15 +2,17 @@
   <ion-toolbar>
     <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
     <ion-title>Administración</ion-title>
-    <ion-buttons slot="end">
-      <ion-button
-        color="primary"
-        (click)="scanner.open()"
-        aria-label="Escanear código"
-      >
-        <ion-icon slot="icon-only" name="barcode-outline" />
-      </ion-button>
-    </ion-buttons>
+    @if (scanner.isEnabledHere()) {
+      <ion-buttons slot="end">
+        <ion-button
+          color="primary"
+          (click)="scanner.open()"
+          aria-label="Escanear código"
+        >
+          <ion-icon slot="icon-only" name="barcode-outline" />
+        </ion-button>
+      </ion-buttons>
+    }
   </ion-toolbar>
 </ion-header>
 

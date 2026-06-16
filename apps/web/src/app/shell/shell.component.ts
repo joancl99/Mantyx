@@ -36,88 +36,9 @@ import {
 import { AuthService } from '../core/services/auth.service';
 import { ScannerService } from '../core/services/scanner.service';
 import { SocketService } from '../core/services/socket.service';
+import { AppConfigService } from '../core/services/app-config.service';
 import { ScannerOverlayComponent } from '../core/scanner/scanner-overlay.component';
-import { UserRole } from '../core/models/user.models';
-
-interface NavItem {
-  label: string;
-  icon: string;
-  route: string;
-  roles: UserRole[];
-}
-
-const ALL_ROLES: UserRole[] = [
-  'SUPERADMIN',
-  'ADMIN',
-  'MANAGER',
-  'OPERATOR',
-  'VIEWER',
-];
-const MANAGERS_UP: UserRole[] = ['SUPERADMIN', 'ADMIN', 'MANAGER'];
-const ADMINS_UP: UserRole[] = ['SUPERADMIN', 'ADMIN'];
-
-const NAV_ITEMS: NavItem[] = [
-  {
-    label: 'Inicio',
-    icon: 'home-outline',
-    route: '/app/dashboard',
-    roles: ALL_ROLES,
-  },
-  {
-    label: 'Productos',
-    icon: 'cube-outline',
-    route: '/app/products',
-    roles: MANAGERS_UP,
-  },
-  {
-    label: 'Stock',
-    icon: 'analytics-outline',
-    route: '/app/stock',
-    roles: ALL_ROLES,
-  },
-  {
-    label: 'Movimientos',
-    icon: 'swap-horizontal-outline',
-    route: '/app/movements',
-    roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'],
-  },
-  {
-    label: 'Inventario',
-    icon: 'clipboard-outline',
-    route: '/app/inventory',
-    roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'],
-  },
-  {
-    label: 'Recepciones',
-    icon: 'download-outline',
-    route: '/app/receptions',
-    roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'],
-  },
-  {
-    label: 'Expediciones',
-    icon: 'send-outline',
-    route: '/app/expeditions',
-    roles: ['SUPERADMIN', 'ADMIN', 'MANAGER', 'OPERATOR'],
-  },
-  {
-    label: 'Almacenes',
-    icon: 'business-outline',
-    route: '/app/warehouses',
-    roles: MANAGERS_UP,
-  },
-  {
-    label: 'Management',
-    icon: 'bar-chart-outline',
-    route: '/app/management',
-    roles: MANAGERS_UP,
-  },
-  {
-    label: 'Administración',
-    icon: 'settings-outline',
-    route: '/app/admin',
-    roles: ADMINS_UP,
-  },
-];
+import { NAV_ITEMS } from './nav-items';
 
 @Component({
   selector: 'app-shell',
@@ -142,13 +63,18 @@ export class ShellComponent implements OnInit {
   private readonly socketService = inject(SocketService);
   private readonly toastCtrl = inject(ToastController);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly appConfig = inject(AppConfigService);
   readonly scannerService = inject(ScannerService);
   readonly currentUser = this.authService.currentUser;
 
   readonly navItems = computed(() => {
     const role = this.currentUser()?.role;
     if (!role) return [];
-    return NAV_ITEMS.filter((item) => item.roles.includes(role));
+    // Visible when the role allows it AND the build config keeps it active.
+    return NAV_ITEMS.filter(
+      (item) =>
+        item.roles.includes(role) && this.appConfig.isModuleActive(item.id),
+    );
   });
 
   constructor() {

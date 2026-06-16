@@ -7,3 +7,6 @@ pnpm-lock.yaml
 /.nx/workspace-data
 .nx/self-healing
 .angular
+# Hand-formatted per-client feature flags — keep the readable one-field-per-line
+# layout so editing/removing a module is fast; prettier would collapse it.
+apps/web/public/app-config.json

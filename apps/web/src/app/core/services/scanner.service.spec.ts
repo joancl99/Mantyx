@@ -1,6 +1,9 @@
+import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { Capacitor } from '@capacitor/core';
 import { vi } from 'vitest';
 import { ScanResult, ScannerService } from './scanner.service';
+import { AppConfigService } from './app-config.service';
 
 /**
  * Covers the web scan flow (ZXing overlay + result subject). The native
@@ -12,7 +15,19 @@ describe('ScannerService (web)', () => {
 
   beforeEach(() => {
     vi.spyOn(Capacitor, 'isNativePlatform').mockReturnValue(false);
-    service = new ScannerService();
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        {
+          provide: AppConfigService,
+          useValue: {
+            isModuleActive: () => true,
+            isScannerEnabled: () => true,
+          },
+        },
+      ],
+    });
+    service = TestBed.inject(ScannerService);
   });
 
   afterEach(() => vi.restoreAllMocks());

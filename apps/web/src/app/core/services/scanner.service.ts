@@ -1,10 +1,12 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { Observable, Subject, finalize, from, map, take } from 'rxjs';
 import { Capacitor } from '@capacitor/core';
 import {
   BarcodeScanner,
   BarcodeFormat,
 } from '@capacitor-mlkit/barcode-scanning';
+import { AppConfigService } from './app-config.service';
 
 export interface ScanResult {
   value: string;
@@ -13,8 +15,22 @@ export interface ScanResult {
 
 @Injectable({ providedIn: 'root' })
 export class ScannerService {
+  private readonly router = inject(Router);
+  private readonly appConfig = inject(AppConfigService);
+
   readonly showOverlay = signal(false);
   private readonly resultSubject = new Subject<ScanResult | null>();
+
+  /**
+   * Whether the toolbar scanner button should show for the module of the
+   * current route — i.e. the build config keeps `scanner: true` for it. Read
+   * by each page's toolbar `@if`.
+   */
+  isEnabledHere(): boolean {
+    const segments = this.router.url.split('?')[0].split('/').filter(Boolean);
+    const id = segments[0] === 'app' ? segments[1] : undefined;
+    return id ? this.appConfig.isScannerEnabled(id) : false;
+  }
 
   scan(): Observable<ScanResult | null> {
     if (Capacitor.isNativePlatform()) {
