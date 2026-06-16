@@ -322,6 +322,7 @@ export class InventoryComponent implements OnInit {
 
   private afterDetailAction(updated: InventoryCount) {
     this.saving.set(false);
+    this.formError.set('');
     this.selectedCount.set(updated);
     this.loadCounts();
   }

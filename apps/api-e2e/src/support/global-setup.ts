@@ -50,6 +50,9 @@ export default async function globalSetup(): Promise<void> {
   }
 }
 
+// NOTE: ensureDatabaseExists + truncateAllTables are mirrored in
+// apps/web-e2e/src/support/start-api.cjs (raw-node Playwright webServer, no
+// TS build, so it can't import this module). Keep the two copies in sync.
 async function ensureDatabaseExists(): Promise<void> {
   const url = new URL(E2E_DATABASE_URL);
   const dbName = url.pathname.replace(/^\//, '');

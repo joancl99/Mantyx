@@ -76,6 +76,10 @@ async function main() {
   }
 }
 
+// NOTE: ensureDatabaseExists + truncateAllTables intentionally mirror
+// apps/api-e2e/src/support/global-setup.ts. They stay duplicated because
+// Playwright runs THIS file with raw node (no TS build) before globalSetup,
+// so it can't import the api-e2e TS support. Keep the two copies in sync.
 async function ensureDatabaseExists() {
   const dbName = new URL(E2E_DATABASE_URL).pathname.replace(/^\//, '');
   const adminUrl = new URL(E2E_DATABASE_URL);
