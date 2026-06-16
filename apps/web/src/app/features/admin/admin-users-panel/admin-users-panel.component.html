@@ -74,7 +74,10 @@
 } @else {
   <div class="data-list">
     @for (user of users(); track user.id) {
-      <div class="user-row data-row" [class.data-row--inactive]="!user.isActive">
+      <div
+        class="user-row data-row"
+        [class.data-row--inactive]="!user.isActive"
+      >
         <div class="user-avatar" [attr.data-role]="user.role">
           {{ userInitial(user) }}
         </div>

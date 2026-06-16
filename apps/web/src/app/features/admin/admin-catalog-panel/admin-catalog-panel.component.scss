@@ -16,8 +16,12 @@
   border-radius: 50%;
   flex-shrink: 0;
 
-  &--cat { background: var(--wh-accent); }
-  &--brand { background: #3b82f6; }
+  &--cat {
+    background: var(--wh-accent);
+  }
+  &--brand {
+    background: #3b82f6;
+  }
 }
 
 .catalog-name {

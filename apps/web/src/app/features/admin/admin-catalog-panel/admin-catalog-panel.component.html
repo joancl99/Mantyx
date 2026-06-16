@@ -2,7 +2,8 @@
   <div class="page-header__left">
     <h1 class="page-title">{{ title() }}</h1>
     <span class="page-subtitle">
-      {{ items().length }} {{ items().length === 1 ? subtitleSingular() : subtitlePlural() }}
+      {{ items().length }}
+      {{ items().length === 1 ? subtitleSingular() : subtitlePlural() }}
     </span>
   </div>
   <button class="btn-primary" (click)="createItem.emit()">
@@ -24,27 +25,44 @@
 </div>
 
 @if (loading()) {
-  <div class="state-center"><ion-spinner name="crescent" class="main-spinner" /></div>
+  <div class="state-center">
+    <ion-spinner name="crescent" class="main-spinner" />
+  </div>
 } @else if (items().length === 0) {
   <div class="state-center">
     <div class="empty-icon"><ion-icon [name]="iconName()" /></div>
     <p class="empty-title">{{ emptyTitle() }}</p>
     <p class="empty-sub">
-      @if (search()) { {{ noResultsMessage() }} }
-      @else { {{ emptyMessage() }} }
+      @if (search()) {
+        {{ noResultsMessage() }}
+      } @else {
+        {{ emptyMessage() }}
+      }
     </p>
   </div>
 } @else {
   <div class="data-list">
     @for (item of items(); track item.id) {
       <div class="catalog-row data-row">
-        <div class="catalog-dot" [class.catalog-dot--cat]="kind() === 'category'" [class.catalog-dot--brand]="kind() === 'brand'"></div>
+        <div
+          class="catalog-dot"
+          [class.catalog-dot--cat]="kind() === 'category'"
+          [class.catalog-dot--brand]="kind() === 'brand'"
+        ></div>
         <span class="catalog-name">{{ item.name }}</span>
         <div class="catalog-actions">
-          <button class="action-btn action-btn--edit" (click)="editItem.emit(item)" title="Renombrar">
+          <button
+            class="action-btn action-btn--edit"
+            (click)="editItem.emit(item)"
+            title="Renombrar"
+          >
             <ion-icon name="create-outline" />
           </button>
-          <button class="action-btn action-btn--delete" (click)="deleteItem.emit(item)" title="Eliminar">
+          <button
+            class="action-btn action-btn--delete"
+            (click)="deleteItem.emit(item)"
+            title="Eliminar"
+          >
             <ion-icon name="trash-outline" />
           </button>
         </div>

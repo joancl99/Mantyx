@@ -62,9 +62,13 @@
 
 .action-btn--enter {
   color: var(--wh-accent);
-  &:hover { background: rgba(245, 158, 11, 0.12); }
+  &:hover {
+    background: rgba(245, 158, 11, 0.12);
+  }
 }
 
 @media (max-width: 480px) {
-  .sub-row__count { display: none; }
+  .sub-row__count {
+    display: none;
+  }
 }
