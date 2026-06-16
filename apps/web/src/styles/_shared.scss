@@ -52,6 +52,14 @@
   color: var(--wh-text-muted);
 }
 
+// Fine context line at the top of a page's content, under the toolbar title
+// (the toolbar owns the title + actions). Pairs with list/filter content.
+.page-context {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--fs-sm);
+  color: var(--wh-text-muted);
+}
+
 .page-header__actions {
   display: flex;
   align-items: center;

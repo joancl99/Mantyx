@@ -2,30 +2,26 @@
   <ion-toolbar>
     <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
     <ion-title>Movimientos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="exportCsv()" aria-label="Exportar CSV">
+        <ion-icon slot="icon-only" name="download-outline" />
+      </ion-button>
+      @if (canCreate()) {
+        <ion-button
+          color="primary"
+          (click)="openCreate()"
+          aria-label="Nuevo traslado"
+        >
+          <ion-icon slot="icon-only" name="add-outline" />
+        </ion-button>
+      }
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [scrollY]="true" [fullscreen]="true">
   <div class="page">
-    <!-- Header -->
-    <header class="page-header">
-      <div class="page-header__left">
-        <h1 class="page-title">Movimientos</h1>
-        <span class="page-subtitle">{{ list.totalLabel() }}</span>
-      </div>
-      <div class="page-header__actions">
-        <button class="btn-export" (click)="exportCsv()">
-          <ion-icon name="download-outline" />
-          Exportar CSV
-        </button>
-        @if (canCreate()) {
-          <button class="btn-primary" (click)="openCreate()">
-            <ion-icon name="add-outline" />
-            Nuevo traslado
-          </button>
-        }
-      </div>
-    </header>
+    <p class="page-context">{{ list.totalLabel() }}</p>
 
     <app-movement-filters
       [filterType]="list.filterType()"

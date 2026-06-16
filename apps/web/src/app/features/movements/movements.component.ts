@@ -14,6 +14,7 @@ import {
   IonHeader,
   IonToolbar,
   IonButtons,
+  IonButton,
   IonMenuButton,
   IonTitle,
 } from '@ionic/angular/standalone';
@@ -46,6 +47,7 @@ import { MovementsListState } from './movements-list-state';
     IonHeader,
     IonToolbar,
     IonButtons,
+    IonButton,
     IonMenuButton,
     IonTitle,
     CreateMovementModalComponent,
