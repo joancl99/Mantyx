@@ -8,12 +8,7 @@
 <ion-content [scrollY]="true" [fullscreen]="true">
   <div class="page dashboard">
     <!-- Header -->
-    <header class="page-header">
-      <div class="page-header__left">
-        <h1 class="page-title">{{ greeting() }}</h1>
-        <span class="page-subtitle">Resumen del almacén central</span>
-      </div>
-    </header>
+    <p class="page-context">{{ greeting() }} · Resumen del almacén central</p>
 
     @if (loading()) {
       <div class="state-center">

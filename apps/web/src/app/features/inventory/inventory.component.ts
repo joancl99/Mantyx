@@ -11,6 +11,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import {
   IonButtons,
+  IonButton,
   IonContent,
   IonHeader,
   IonIcon,
@@ -46,6 +47,7 @@ import { INVENTORY_STATUS_OPTIONS } from './inventory-status';
     IonTitle,
     IonContent,
     IonButtons,
+    IonButton,
     IonMenuButton,
     IonIcon,
     InventoryCountListComponent,

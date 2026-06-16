@@ -11,6 +11,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { forkJoin } from 'rxjs';
 import {
   IonButtons,
+  IonButton,
   IonContent,
   IonHeader,
   IonIcon,
@@ -45,6 +46,7 @@ import { ExpeditionListComponent } from './expedition-list/expedition-list.compo
     IonHeader,
     IonToolbar,
     IonButtons,
+    IonButton,
     IonMenuButton,
     IonTitle,
     IonIcon,

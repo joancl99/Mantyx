@@ -2,24 +2,23 @@
   <ion-toolbar>
     <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
     <ion-title>Productos</ion-title>
+    @if (canEdit()) {
+      <ion-buttons slot="end">
+        <ion-button
+          color="primary"
+          (click)="openCreate()"
+          aria-label="Nuevo producto"
+        >
+          <ion-icon slot="icon-only" name="add-outline" />
+        </ion-button>
+      </ion-buttons>
+    }
   </ion-toolbar>
 </ion-header>
 
 <ion-content [scrollY]="true" [fullscreen]="true">
   <div class="page">
-    <!-- Header -->
-    <header class="page-header">
-      <div class="page-header__left">
-        <h1 class="page-title">Productos</h1>
-        <span class="page-subtitle">{{ list.totalLabel() }}</span>
-      </div>
-      @if (canEdit()) {
-        <button class="btn-primary" (click)="openCreate()">
-          <ion-icon name="add-outline" />
-          Nuevo producto
-        </button>
-      }
-    </header>
+    <p class="page-context">{{ list.totalLabel() }}</p>
 
     <app-product-filters
       [searchQuery]="list.searchQuery()"

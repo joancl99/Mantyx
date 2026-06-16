@@ -11,8 +11,8 @@ ion-content {
   flex-direction: column;
   gap: var(--sp-6);
 
-  // The flex gap owns the vertical rhythm; drop the header's own margin.
-  .page-header {
+  // The flex gap owns the vertical rhythm; drop the context line's own margin.
+  .page-context {
     margin-bottom: 0;
   }
 }

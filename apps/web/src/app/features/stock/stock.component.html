@@ -2,32 +2,24 @@
   <ion-toolbar>
     <ion-buttons slot="start"><ion-menu-button></ion-menu-button></ion-buttons>
     <ion-title>Stock</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="exportCsv()" aria-label="Exportar CSV">
+        <ion-icon slot="icon-only" name="download-outline" />
+      </ion-button>
+      <ion-button
+        [color]="filterLowStock() ? 'primary' : undefined"
+        (click)="onToggleLowStock()"
+        aria-label="Filtrar por stock bajo"
+      >
+        <ion-icon slot="icon-only" name="warning-outline" />
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [scrollY]="true" [fullscreen]="true">
   <div class="page">
-    <!-- Header -->
-    <header class="page-header">
-      <div class="page-header__left">
-        <h1 class="page-title">Stock actual</h1>
-        <span class="page-subtitle">{{ totalLabel() }}</span>
-      </div>
-      <div class="page-header__actions">
-        <button class="btn-export" (click)="exportCsv()">
-          <ion-icon name="download-outline" />
-          Exportar CSV
-        </button>
-        <button
-          class="btn-filter"
-          [class.active]="filterLowStock()"
-          (click)="onToggleLowStock()"
-        >
-          <ion-icon name="warning-outline" />
-          Stock bajo
-        </button>
-      </div>
-    </header>
+    <p class="page-context">{{ totalLabel() }}</p>
 
     <!-- Search -->
     <div class="search-wrap">

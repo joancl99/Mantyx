@@ -4,21 +4,21 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-title>Inventario</ion-title>
+    <ion-buttons slot="end">
+      <ion-button
+        color="primary"
+        (click)="openCreate()"
+        aria-label="Nuevo conteo"
+      >
+        <ion-icon slot="icon-only" name="add-outline" />
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [scrollY]="true" [fullscreen]="true">
   <div class="page page--wide">
-    <header class="page-header">
-      <div class="page-header__left">
-        <h1 class="page-title">Conteos de inventario</h1>
-        <span class="page-subtitle">{{ totalLabel() }}</span>
-      </div>
-      <button class="btn-primary" (click)="openCreate()">
-        <ion-icon name="add-outline" />
-        Nuevo conteo
-      </button>
-    </header>
+    <p class="page-context">{{ totalLabel() }}</p>
 
     <app-inventory-filters
       [statusOptions]="statusOptions"
