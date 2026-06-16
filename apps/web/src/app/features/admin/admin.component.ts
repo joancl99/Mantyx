@@ -12,18 +12,21 @@ import {
   IonToolbar,
   IonContent,
   IonButtons,
+  IonButton,
   IonMenuButton,
   IonTitle,
   IonIcon,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
+  barcodeOutline,
   peopleOutline,
   pricetagsOutline,
   shieldCheckmarkOutline,
   storefrontOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
+import { ScannerService } from '../../core/services/scanner.service';
 import { AuditService } from '../../core/services/audit.service';
 import { UsersService } from '../../core/services/users.service';
 import { Brand, Category } from '../../core/models/product.models';
@@ -54,6 +57,7 @@ type AdminTab = 'usuarios' | 'categorias' | 'marcas' | 'auditoria';
     IonToolbar,
     IonContent,
     IonButtons,
+    IonButton,
     IonMenuButton,
     IonTitle,
     IonIcon,
@@ -72,6 +76,7 @@ type AdminTab = 'usuarios' | 'categorias' | 'marcas' | 'auditoria';
 export class AdminComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly scanner = inject(ScannerService);
 
   // ── Tab ───────────────────────────────────────────────────────────────────────
   readonly activeTab = signal<AdminTab>('usuarios');
@@ -110,6 +115,7 @@ export class AdminComponent implements OnInit {
 
   constructor() {
     addIcons({
+      barcodeOutline,
       peopleOutline,
       pricetagsOutline,
       shieldCheckmarkOutline,

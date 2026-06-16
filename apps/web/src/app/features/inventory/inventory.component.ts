@@ -20,7 +20,7 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { addOutline } from 'ionicons/icons';
+import { addOutline, barcodeOutline } from 'ionicons/icons';
 import {
   InventoryCount,
   InventoryCountLine,
@@ -61,7 +61,7 @@ import { INVENTORY_STATUS_OPTIONS } from './inventory-status';
 export class InventoryComponent implements OnInit {
   private readonly inventoryService = inject(InventoryService);
   private readonly warehousesService = inject(WarehousesService);
-  private readonly scannerService = inject(ScannerService);
+  readonly scannerService = inject(ScannerService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly counts = signal<InventoryCount[]>([]);
@@ -107,7 +107,7 @@ export class InventoryComponent implements OnInit {
   });
 
   constructor() {
-    addIcons({ addOutline });
+    addIcons({ addOutline, barcodeOutline });
   }
 
   ngOnInit() {

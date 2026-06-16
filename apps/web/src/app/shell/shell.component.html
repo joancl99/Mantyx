@@ -63,13 +63,6 @@
 
 <ion-router-outlet id="main-content"></ion-router-outlet>
 
-<!-- Scanner FAB — global, always visible -->
-<ion-fab slot="fixed" vertical="bottom" horizontal="end">
-  <ion-fab-button class="scanner-fab" (click)="openScanner()">
-    <ion-icon name="barcode-outline"></ion-icon>
-  </ion-fab-button>
-</ion-fab>
-
 @if (scannerService.showOverlay()) {
   <app-scanner-overlay />
 }

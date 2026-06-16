@@ -30,6 +30,7 @@ import {
 import { addIcons } from 'ionicons';
 import {
   addOutline,
+  barcodeOutline,
   businessOutline,
   createOutline,
   powerOutline,
@@ -42,6 +43,7 @@ import {
   cubeOutline,
 } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
+import { ScannerService } from '../../core/services/scanner.service';
 import {
   Aisle,
   CreateWarehouseDto,
@@ -86,6 +88,7 @@ export class WarehousesComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly whService = inject(WarehousesService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly scanner = inject(ScannerService);
 
   readonly canEdit = computed(() => {
     const role = this.auth.currentUser()?.role;
@@ -152,6 +155,7 @@ export class WarehousesComponent implements OnInit {
   constructor() {
     addIcons({
       addOutline,
+      barcodeOutline,
       businessOutline,
       createOutline,
       powerOutline,

@@ -15,8 +15,6 @@ import {
   IonIcon,
   IonRouterOutlet,
   IonMenuToggle,
-  IonFab,
-  IonFabButton,
   ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -30,7 +28,6 @@ import {
   barChartOutline,
   settingsOutline,
   logOutOutline,
-  barcodeOutline,
   shieldCheckmarkOutline,
   downloadOutline,
   sendOutline,
@@ -135,8 +132,6 @@ const NAV_ITEMS: NavItem[] = [
     IonIcon,
     IonRouterOutlet,
     IonMenuToggle,
-    IonFab,
-    IonFabButton,
     ScannerOverlayComponent,
   ],
   templateUrl: './shell.component.html',
@@ -167,7 +162,6 @@ export class ShellComponent implements OnInit {
       barChartOutline,
       settingsOutline,
       logOutOutline,
-      barcodeOutline,
       shieldCheckmarkOutline,
       downloadOutline,
       sendOutline,
@@ -203,9 +197,5 @@ export class ShellComponent implements OnInit {
   logout() {
     this.socketService.disconnect();
     this.authService.logout().subscribe();
-  }
-
-  openScanner() {
-    this.scannerService.scan().subscribe();
   }
 }

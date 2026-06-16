@@ -14,6 +14,7 @@ import {
   IonHeader,
   IonToolbar,
   IonButtons,
+  IonButton,
   IonMenuButton,
   IonTitle,
   IonSpinner,
@@ -26,12 +27,14 @@ import {
   swapHorizontalOutline,
   arrowUpOutline,
   arrowDownOutline,
+  barcodeOutline,
 } from 'ionicons/icons';
 import {
   DashboardAlert,
   DashboardMovement,
 } from '../../core/models/dashboard.models';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { ScannerService } from '../../core/services/scanner.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -44,6 +47,7 @@ import { DashboardService } from '../../core/services/dashboard.service';
     IonToolbar,
     IonButtons,
     IonMenuButton,
+    IonButton,
     IonTitle,
     IonSpinner,
   ],
@@ -53,6 +57,7 @@ import { DashboardService } from '../../core/services/dashboard.service';
 export class DashboardComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly scanner = inject(ScannerService);
 
   readonly loading = signal(true);
   readonly totalProducts = signal(0);
@@ -79,6 +84,7 @@ export class DashboardComponent implements OnInit {
       swapHorizontalOutline,
       arrowUpOutline,
       arrowDownOutline,
+      barcodeOutline,
     });
   }
 

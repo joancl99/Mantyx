@@ -7,6 +7,13 @@
     <ion-buttons slot="end">
       <ion-button
         color="primary"
+        (click)="scannerService.open()"
+        aria-label="Escanear código"
+      >
+        <ion-icon slot="icon-only" name="barcode-outline" />
+      </ion-button>
+      <ion-button
+        color="primary"
         (click)="openCreate()"
         aria-label="Nuevo conteo"
       >

@@ -20,10 +20,11 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { addOutline, downloadOutline } from 'ionicons/icons';
+import { addOutline, barcodeOutline, downloadOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
 import { StockService } from '../../core/services/stock.service';
+import { ScannerService } from '../../core/services/scanner.service';
 import {
   CreateMovementDto,
   StockMovement,
@@ -62,6 +63,7 @@ export class ReceptionsComponent implements OnInit {
   private readonly stockService = inject(StockService);
   private readonly csvExport = inject(CsvExportService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly scanner = inject(ScannerService);
 
   readonly saving = signal(false);
   readonly formError = signal('');
@@ -96,7 +98,7 @@ export class ReceptionsComponent implements OnInit {
   });
 
   constructor() {
-    addIcons({ addOutline, downloadOutline });
+    addIcons({ addOutline, barcodeOutline, downloadOutline });
   }
 
   ngOnInit() {

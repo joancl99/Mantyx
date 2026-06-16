@@ -23,6 +23,14 @@ export class ScannerService {
     return this.scanWeb();
   }
 
+  /**
+   * Fire-and-forget trigger for the global toolbar scanner button. The scan
+   * completes after one read (native) or when the overlay emits/closes (web).
+   */
+  open(): void {
+    this.scan().subscribe();
+  }
+
   private scanNative(): Observable<ScanResult | null> {
     return from(
       BarcodeScanner.scan({
