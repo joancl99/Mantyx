@@ -21,8 +21,9 @@ import {
   IonTitle,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { addOutline } from 'ionicons/icons';
+import { addOutline, barcodeOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
+import { ScannerService } from '../../core/services/scanner.service';
 import {
   Brand,
   Category,
@@ -67,6 +68,7 @@ export class ProductsComponent implements OnInit {
   private readonly categoriesService = inject(CategoriesService);
   private readonly brandsService = inject(BrandsService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly scanner = inject(ScannerService);
 
   // ── State ──────────────────────────────────────────────────────
   readonly categories = signal<Category[]>([]);
@@ -119,6 +121,7 @@ export class ProductsComponent implements OnInit {
   constructor() {
     addIcons({
       addOutline,
+      barcodeOutline,
     });
   }
 

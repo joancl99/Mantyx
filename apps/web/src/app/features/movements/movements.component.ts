@@ -19,9 +19,10 @@ import {
   IonTitle,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { addOutline, downloadOutline } from 'ionicons/icons';
+import { addOutline, barcodeOutline, downloadOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
+import { ScannerService } from '../../core/services/scanner.service';
 import {
   CreateMovementDto,
   StockMovement,
@@ -63,6 +64,7 @@ export class MovementsComponent implements OnInit {
   private readonly csvExport = inject(CsvExportService);
   private readonly productsService = inject(ProductsService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly scanner = inject(ScannerService);
 
   // ── State ──────────────────────────────────────────────────────────────────
   readonly products = signal<Product[]>([]);
@@ -87,6 +89,7 @@ export class MovementsComponent implements OnInit {
   constructor() {
     addIcons({
       addOutline,
+      barcodeOutline,
       downloadOutline,
     });
   }
