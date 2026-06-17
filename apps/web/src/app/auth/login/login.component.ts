@@ -13,12 +13,7 @@ import {
 import { Router } from '@angular/router';
 import { IonContent, IonIcon, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import {
-  mailOutline,
-  lockClosedOutline,
-  eyeOutline,
-  eyeOffOutline,
-} from 'ionicons/icons';
+import { eyeOutline, eyeOffOutline } from 'ionicons/icons';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
@@ -50,12 +45,7 @@ export class LoginComponent {
   });
 
   constructor() {
-    addIcons({
-      mailOutline,
-      lockClosedOutline,
-      eyeOutline,
-      eyeOffOutline,
-    });
+    addIcons({ eyeOutline, eyeOffOutline });
   }
 
   get email() {

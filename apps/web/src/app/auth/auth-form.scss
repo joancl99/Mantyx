@@ -1,3 +1,14 @@
+// =============================================================================
+// Login — dark, minimalist (reference-inspired). Keeps the app's signature navy
+// background; the untouched logo sits on a white plate at the top; the fields
+// are clean underline inputs with coloured labels; the action is an amber pill.
+// Swap the accent from this one variable.
+// =============================================================================
+$login-ink: #f1f5f9; // primary input text
+$login-muted: #94a3b8; // labels helper / placeholders
+$login-line: rgba(148, 163, 184, 0.35); // field underline
+$login-accent: #f59e0b; // labels, focus, button (app amber)
+
 ion-content {
   --background: var(--wh-bg);
 }
@@ -7,82 +18,91 @@ ion-content {
   align-items: center;
   justify-content: center;
   min-height: 100%;
-  padding: 24px 20px;
+  padding: 32px 24px;
 }
 
 .login-card {
   width: 100%;
-  max-width: 400px;
-  background: var(--wh-surface);
-  border: 1px solid var(--wh-border);
-  border-radius: 20px;
-  padding: 40px 32px 32px;
+  max-width: 380px;
+  // Center the block so the empty space is shared top and bottom — balanced,
+  // not bunched at the top with a big gap below. A touch of bottom padding nudges
+  // the whole centered block slightly upward.
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 56px;
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 56px;
 }
 
 .brand-plate {
+  // The logo ships with a dark-navy wordmark, so on the dark screen it sits on a
+  // white plate — the focal element, like the avatar badge in the reference.
   display: inline-flex;
   padding: 16px 22px;
-  margin-bottom: 18px;
   background: #ffffff;
-  border-radius: 16px;
+  border-radius: 20px;
 
   img {
     display: block;
-    width: 200px;
+    width: 196px;
     max-width: 100%;
     height: auto;
   }
 }
 
+// Inset the form so the fields sit in from the card edges.
+form {
+  padding: 0 18px;
+}
+
 .app-subtitle {
-  font-size: 14px;
-  color: var(--wh-text-muted);
-  margin: 0;
+  margin: 18px 0 0;
+  font-size: 15px;
+  color: $login-muted;
 }
 
 .field {
-  margin-bottom: 16px;
+  margin-bottom: 60px;
 
   &--error .input-wrap {
-    border-color: var(--wh-danger);
+    border-bottom-color: var(--wh-danger);
   }
+}
+
+// Extra breathing room only between the email field and the password label,
+// without touching the gap down to the button.
+.field + .field {
+  margin-top: 50px;
 }
 
 .field-label {
   display: block;
   font-size: 13px;
-  font-weight: 600;
-  color: var(--wh-text-muted);
-  margin-bottom: 6px;
-  letter-spacing: 0.3px;
+  font-weight: 700;
+  color: $login-accent;
+  margin-bottom: 5px;
+  letter-spacing: 1px;
   text-transform: uppercase;
 }
 
 .input-wrap {
   display: flex;
   align-items: center;
-  min-height: var(--control-h);
-  background: var(--wh-bg);
-  border: 1px solid var(--wh-border);
-  border-radius: 10px;
-  padding: 0 12px;
+  // Minimalist underline field — no box, just a bottom rule.
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid $login-line;
+  border-radius: 0;
+  padding: 6px 0;
   transition: border-color 0.15s ease;
 
   &:focus-within {
-    border-color: var(--wh-accent);
+    border-bottom-color: $login-accent;
   }
-}
-
-.input-icon {
-  font-size: 17px;
-  color: var(--wh-text-muted);
-  flex-shrink: 0;
-  margin-right: 10px;
 }
 
 .field-input {
@@ -90,32 +110,32 @@ ion-content {
   background: transparent;
   border: none;
   outline: none;
-  color: var(--wh-text);
+  color: $login-ink;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 15px;
-  padding: 13px 0;
+  font-size: 16px;
+  padding: 6px 0;
 
   &::placeholder {
-    color: var(--wh-text-muted);
-    opacity: 0.6;
+    color: $login-muted;
+    opacity: 0.7;
   }
 }
 
 .input-toggle {
   background: transparent;
   border: none;
-  padding: 0;
+  padding: 0 0 0 8px;
   cursor: pointer;
   display: flex;
   align-items: center;
-  color: var(--wh-text-muted);
+  color: $login-muted;
 
   ion-icon {
     font-size: 18px;
   }
 
   &:hover {
-    color: var(--wh-text);
+    color: $login-ink;
   }
 }
 
@@ -123,39 +143,40 @@ ion-content {
   display: block;
   font-size: 12px;
   color: var(--wh-danger);
-  margin-top: 5px;
-  padding-left: 2px;
+  margin-top: 6px;
 }
 
 .error-banner {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
   border-radius: 8px;
   padding: 10px 14px;
   font-size: 13px;
-  color: var(--wh-danger);
-  margin-bottom: 16px;
+  color: #fca5a5;
+  margin-bottom: 20px;
 }
 
 .btn-primary {
   width: 100%;
-  padding: 14px;
+  padding: 15px;
   border: none;
-  border-radius: 10px;
-  background: var(--wh-accent);
-  color: var(--wh-bg);
+  border-radius: 999px;
+  background: $login-accent;
+  color: #1a1206;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
+  letter-spacing: 0.3px;
   cursor: pointer;
   transition:
-    background 0.15s ease,
+    filter 0.15s ease,
     opacity 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 48px;
-  margin-bottom: 24px;
+  min-height: 52px;
+  margin-top: 72px;
+  margin-bottom: 44px;
 
   &:hover:not(:disabled) {
     background: var(--wh-accent-hover);
@@ -166,7 +187,7 @@ ion-content {
   }
 
   ion-spinner {
-    --color: var(--wh-bg);
+    --color: #1a1206;
     width: 20px;
     height: 20px;
   }
@@ -174,17 +195,28 @@ ion-content {
 
 .register-link {
   text-align: center;
-  font-size: 13px;
-  color: var(--wh-text-muted);
+  font-size: 14px;
+  color: $login-muted;
   margin: 0;
 
   a {
-    color: var(--wh-accent);
+    color: $login-accent;
     font-weight: 600;
     text-decoration: none;
 
     &:hover {
       text-decoration: underline;
     }
+  }
+}
+
+// Mobile/PDA-first: fill almost the whole screen.
+@media (max-width: 600px) {
+  .login-wrap {
+    padding: 24px 20px;
+  }
+
+  .login-card {
+    min-height: calc(100dvh - 48px);
   }
 }
