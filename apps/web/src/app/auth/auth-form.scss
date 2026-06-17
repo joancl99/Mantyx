@@ -8,6 +8,7 @@ $login-ink: #f1f5f9; // primary input text
 $login-muted: #94a3b8; // labels helper / placeholders
 $login-line: rgba(148, 163, 184, 0.35); // field underline
 $login-accent: #f59e0b; // labels, focus, button (app amber)
+$login-band: #d8e2e6; // logo band background + the tagline text (kept in sync)
 
 ion-content {
   --background: var(--wh-bg);
@@ -39,18 +40,25 @@ ion-content {
 }
 
 .brand-plate {
-  // The logo ships with a dark-navy wordmark, so on the dark screen it sits on a
-  // white plate — the focal element, like the avatar badge in the reference.
-  display: inline-flex;
-  padding: 16px 22px;
-  background: #ffffff;
-  border-radius: 20px;
+  // Rounded band behind the logo: wide but contained (not full-bleed), centered,
+  // with the untouched logo inside.
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  padding: 10px 0;
+  background: $login-band;
+  border-radius: 16px;
 
   img {
     display: block;
     width: 196px;
     max-width: 100%;
     height: auto;
+    // Visual-only nudge so the top-heavy artwork reads centered in the band.
+    position: relative;
+    top: 6px;
   }
 }
 
@@ -60,7 +68,7 @@ form {
 }
 
 .app-subtitle {
-  margin: 18px 0 0;
+  margin: 20px 0 0;
   font-size: 15px;
   color: $login-muted;
 }
