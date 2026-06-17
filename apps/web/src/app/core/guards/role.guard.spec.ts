@@ -45,15 +45,15 @@ describe('roleGuard', () => {
     expect(createUrlTree).not.toHaveBeenCalled();
   });
 
-  it('redirects denied roles to the dashboard', () => {
+  it('redirects denied roles to home', () => {
     currentRole = 'VIEWER';
 
     const result = TestBed.runInInjectionContext(() =>
       roleGuard(routeWithRoles(['SUPERADMIN', 'ADMIN']), {} as never),
     );
 
-    expect(result).toEqual({ commands: ['/app/dashboard'] });
-    expect(createUrlTree).toHaveBeenCalledWith(['/app/dashboard']);
+    expect(result).toEqual({ commands: ['/app/home'] });
+    expect(createUrlTree).toHaveBeenCalledWith(['/app/home']);
   });
 
   it('redirects missing users to login', () => {

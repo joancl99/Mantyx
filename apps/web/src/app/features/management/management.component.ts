@@ -28,6 +28,7 @@ import {
   analyticsOutline,
   arrowForwardOutline,
   barChartOutline,
+  barcodeOutline,
   checkboxOutline,
   clipboardOutline,
   cubeOutline,
@@ -40,6 +41,7 @@ import { DashboardStats } from '../../core/models/dashboard.models';
 import { StockOverviewItem } from '../../core/models/stock.models';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { StockService } from '../../core/services/stock.service';
+import { ScannerService } from '../../core/services/scanner.service';
 
 interface ManagementAction {
   label: string;
@@ -73,6 +75,7 @@ export class ManagementComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService);
   private readonly stockService = inject(StockService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly scanner = inject(ScannerService);
 
   readonly loading = signal(true);
   readonly dashboard = signal<DashboardStats | null>(null);
@@ -148,6 +151,7 @@ export class ManagementComponent implements OnInit {
       analyticsOutline,
       arrowForwardOutline,
       barChartOutline,
+      barcodeOutline,
       checkboxOutline,
       clipboardOutline,
       cubeOutline,

@@ -26,6 +26,7 @@ export interface DashboardMovement {
 }
 
 export interface DashboardStats {
+  warehouseCount: number;
   kpis: DashboardKpis;
   alerts: DashboardAlert[];
   recentMovements: DashboardMovement[];

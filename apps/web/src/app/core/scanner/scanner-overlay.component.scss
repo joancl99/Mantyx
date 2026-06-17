@@ -19,6 +19,7 @@
     position: relative;
     width: 100%;
     max-width: 480px;
+    height: 75vh;
     background: var(--color-surface, #1e293b);
     border-radius: 20px 20px 0 0;
     padding-bottom: env(safe-area-inset-bottom, 0);
@@ -72,8 +73,9 @@
 
   &__viewport {
     position: relative;
+    flex: 1;
+    min-height: 0;
     width: 100%;
-    aspect-ratio: 4 / 3;
     background: #000;
     overflow: hidden;
   }
@@ -111,27 +113,10 @@
   }
 
   &__hint {
-    padding: 14px 20px;
+    padding: 24px 20px 28px;
     font-size: 0.8125rem;
     color: var(--color-text-secondary, #94a3b8);
     text-align: center;
-  }
-
-  &__cancel-btn {
-    margin: 0 20px 20px;
-    padding: 12px;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--color-text-primary, #f1f5f9);
-    font-size: 0.9375rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
   }
 }
 

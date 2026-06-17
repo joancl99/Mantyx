@@ -1,0 +1,64 @@
+{
+  "modules": 
+  {
+    "home":
+    {
+      "active": true,
+      "scanner": true
+    },
+
+    "products": 
+    { 
+      "active": true, 
+      "scanner": true 
+    },
+
+    "stock": 
+    { 
+      "active": true, 
+      "scanner": true 
+    },
+
+    "movements": 
+    { 
+      "active": true, 
+      "scanner": true 
+    },
+
+    "inventory": 
+    { 
+      "active": true, 
+      "scanner": true 
+    },
+
+    "receptions": 
+    { 
+      "active": true, 
+      "scanner": true 
+    },
+
+    "expeditions": 
+    { 
+      "active": true, 
+      "scanner": true 
+    },
+
+    "warehouses": 
+    { 
+      "active": true, 
+      "scanner": true 
+    },
+
+    "management": 
+    { 
+      "active": true, 
+      "scanner": true 
+    },
+    
+    "admin": 
+    { 
+      "active": true, 
+      "scanner": true 
+    }
+  }
+}

@@ -20,11 +20,17 @@ import {
   IonIcon,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { downloadOutline, searchOutline, warningOutline } from 'ionicons/icons';
+import {
+  barcodeOutline,
+  downloadOutline,
+  searchOutline,
+  warningOutline,
+} from 'ionicons/icons';
 import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { StockOverviewItem } from '../../core/models/stock.models';
 import { StockService } from '../../core/services/stock.service';
 import { CsvExportService } from '../../core/services/csv-export.service';
+import { ScannerService } from '../../core/services/scanner.service';
 import { StockListComponent } from './stock-list/stock-list.component';
 
 @Component({
@@ -50,6 +56,7 @@ export class StockComponent implements OnInit {
   private readonly stockService = inject(StockService);
   private readonly csvExport = inject(CsvExportService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly scanner = inject(ScannerService);
   private readonly searchSubject = new Subject<string>();
 
   readonly items = signal<StockOverviewItem[]>([]);
@@ -78,6 +85,7 @@ export class StockComponent implements OnInit {
 
   constructor() {
     addIcons({
+      barcodeOutline,
       downloadOutline,
       searchOutline,
       warningOutline,
