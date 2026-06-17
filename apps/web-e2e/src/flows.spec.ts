@@ -49,7 +49,7 @@ test('shows an error banner for wrong credentials', async ({ page }) => {
 test('logs in as ADMIN with a role-scoped menu', async ({ page }) => {
   await login(page, ADMIN.email, ADMIN.password);
 
-  await expect(page).toHaveURL(/\/app\/dashboard$/);
+  await expect(page).toHaveURL(/\/app\/home$/);
   await openMenu(page);
   await expect(page.locator('.menu-role-badge')).toContainText('ADMIN');
   await expect(menuLabels(page).filter({ hasText: 'Productos' })).toBeVisible();
@@ -65,7 +65,7 @@ test('creates a product end-to-end from the Productos page', async ({
   const sku = `PW-${Date.now()}`;
 
   await login(page, ADMIN.email, ADMIN.password);
-  await expect(page).toHaveURL(/\/app\/dashboard$/);
+  await expect(page).toHaveURL(/\/app\/home$/);
 
   await openMenu(page);
   await page
@@ -90,7 +90,7 @@ test('creates a product end-to-end from the Productos page', async ({
 test('VIEWER gets a read-only menu and can log out', async ({ page }) => {
   await login(page, VIEWER.email, VIEWER.password);
 
-  await expect(page).toHaveURL(/\/app\/dashboard$/);
+  await expect(page).toHaveURL(/\/app\/home$/);
   await openMenu(page);
   await expect(page.locator('.menu-role-badge')).toContainText('VIEWER');
   await expect(menuLabels(page).filter({ hasText: 'Stock' })).toBeVisible();

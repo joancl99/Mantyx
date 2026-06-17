@@ -20,13 +20,11 @@ const ADMINS_UP: UserRole[] = ['SUPERADMIN', 'ADMIN'];
 
 export const shellRoutes: Route[] = [
   {
-    path: 'dashboard',
+    path: 'home',
     canActivate: [roleGuard, moduleActiveGuard],
     data: { roles: ALL_ROLES },
     loadComponent: () =>
-      import('../features/dashboard/dashboard.component').then(
-        (m) => m.DashboardComponent,
-      ),
+      import('../features/home/home.component').then((m) => m.HomeComponent),
   },
   {
     path: 'products',

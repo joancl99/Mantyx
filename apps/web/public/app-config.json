@@ -1,10 +1,10 @@
 {
   "modules": 
   {
-    "dashboard": 
-    { 
-      "active": true, 
-      "scanner": true 
+    "home":
+    {
+      "active": true,
+      "scanner": true
     },
 
     "products": 

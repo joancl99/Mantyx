@@ -37,7 +37,7 @@ import { DashboardService } from '../../core/services/dashboard.service';
 import { ScannerService } from '../../core/services/scanner.service';
 
 @Component({
-  selector: 'app-dashboard',
+  selector: 'app-home',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -51,10 +51,10 @@ import { ScannerService } from '../../core/services/scanner.service';
     IonTitle,
     IonSpinner,
   ],
-  styleUrl: './dashboard.component.scss',
-  templateUrl: './dashboard.component.html',
+  styleUrl: './home.component.scss',
+  templateUrl: './home.component.html',
 })
-export class DashboardComponent implements OnInit {
+export class HomeComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService);
   private readonly destroyRef = inject(DestroyRef);
   readonly scanner = inject(ScannerService);

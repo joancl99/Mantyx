@@ -54,15 +54,15 @@ Backend modules currently present:
 - Stock alerts gateway (`StockAlertsGateway`, namespace `/ws`): **authenticated** — the socket.io handshake must carry a valid access token in `auth.token` (denylisted `jti` rejected against Redis), authenticated clients join a per-tenant `company:<id>` room, and `emitLowStock(companyId, payload)` emits only to that room (never a global broadcast — that leaked stock data across tenants until 2026-06-09). SUPERADMIN connects but joins no room.
 - Warehouses: warehouses, zones, aisles, and locations.
 - Inventory counts: tenant-scoped count list/detail, create, start, complete, cancel, line add/update/delete. `PATCH /inventory/:id/cancel` (`@Roles(ADMIN, MANAGER)`) cancels DRAFT/IN_PROGRESS counts; the status update and the AuditLog row (acting user from `@CurrentUser('sub')`) are written in one transaction, mirroring complete. COMPLETED/CANCELLED counts are rejected; a cancelled count is read-only.
-- Dashboard: KPIs, alerts, and latest movements.
+- Dashboard (KPI/stats API): `GET /dashboard/stats` returns KPIs, alerts, and latest movements. NOTE: the backend module/service/route keep the `dashboard` name (it is the stats data layer, consumed by both the frontend Inicio page and Management); only the **frontend page identity** was renamed to `home`/"Inicio" (see Frontend areas).
 - Audit: global `AuditModule`. `AuditService.log()` writes an `AuditLog` row and never breaks the business op (failures are swallowed + logged); `GET /audit` (`@Roles(ADMIN)`, company-scoped, action/entityType filters + pagination). Writers: auth (LOGIN/LOGOUT, with ip/userAgent), products + users controllers (CREATE/UPDATE/DELETE — passwords never stored in `changes`), and the existing in-transaction writes from stock movements + inventory completion.
 - Global exception filter, Prisma module, Redis module, Swagger bootstrap. `main.ts` sets **`trust proxy = 1`** (nginx is the single hop in prod): without it `req.ip` was the nginx container IP, so the throttler put every user in ONE shared rate-limit bucket and auth audit rows stored the proxy IP. The api-e2e bootstrap mirrors the setting. `InventoryService.complete()` attributes its audit row to the acting user from `@CurrentUser('sub')` (it used to claim the count creator did it). `apps/api-e2e` exposes only its `e2e` target — the `@nx/jest/plugin` in `nx.json` excludes it so `nx run-many -t test` never boots the Docker-dependent e2e suite; `passWithNoTests` removed from the api/api-e2e jest targets.
 
 Frontend areas currently present:
 
 - Auth pages: login (no register — invite-based onboarding).
-- Shell with Ionic side menu and global scanner FAB (functional).
-- Dashboard.
+- Shell with Ionic side menu. The barcode scanner is **no longer a floating FAB** — it lives as an amber icon-only button (`color="primary"`) in each page toolbar (`slot="end"`), gated per page by `@if (scanner.isEnabledHere())`; the centralized `ScannerService.open()` fires the scan. The ZXing web overlay has no Cancelar button and uses 75vh of camera.
+- Inicio (home): the former Dashboard page, renamed to "Inicio" with route `/app/home`, module id `home`, component `features/home/home.component.*` (selector `app-home`). The functional UX audit reworked it: removed the time-of-day greeting and the "Accesos rápidos" block; the summary subtitle is dynamic ("Resumen de todos los almacenes" with >1 warehouse, "Resumen general" with one); KPI cards toned down (centered value/label, icon top-left, electric-blue accent on Movimientos), unified red badges for low/no-stock counts, consistent 25px gaps. The stats still come from `DashboardService` (`/dashboard/stats`).
 - Products.
 - Stock (overview with search and paginated list).
 - Movements.
@@ -92,7 +92,7 @@ Frontend areas currently present:
 - Movements list, filters, pagination, and total label state lives in feature-local `movements-list-state.ts`.
 - Receptions list, filters, and pagination state lives in feature-local `receptions-list-state.ts` (always filters `type: 'INBOUND'`).
 - Expeditions list, filters, and pagination state lives in feature-local `expeditions-list-state.ts` (always filters `type: 'OUTBOUND'`).
-- Dashboard has shared frontend models in `core/models/dashboard.models.ts`; `DashboardService` should remain HTTP-focused.
+- Inicio (home) has shared frontend models in `core/models/dashboard.models.ts`; `DashboardService` should remain HTTP-focused. (The models/service keep the `dashboard`/`Dashboard*` names — they back both the Inicio page and Management.)
 - Admin has shared frontend models in `core/models/user.models.ts` and `core/models/company.models.ts`, plus child components for company list, users panel, and catalog panel. The ADMIN users view and SUPERADMIN companies view are orchestrated by feature-local `admin-users-state.ts` (`AdminUsersState`) and `admin-companies-state.ts` (`AdminCompaniesState`) — same pattern as `admin-catalog-state.ts` — keeping `admin.component.ts` a thin coordinator (~140 lines). The modals are extracted into child components (`admin-user-modal`, `admin-company-modal`, the shared `admin-catalog-modal` for categories/brands, and the shared `admin-confirm-dialog` for the toggle/delete confirmations), so `admin.component.html` is now just `@if` guards hosting them.
 - Admin category/brand list, modal, save, and delete orchestration is shared through feature-local `admin-catalog-state.ts`. The users (ADMIN) and companies (SUPERADMIN) orchestration lives in feature-local `admin-users-state.ts` (`AdminUsersState`) and `admin-companies-state.ts` (`AdminCompaniesState`), same pattern. The Auditoría tab is orchestrated by feature-local `admin-audit-state.ts` (`AdminAuditState`: filters + pagination) feeding the presentational `admin-audit-panel` child.
 - Warehouses hierarchy selection and breadcrumb navigation state is shared through feature-local `warehouse-navigation-state.ts`.
@@ -115,7 +115,7 @@ All four agreed items were built and committed on `dev` (commits `6d6f9e1`, `014
 
 Remaining frontend work: none pending — inventory count cancellation (the last optional item) was implemented on 2026-06-11 (commit `28236c1`).
 
-## Frontend Cohesion Pass (mobile/PDA-first) — IN PROGRESS (started 2026-06-16, on `dev`, not promoted)
+## Frontend Cohesion Pass (mobile/PDA-first) — CLOSED + PROMOTED to main (2026-06-16); functional audit IN PROGRESS on `dev`
 
 The app is **mobile/PDA-first** (warehouse workers use it on handhelds for daily tasks: movements, receptions, expeditions, inventory, stock; desktop is secondary, for SUPERADMIN/ADMIN management). A consistency refactor is underway because each page used to hardcode its own sizes, widths, and centering. Decisions agreed with the user: touch-comfortable density (body 15px, 44px tap targets), foundation-first then per-page. The full play-by-play (commits, gotchas, palette) lives in the `project-frontend-design-system` memory.
 
@@ -127,13 +127,18 @@ Done so far (each verified with `nx build web` + `nx lint web`, all on `dev`):
 - **#2 Toolbar owns the title + actions** — the page title used to render twice (`ion-title` + an in-content `<h1>`). Now the fixed toolbar is the single title and carries the page actions as icon-only `ion-button`s in `slot="end"` (primary action `color="primary"`); content keeps only a fine `.page-context` line. Applied to all 10 pages with their own toolbar; warehouses moved its create to the toolbar (warehouses view only); admin was left as-is (its toolbar is "Administración" while child panels carry distinct section titles — no duplication). Validated on mobile by the user.
 - **Login + shell** — login was already token-aligned/touch-friendly (15px inputs, 48px button), just got 44px input rows; the shell side menu is fine (≈56px items), only its role badge needed the `.badge` + colour alignment above.
 
-### NEXT SESSION — start here, in this order (agreed 2026-06-16)
+**Cohesion pass CLOSED and PROMOTED to main** (PR #4 green, `--no-ff` chained merges `dev → pre → main`, tree parity `f339f239`, CI main green). The remaining items #1 `.data-row`/`.data-list` (11 lists migrated) and #2 internal surfaces (unified to `var(--wh-surface-hover)`) were finished. See the `project-frontend-design-system` memory for the full play-by-play.
 
-1. **Shared list-row pattern (`.data-row`).** Every list still defines its own row (`.movement-row`, `.stock-row`, `.product-row`, `.reception-row`/`.expedition-row`, `.count-row`, warehouse/admin rows) with different density, hover, separators. Add a `.data-row` scaffold to `_shared.scss` (surface, border, radius, hover, touch padding) and migrate the lists, leaving only the feature-specific grid/columns per component.
-2. **Unify internal card/panel surfaces.** Some inner panels use `rgba(15,23,42,…)` (e.g. management `risk-row`/`movement-feed`/`empty-panel`), others `var(--wh-surface-hover)`. Pick one treatment.
-3. **Promote `dev → main` once the visual pass is closed.** ~13 design commits are stacked on `dev`. Follow the repo flow: local gate (lint/test/build) + CI validation via a `dev → main` PR, then `--no-ff` chained merges `dev → pre → main` with tree-hash parity (see "GitHub And CI").
+### Functional UX audit + feature flags (2026-06-16/17, on `dev`)
 
-(Also still un-started, independent of the visual pass: the functional "what works / what doesn't" audit by running the app, parked at the start of the 2026-06-16 session.)
+The functional "what works / what should work" audit started, page by page, beginning with the dashboard → renamed **Inicio**. Work done (each verified `nx build web` + `nx lint web` + `nx test web`):
+
+- **Scanner moved from FAB to page toolbars** (`851ed7c`). The floating barcode FAB is gone; each page toolbar carries an amber icon-only scanner button (`color="primary"`, `slot="end"`) gated by `@if (scanner.isEnabledHere())`. `ScannerService.open()` centralizes the scan (fire-and-forget `scan().subscribe()`). The ZXing web overlay lost its Cancelar button and now uses 75vh of camera. Gotcha: an Angular wrapper component with `slot="end"` + `:host{display:contents}` does **not** slot into `ion-toolbar` correctly (button rendered on the wrong side) — use the direct `<ion-buttons slot="end"><ion-button>` pattern per page.
+- **Inicio rework** (`fe0fb19`) — see the "Inicio (home)" bullet under Frontend areas.
+- **Build-time feature flags** (`69d7263`) — `apps/web/public/app-config.json` declares per-module `{ active, scanner }` for white-labeling / per-client APKs. `AppConfigService.load()` (registered via `provideAppInitializer`, fail-open on fetch error) exposes `isModuleActive(id)`/`isScannerEnabled(id)` (default `?? true`). `active:false` **hides the menu item AND blocks the route** (`moduleActiveGuard`, with an anti-loop `if (fallback === id) return true`); `scanner:false` hides the toolbar button. `NAV_ITEMS` moved to `shell/nav-items.ts` with a per-module `id` + `firstAvailableModuleId(role, isActive)` helper driving both the `/app` landing redirect and the guard fallback (so an all-disabled config can't brick navigation). Everything is toggleable, Inicio included. The JSON is hand-formatted (one field per line) and added to `.prettierignore` so format:check leaves it alone. Decisions: build-time (not runtime), hide+block, all modules toggleable.
+- **Dashboard page → Inicio rename** (this session) — the frontend page identity is now `home`: `features/home/home.component.*` (selector `app-home`), route `/app/home`, module id `home`, nav label "Inicio", login + role-guard redirects to `/app/home`, e2e URL assertions, app-config.json key `home`, internal `.home` CSS class. The **stats data layer keeps the `dashboard` name** (`DashboardService`, `dashboard.models.ts`, backend `/dashboard/stats` module/controller) — it is a distinct domain concept shared with Management.
+
+(Still un-started: the rest of the functional audit, page by page beyond Inicio.)
 
 ## Remaining Product Focus
 
@@ -166,7 +171,7 @@ Done so far (each verified with `nx build web` + `nx lint web`, all on `dev`):
 - Brand assets live in `apps/web/public/brand/`: `mantyx-logo-full.png` (mantis symbol + wordmark), `mantyx-symbol.png` (mantis only), `mantyx-wordmark.png` ("Mantyx" text only). The logo's wordmark is dark, so on the dark login card and dark side menu it sits on a white rounded "plate"/badge to stay legible. Current usage: **login** shows the full logo on a white plate; the **side menu** shows the wordmark on a white plate; the **favicon** (`apps/web/public/favicon.ico` + `favicon-16x16.png`/`favicon-32x32.png`/`apple-touch-icon.png`, linked in `index.html`) is generated from the green mantis symbol. Logos are plain `<img>` static assets — no ion-icon placeholder (`cube-sharp` was removed).
 - Navigation: Ionic `IonMenu` side drawer for authenticated routes.
 - Auth pages are full-screen and do not show the app menu.
-- Scanner is a global FAB (barcode icon, bottom-right corner), not a regular menu section.
+- Scanner lives as an amber icon-only button in each page toolbar (`slot="end"`), gated by feature flags + `@if (scanner.isEnabledHere())` — no longer a floating FAB.
 - Avoid futuristic, neon, holographic, or 3D visual effects.
 - Do not use Inter, Roboto, or Arial as the primary brand font.
 - Before building a new visual page from scratch, ask for a design reference if the direction is unclear.
@@ -175,7 +180,7 @@ Approved shell menu (in order):
 
 | Label          | Icon                      | Roles       |
 | -------------- | ------------------------- | ----------- |
-| Dashboard      | `home-outline`            | ALL_ROLES   |
+| Inicio         | `home-outline`            | ALL_ROLES   |
 | Productos      | `cube-outline`            | MANAGERS_UP |
 | Stock          | `analytics-outline`       | ALL_ROLES   |
 | Movimientos    | `swap-horizontal-outline` | OPERATOR+   |

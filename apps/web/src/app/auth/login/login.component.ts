@@ -80,11 +80,11 @@ export class LoginComponent {
 
     this.authService.login(email, password).subscribe({
       next: () => {
-        // SUPERADMIN has no company, so the company-scoped dashboard does not
+        // SUPERADMIN has no company, so the company-scoped home does not
         // apply — send them straight to the platform admin panel.
         const isSuperadmin =
           this.authService.currentUser()?.role === 'SUPERADMIN';
-        this.router.navigate([isSuperadmin ? '/app/admin' : '/app/dashboard']);
+        this.router.navigate([isSuperadmin ? '/app/admin' : '/app/home']);
       },
       error: (err) => {
         this.isLoading.set(false);

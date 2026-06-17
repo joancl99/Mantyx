@@ -24,10 +24,10 @@ const ADMINS_UP: UserRole[] = ['SUPERADMIN', 'ADMIN'];
 // the landing-route helper so the three stay in sync.
 export const NAV_ITEMS: NavItem[] = [
   {
-    id: 'dashboard',
+    id: 'home',
     label: 'Inicio',
     icon: 'home-outline',
-    route: '/app/dashboard',
+    route: '/app/home',
     roles: ALL_ROLES,
   },
   {
@@ -114,5 +114,5 @@ export function firstAvailableModuleId(
     const allowed = NAV_ITEMS.find((i) => i.roles.includes(role));
     if (allowed) return allowed.id;
   }
-  return 'dashboard';
+  return 'home';
 }
