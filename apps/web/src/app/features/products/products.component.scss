@@ -1,3 +1,39 @@
 :host {
   display: contents;
 }
+
+// More breathing room between the toolbar and the first block (the search box).
+.page {
+  padding-top: var(--sp-10);
+}
+
+// Section header above the product list: title + result count pill. Mirrors the
+// Inicio section headers (.dash-section__header / __title / __count) so the page
+// reads with the same visual order.
+.list-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding-left: var(--sp-2);
+}
+
+.list-head__title {
+  margin: 0;
+  color: var(--wh-text);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.list-head__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--wh-surface-hover);
+  color: var(--wh-text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}

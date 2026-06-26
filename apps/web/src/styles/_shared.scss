@@ -23,6 +23,23 @@
   --page-max: 760px;
 }
 
+// Even vertical rhythm between a page's top-level blocks (filters, section
+// headers, lists, pagination) via a single gap instead of per-block margins.
+// Neutralises the stray margins those shared blocks carry so the spacing stays
+// uniform. Opt-in; pages keep their own spacing unless they add this.
+.page--stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+
+  .filters-bar {
+    margin-bottom: 0;
+  }
+  .pagination {
+    margin-top: 0;
+  }
+}
+
 // ── Page header ───────────────────────────────────────────────────────────────
 .page-header {
   display: flex;
@@ -366,6 +383,33 @@
 // Dimmed state for deactivated/inactive entities (users, warehouses…).
 .data-row--inactive {
   opacity: 0.55;
+}
+
+// Unified-surface variant: the rows share one bordered card and are separated by
+// hairlines (the same visual language as the Inicio lists), and hover fills the
+// whole row instead of just tinting the border. Apply to the .data-list element.
+.data-list--flush {
+  gap: 0;
+  overflow: hidden;
+  background: var(--wh-surface);
+  border: 1px solid var(--wh-border);
+  border-radius: var(--radius-lg);
+
+  .data-row {
+    border: none;
+    border-bottom: 1px solid var(--wh-border);
+    border-radius: 0;
+    padding: var(--sp-4);
+    background: transparent;
+
+    &:last-child {
+      border-bottom: none;
+    }
+    &:hover {
+      border-color: var(--wh-border);
+      background: var(--wh-surface-hover);
+    }
+  }
 }
 
 // ── Search & Filters ──────────────────────────────────────────────────────────

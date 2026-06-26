@@ -28,9 +28,7 @@
 </ion-header>
 
 <ion-content [scrollY]="true" [fullscreen]="true">
-  <div class="page">
-    <p class="page-context">{{ list.totalLabel() }}</p>
-
+  <div class="page page--stack">
     <app-product-filters
       [searchQuery]="list.searchQuery()"
       [selectedCategory]="list.selectedCategory()"
@@ -41,6 +39,13 @@
       (categoryChanged)="list.onCategoryChange($event)"
       (brandChanged)="list.onBrandChange($event)"
     />
+
+    <header class="list-head">
+      <h2 class="list-head__title">Catálogo</h2>
+      @if (!list.loading()) {
+        <span class="list-head__count">{{ list.total() }}</span>
+      }
+    </header>
 
     <app-product-list
       [products]="list.products()"

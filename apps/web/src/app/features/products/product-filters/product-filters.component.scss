@@ -2,6 +2,13 @@
   display: contents;
 }
 
+// More breathing room between the search block and the brand/category selects
+// than the shared 12px (applies both as a row gap when side by side and as a
+// column gap when they wrap on a handheld).
+.filters-bar {
+  gap: var(--sp-6);
+}
+
 .search-wrap {
   flex: 1;
   min-width: 200px;

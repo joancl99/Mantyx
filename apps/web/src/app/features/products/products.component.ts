@@ -77,13 +77,16 @@ export class ProductsComponent implements OnInit {
   readonly list = new ProductsListState(this.productsService, this.destroyRef);
 
   // ── Permissions ─────────────────────────────────────────────
+  // Mirrors the backend @Roles: create/update = ADMIN + MANAGER, delete = ADMIN.
+  // SUPERADMIN is a platform role (companyId = null) and never operates inside a
+  // tenant, so it is intentionally excluded here to match the API.
   readonly canEdit = computed(() => {
     const role = this.auth.currentUser()?.role;
-    return role === 'SUPERADMIN' || role === 'ADMIN' || role === 'MANAGER';
+    return role === 'ADMIN' || role === 'MANAGER';
   });
   readonly canDelete = computed(() => {
     const role = this.auth.currentUser()?.role;
-    return role === 'SUPERADMIN' || role === 'ADMIN';
+    return role === 'ADMIN';
   });
 
   // ── Modal ────────────────────────────────────────────────────
